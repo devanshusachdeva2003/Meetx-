@@ -1,15 +1,6 @@
 import { Calendar, Video } from "lucide-react";
 import { motion } from "framer-motion";
 
-export interface MeetingCardProps {
-  title: string;
-  meta: string;
-  avatars: number;
-  extra?: number;
-  action?: "join" | "view";
-  icon?: "calendar" | "video";
-}
-
 const avatarColors = [
   "from-purple-500 to-pink-500",
   "from-blue-500 to-cyan-500",
@@ -18,7 +9,7 @@ const avatarColors = [
   "from-violet-500 to-indigo-500",
 ];
 
-export function MeetingCard({ title, meta, avatars, extra, action = "join", icon = "calendar" }: MeetingCardProps) {
+export function MeetingCard({ title, meta, avatars, extra, action = "join", icon = "calendar" }) {
   const Icon = icon === "calendar" ? Calendar : Video;
   return (
     <motion.div
