@@ -6,7 +6,7 @@ export function Header() {
     <header className="flex items-start justify-between gap-4 flex-wrap">
       <div>
         <h1 className="text-3xl md:text-4xl font-bold tracking-tight text-white">
-          Welcome back, John! <span className="inline-block">👋</span>
+          Welcome back, Ds! <span className="inline-block">👋</span>
         </h1>
         <p className="text-gray-400 mt-1">Ready to connect and collaborate?</p>
       </div>
