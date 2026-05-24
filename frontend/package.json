@@ -7,16 +7,17 @@
     "dev": "vite",
     "build": "vite build",
     "lint": "eslint .",
+    "tunnel": "lt --port 3000 --subdomain meetx-uttam",
     "preview": "vite preview"
   },
   "dependencies": {
     "framer-motion": "latest",
     "lucide-react": "latest",
-    "socket.io-client": "^4.7.2",
     "react": "^19.2.6",
     "react-dom": "^19.2.6",
     "react-hook-form": "^7.76.1",
     "react-router-dom": "^7.15.1",
+    "socket.io-client": "^4.7.2",
     "tailwind-merge": "^3.6.0"
   },
   "devDependencies": {
@@ -29,6 +30,7 @@
     "eslint-plugin-react-hooks": "^7.1.1",
     "eslint-plugin-react-refresh": "^0.5.2",
     "globals": "^17.6.0",
+    "localtunnel": "^2.0.2",
     "tailwindcss": "^4.3.0",
     "vite": "^8.0.12"
   }
