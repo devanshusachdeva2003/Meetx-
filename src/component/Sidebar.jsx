@@ -1,22 +1,33 @@
 import { Home, Calendar, Users, Video, Settings, PlayCircle, ChevronDown, Sparkles } from "lucide-react";
 import { motion } from "framer-motion";
-import { useState } from "react";
+import { useState, useEffect } from "react";
+import { useNavigate, useLocation } from 'react-router-dom';
 
 const avatarJohn = "/download.jpg";
 
 const menu = [
-  { icon: Home, label: "Home", key: "home" },
-  { icon: Video, label: "Meetings", key: "meetings" },
-  { icon: Calendar, label: "Calendar", key: "calendar" },
-  { icon: Users, label: "Contacts", key: "contacts" },
-  { icon: PlayCircle, label: "Recordings", key: "recordings" },
-  { icon: Settings, label: "Settings", key: "settings" },
+  { icon: Home, label: "Home", key: "home", path: '/' },
+  { icon: Video, label: "Meetings", key: "meetings", path: '/meetings' },
+  { icon: Calendar, label: "Calendar", key: "calendar", path: '/calendar' },
+  { icon: Users, label: "Contacts", key: "contacts", path: '/contacts' },
+  { icon: PlayCircle, label: "Recordings", key: "recordings", path: '/recordings' },
+  { icon: Settings, label: "Settings", key: "settings", path: '/settings' },
 ];
 
 export function Sidebar() {
   const [active, setActive] = useState("home");
+  const navigate = useNavigate();
+  const location = useLocation();
+
+  // keep active in sync with current path
+  const currentPath = location.pathname;
+  // derive active from pathname when component mounts / location changes
+  useEffect(() => {
+    const match = menu.find((m) => m.path && (currentPath === m.path || currentPath.startsWith(m.path)));
+    if (match) setActive(match.key);
+  }, [currentPath]);
   return (
-    <aside className="w-[260px] shrink-0 h-screen sticky top-0 bg-[#0B0C10] border-r border-border flex flex-col p-5 gap-6">
+    <aside className="sidebar w-[260px] shrink-0 h-screen sticky top-0 bg-[#0B0C10] border-r border-border flex flex-col p-5 gap-6">
       <div className="flex items-center gap-2 px-2 pt-2 mb-2">
         <div className="w-9 h-9 rounded-xl gradient-primary grid place-items-center shadow-[0_0_15px_rgba(168,85,247,0.5)]">
           <Video className="w-5 h-5 text-white" />
@@ -33,7 +44,10 @@ export function Sidebar() {
           return (
             <motion.button
               key={item.key}
-              onClick={() => setActive(item.key)}
+              onClick={() => {
+                setActive(item.key);
+                if (item.path) navigate(item.path);
+              }}
               whileHover={{ x: 4 }}
               whileTap={{ scale: 0.97 }}
               className={`relative flex items-center gap-3 px-4 py-3 rounded-2xl text-sm font-medium transition-all ${
@@ -73,7 +87,15 @@ export function Sidebar() {
             <p className="text-sm font-semibold text-white truncate">John Doe</p>
             <p className="text-xs text-gray-400 truncate">john.doe@email.com</p>
           </div>
-          <ChevronDown className="w-4 h-4 text-gray-400" />
+          <div className="flex flex-col items-end">
+            <ChevronDown className="w-4 h-4 text-gray-400" />
+            <button
+              onClick={() => navigate('/login')}
+              className="text-xs text-primary mt-1 hover:text-primary-glow"
+            >
+              Sign Out
+            </button>
+          </div>
         </div>
       </div>
     </aside>

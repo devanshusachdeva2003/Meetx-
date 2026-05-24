@@ -1,7 +1,14 @@
 import { motion } from "framer-motion";
 import { Video, User } from "lucide-react";
+import { useNavigate } from "react-router-dom";
 
 export function StartMeetingCard() {
+  const navigate = useNavigate();
+
+  function handleStart() {
+    const id = (crypto?.randomUUID?.() ?? Math.random().toString(36).slice(2, 8));
+    navigate(`/meeting/${id}`);
+  }
   return (
     <motion.div
       initial={{ opacity: 0, y: 12 }}
@@ -19,6 +26,7 @@ export function StartMeetingCard() {
             whileHover={{ scale: 1.03 }}
             whileTap={{ scale: 0.97 }}
             className="gradient-primary text-white font-medium px-6 py-3 rounded-2xl shadow-[0_0_20px_rgba(168,85,247,0.4)]"
+            onClick={handleStart}
           >
             Start Meeting
           </motion.button>

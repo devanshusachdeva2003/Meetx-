@@ -63,5 +63,13 @@ body{
 
 @media(max-width:900px){
 	.sidebar{display:none}
+	.app-root{flex-direction:column;height:auto}
+	.main{padding:16px}
+	.topbar{flex-direction:column;align-items:flex-start;gap:12px}
+	.content{flex-direction:column;gap:12px}
 	.right-column{display:none}
+	.card{padding:12px}
+	.hero-actions{flex-direction:column;align-items:stretch}
+	.welcome{font-size:18px}
+	.avatar{width:36px;height:36px}
 }

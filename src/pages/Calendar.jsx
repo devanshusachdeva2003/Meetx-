@@ -1,0 +1,311 @@
+import React, { useState, useEffect } from 'react';
+import { 
+  Calendar as CalendarIcon, 
+  ChevronLeft, 
+  ChevronRight, 
+  Plus, 
+  Home, 
+  Video, 
+  Settings, 
+  Mic, 
+  Clock, 
+  MapPin,
+  MoreHorizontal,
+  Search,
+  Filter,
+  User
+} from 'lucide-react';
+
+/**
+ * MeetX Calendar UI Component
+ * Theme: Obsidian Flux (Dark, Glassmorphism, Neon Purple)
+ */
+
+const MeetXCalendar = () => {
+  const [currentView, setCurrentView] = useState('Month');
+  const [selectedDate, setSelectedDate] = useState(new Date().getDate());
+  const [isModalOpen, setIsModalOpen] = useState(false);
+
+  const [events, setEvents] = useState([]);
+  const [eventsByDate, setEventsByDate] = useState({});
+
+  // display month state
+  const [displayDate, setDisplayDate] = useState(() => new Date());
+
+  const days = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
+  const year = displayDate.getFullYear();
+  const month = displayDate.getMonth();
+  const firstOfMonth = new Date(year, month, 1);
+  const daysInMonth = new Date(year, month + 1, 0).getDate();
+  const startOffset = firstOfMonth.getDay();
+  const dates = Array.from({ length: daysInMonth }, (_, i) => i + 1);
+
+  // modal form state
+  const [newTitle, setNewTitle] = useState('');
+  const [newDescription, setNewDescription] = useState('');
+  const [creating, setCreating] = useState(false);
+
+  // helper: build query range for visible month
+  function monthRange(d) {
+    const y = d.getFullYear();
+    const m = d.getMonth();
+    const start = new Date(y, m, 1);
+    const end = new Date(y, m + 1, 0, 23, 59, 59, 999);
+    return { start, end };
+  }
+
+  async function fetchEventsForMonth(d) {
+    const { start, end } = monthRange(d);
+    try {
+      const res = await fetch(`/api/calendar?start=${start.toISOString()}&end=${end.toISOString()}`);
+      if (!res.ok) throw new Error('Failed to fetch');
+      const data = await res.json();
+      const evs = data.events || [];
+      setEvents(evs);
+      const map = {};
+      evs.forEach((e) => {
+        const dt = new Date(e.start);
+        const day = dt.getDate();
+        map[day] = map[day] || [];
+        map[day].push(e);
+      });
+      setEventsByDate(map);
+    } catch (err) {
+      console.error('fetchEvents error', err);
+    }
+  }
+
+  useEffect(() => { fetchEventsForMonth(displayDate); }, [displayDate]);
+
+  return (
+    <div className="flex flex-col h-screen bg-[#0c0e17] text-white font-sans overflow-hidden">
+      {/* Top Bar */}
+      <header className="flex items-center justify-between px-6 py-6">
+        <div className="flex items-center gap-3">
+          <div className="p-2 bg-[#7c5dff]/20 rounded-xl">
+            <CalendarIcon className="text-[#7c5dff] w-6 h-6" />
+          </div>
+          <h1 className="text-2xl font-bold tracking-tight">Calendar</h1>
+        </div>
+        <button 
+          onClick={() => setIsModalOpen(true)}
+          className="p-3 bg-[#7c5dff] hover:bg-[#6a4ee0] rounded-2xl shadow-lg shadow-[#7c5dff]/20 transition-all active:scale-95"
+        >
+          <Plus className="w-6 h-6 text-white" />
+        </button>
+      </header>
+
+      {/* Calendar Controls */}
+      <div className="px-6 mb-6">
+        <div className="flex items-center justify-between mb-6">
+          <div className="flex items-center gap-4">
+              <button onClick={() => setDisplayDate(new Date(year, month - 1, 1))} className="p-2 bg-white/5 rounded-full hover:bg-white/10 transition-colors">
+                <ChevronLeft className="w-5 h-5 text-white/60" />
+              </button>
+              <h2 className="text-xl font-semibold">{displayDate.toLocaleString('default', { month: 'long' })} {year}</h2>
+              <button onClick={() => setDisplayDate(new Date(year, month + 1, 1))} className="p-2 bg-white/5 rounded-full hover:bg-white/10 transition-colors">
+                <ChevronRight className="w-5 h-5 text-white/60" />
+              </button>
+          </div>
+          <div className="flex bg-white/5 p-1 rounded-xl">
+            {['Day', 'Week', 'Month'].map((view) => (
+              <button
+                key={view}
+                onClick={() => setCurrentView(view)}
+                className={`px-4 py-1.5 rounded-lg text-sm font-medium transition-all ${
+                  currentView === view ? 'bg-[#7c5dff] text-white shadow-md' : 'text-white/40 hover:text-white/60'
+                }`}
+              >
+                {view}
+              </button>
+            ))}
+          </div>
+        </div>
+
+        {/* Calendar Grid */}
+          <div className="grid grid-cols-7 gap-y-4 text-center">
+          {days.map(day => (
+            <span key={day} className="text-xs font-bold text-white/30 uppercase tracking-widest">{day}</span>
+          ))}
+          {/* Empty spaces for offset */}
+          {Array.from({ length: startOffset }).map((_, i) => (
+            <div key={`empty-${i}`} className="h-10" />
+          ))}
+          {dates.map(date => (
+            <div key={date} className="relative flex flex-col items-center">
+              <button
+                onClick={() => setSelectedDate(date)}
+                className={`w-10 h-10 flex items-center justify-center rounded-xl text-sm font-medium transition-all ${
+                  selectedDate === date 
+                  ? 'bg-[#7c5dff] text-white shadow-lg shadow-[#7c5dff]/30 ring-2 ring-[#7c5dff]/50' 
+                  : 'text-white/60 hover:bg-white/5'
+                }`}
+              >
+                {date}
+                {date === new Date().getDate() && new Date().getMonth() === new Date().getMonth() && <span className="absolute bottom-1 text-[8px] font-bold">TODAY</span>}
+              </button>
+              {/* Event Indicators */}
+              <div className="flex gap-0.5 mt-1">
+                {(eventsByDate[date] || []).slice(0,3).map((e, idx) => (
+                  <div key={idx} className={`w-1 h-1 rounded-full ${idx === 0 ? 'bg-[#7c5dff]' : 'bg-green-400'}`} />
+                ))}
+              </div>
+            </div>
+          ))}
+        </div>
+      </div>
+
+      {/* Upcoming Meetings Section */}
+      <div className="flex-1 bg-[#11131c] rounded-t-[40px] border-t border-white/5 px-6 pt-8 overflow-y-auto pb-32">
+          <div className="flex items-center justify-between mb-6">
+          <h3 className="text-xl font-bold">Upcoming Meetings</h3>
+          <button className="text-[#7c5dff] text-sm font-semibold hover:underline">See all</button>
+        </div>
+
+        <div className="space-y-4">
+          {events.filter(e => new Date(e.start) >= new Date()).slice(0,6).map((meeting) => (
+            <div key={meeting._id} className="bg-white/5 border border-white/5 rounded-3xl p-5 backdrop-blur-xl">
+              <div className="flex gap-4">
+                <div className="flex flex-col items-center justify-center bg-white/5 rounded-2xl p-3 min-w-[70px] h-fit">
+                  <span className="text-[10px] font-bold text-white/40 uppercase">{new Date(meeting.start).toLocaleString('en-US', { month: 'short' }).toUpperCase()}</span>
+                  <span className="text-2xl font-bold">{new Date(meeting.start).getDate()}</span>
+                </div>
+                <div className="flex-1">
+                  <div className="flex justify-between items-start mb-2">
+                    <h4 className="font-bold text-lg leading-tight">{meeting.title}</h4>
+                  </div>
+                  <p className="text-white/40 text-sm mb-4 line-clamp-2">{meeting.description}</p>
+
+                  <div className="flex items-center gap-4 text-xs text-white/40 mb-4">
+                    <div className="flex items-center gap-1.5">
+                      <Clock className="w-3.5 h-3.5" />
+                      {new Date(meeting.start).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
+                    </div>
+                    {meeting.location && (
+                      <div className="flex items-center gap-1.5">
+                        <MapPin className="w-3.5 h-3.5" />
+                        {meeting.location}
+                      </div>
+                    )}
+                  </div>
+
+                  <div className="flex items-center justify-between">
+                    <div className="flex -space-x-2">
+                      {(meeting.attendees || []).slice(0,4).map((p, idx) => (
+                        <img key={idx} src={(p.avatar || '')} alt={p.name || p.email} className="w-8 h-8 rounded-full border-2 border-[#11131c] object-cover" />
+                      ))}
+                    </div>
+                    <button className="bg-[#7c5dff] hover:bg-[#6a4ee0] text-white text-sm font-bold px-6 py-2.5 rounded-2xl transition-all shadow-lg shadow-[#7c5dff]/20">
+                      View
+                    </button>
+                  </div>
+                </div>
+              </div>
+            </div>
+          ))}
+        </div>
+      </div>
+
+      {/* Bottom Navigation */}
+      <nav className="fixed bottom-0 left-0 right-0 bg-[#11131c]/80 backdrop-blur-2xl border-t border-white/5 px-6 pt-4 pb-10 flex justify-between items-center z-50">
+        <NavItem icon={<Home />} label="Home" />
+        <NavItem icon={<Video />} label="Meetings" />
+        <NavItem icon={<CalendarIcon />} label="Calendar" active />
+        <NavItem icon={<Search />} label="Recs" />
+        <NavItem icon={<Settings />} label="Settings" />
+      </nav>
+
+      {/* Simple Modal Overlay Simulation */}
+      {isModalOpen && (
+        <div className="fixed inset-0 bg-black/60 backdrop-blur-sm z-[100] flex items-end animate-in fade-in duration-200">
+          <div className="w-full bg-[#11131c] rounded-t-[40px] p-8 border-t border-[#7c5dff]/20 animate-in slide-in-from-bottom duration-300">
+            <div className="w-12 h-1 bg-white/10 rounded-full mx-auto mb-8" />
+            <div className="flex justify-between items-center mb-8">
+              <h2 className="text-2xl font-bold flex items-center gap-3">
+                <div className="w-2 h-8 bg-[#7c5dff] rounded-full" />
+                New Meeting
+              </h2>
+              <button onClick={() => setIsModalOpen(false)} className="p-2 bg-white/5 rounded-full">
+                <Plus className="w-6 h-6 rotate-45" />
+              </button>
+            </div>
+            
+            <div className="space-y-6">
+              <InputGroup label="Meeting Title" placeholder="Add title..." />
+              <div>
+                <input value={newTitle} onChange={(e) => setNewTitle(e.target.value)} placeholder="Meeting title" className="w-full p-3 rounded-xl bg-white/5 outline-none text-white" />
+              </div>
+              <div>
+                <textarea value={newDescription} onChange={(e) => setNewDescription(e.target.value)} placeholder="Description" className="w-full p-3 rounded-xl bg-white/5 outline-none text-white h-24" />
+              </div>
+              
+              <div className="grid grid-cols-2 gap-4">
+                <button className="flex items-center justify-center gap-2 bg-[#7c5dff] p-4 rounded-2xl font-bold">
+                  <Video className="w-5 h-5" /> Video Call
+                </button>
+                <button className="flex items-center justify-center gap-2 bg-white/5 p-4 rounded-2xl font-bold text-white/40">
+                  <Mic className="w-5 h-5" /> Audio Only
+                </button>
+              </div>
+
+              <div className="flex gap-4">
+                <div className="flex-1 p-4 bg-white/5 rounded-2xl border border-white/5 flex items-center gap-3">
+                  <CalendarIcon className="w-5 h-5 text-[#7c5dff]" />
+                  <span className="text-sm font-medium">{displayDate.toLocaleString('default', { month: 'long' })} {selectedDate}, {year}</span>
+                </div>
+                <div className="flex-1 p-4 bg-white/5 rounded-2xl border border-white/5 flex items-center gap-3">
+                  <Clock className="w-5 h-5 text-[#7c5dff]" />
+                  <span className="text-sm font-medium">11:00 AM - 12:00 PM</span>
+                </div>
+              </div>
+
+              <button onClick={async () => {
+                if (!newTitle) return alert('Please enter a title');
+                setCreating(true);
+                const start = new Date(year, month, selectedDate, 11, 0).toISOString();
+                const end = new Date(year, month, selectedDate, 12, 0).toISOString();
+                try {
+                  const res = await fetch('/api/calendar', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ title: newTitle, description: newDescription, start, end }) });
+                  if (res.status === 401) { setCreating(false); return alert('Authentication required to create events'); }
+                  if (!res.ok) throw new Error('Create failed');
+                  const data = await res.json();
+                  setIsModalOpen(false);
+                  setNewTitle(''); setNewDescription('');
+                  // refresh events for month
+                  fetchEventsForMonth(displayDate);
+                } catch (err) {
+                  console.error(err);
+                  alert('Could not create event');
+                } finally { setCreating(false); }
+              }} className="w-full bg-[#7c5dff] py-5 rounded-3xl font-black text-lg shadow-xl shadow-[#7c5dff]/20 flex items-center justify-center gap-3 hover:bg-[#6a4ee0] transition-all">
+                {creating ? 'Scheduling...' : 'Schedule Meeting'}
+                <span className="text-xl">🚀</span>
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+    </div>
+  );
+};
+
+const NavItem = ({ icon, label, active = false }) => (
+  <div className="flex flex-col items-center gap-1">
+    <div className={`p-3 rounded-2xl transition-all ${active ? 'bg-[#7c5dff] text-white shadow-lg shadow-[#7c5dff]/20' : 'text-white/40'}`}>
+      {React.cloneElement(icon, { className: "w-6 h-6" })}
+    </div>
+    <span className={`text-[10px] font-bold ${active ? 'text-white' : 'text-white/40'}`}>{label}</span>
+  </div>
+);
+
+const InputGroup = ({ label, placeholder }) => (
+  <div className="space-y-2">
+    <label className="text-xs font-bold text-white/40 uppercase tracking-widest px-1">{label}</label>
+    <div className="bg-white/5 border border-white/5 rounded-2xl p-4 flex items-center justify-between focus-within:border-[#7c5dff]/50 transition-all">
+      <input type="text" placeholder={placeholder} className="bg-transparent outline-none flex-1 text-white placeholder:text-white/20" />
+      <Settings className="w-4 h-4 text-white/20" />
+    </div>
+  </div>
+);
+
+export default MeetXCalendar;
