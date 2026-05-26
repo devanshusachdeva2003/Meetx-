@@ -4,6 +4,8 @@ import App from './App.jsx';
 import Login from './pages/Login.jsx';
 import Meeting from './pages/Meeting.jsx';
 import Calendar from './pages/Calendar.jsx';
+import MeetXSettingsMobile from './component/MeetXSettingsMobile.jsx';
+import Settings from './pages/Settings.jsx';
 
 const Router = () => {
   return (
@@ -11,6 +13,7 @@ const Router = () => {
       <Route path="/" element={<App />} />
       <Route path="/login" element={<Login />} />
       <Route path="/meeting/:id" element={<Meeting />} />
+      <Route path="/settings" element={<Settings />} />
       <Route path="/calendar" element={<Calendar />} />
     </Routes>
   );

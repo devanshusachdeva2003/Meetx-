@@ -1,7 +1,7 @@
 import { useEffect, useRef, useState } from 'react';
 import { io } from 'socket.io-client';
 
-export function useSocket({ url, token, roomId, onSignal, onParticipants, onChat }) {
+export function useSocket({ url, token, roomId, onSignal, onParticipants, onUserJoined, onUserLeft, onChat }) {
   const socketRef = useRef(null);
   const [connected, setConnected] = useState(false);
 
@@ -10,17 +10,44 @@ export function useSocket({ url, token, roomId, onSignal, onParticipants, onChat
     const socket = io(url, { query: { token }, transports: ['websocket'] });
     socketRef.current = socket;
 
-    socket.on('connect', () => setConnected(true));
-    socket.on('disconnect', () => setConnected(false));
+    const handleConnect = () => setConnected(true);
+    const handleDisconnect = () => setConnected(false);
+    const handleParticipants = (list) => {
+      console.debug('[SOCKET] participants', list);
+      onParticipants?.(list);
+    };
+    const handleUserJoined = (p) => {
+      console.debug('[SOCKET] user-joined', p);
+      onUserJoined?.(p);
+    };
+    const handleUserLeft = (p) => {
+      console.debug('[SOCKET] user-left', p);
+      onUserLeft?.(p);
+    };
+    const handleSignal = (msg) => {
+      console.debug('[SOCKET] signal in', msg);
+      onSignal?.(msg);
+    };
+    const handleChat = (m) => onChat?.(m);
 
-    socket.on('participants', (list) => onParticipants?.(list));
-    socket.on('user-joined', (p) => onParticipants?.((prev) => [...(prev||[]), p]));
-    socket.on('user-left', (p) => onParticipants?.((prev) => (prev||[]).filter(x => x.socketId !== p.socketId)));
+    socket.on('connect', handleConnect);
+    socket.on('disconnect', handleDisconnect);
+    socket.on('participants', handleParticipants);
+    socket.on('user-joined', handleUserJoined);
+    socket.on('user-left', handleUserLeft);
+    socket.on('signal', handleSignal);
+    socket.on('chat', handleChat);
 
-    socket.on('signal', (msg) => onSignal?.(msg));
-    socket.on('chat', (m) => onChat?.(m));
-
-    return () => { socket.disconnect(); };
+    return () => {
+      socket.off('connect', handleConnect);
+      socket.off('disconnect', handleDisconnect);
+      socket.off('participants', handleParticipants);
+      socket.off('user-joined', handleUserJoined);
+      socket.off('user-left', handleUserLeft);
+      socket.off('signal', handleSignal);
+      socket.off('chat', handleChat);
+      socket.disconnect();
+    };
   }, [url, token]);
 
   function join(roomId, user) {

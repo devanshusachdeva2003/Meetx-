@@ -26,6 +26,24 @@ const io = new Server(server, {
 // Simple in-memory room participants map for signaling metadata
 const rooms = new Map();
 
+// parse ICE servers from env (JSON string) or fall back to public STUN
+let iceServers = [];
+try {
+  if (process.env.ICE_SERVERS) {
+    iceServers = JSON.parse(process.env.ICE_SERVERS);
+  }
+} catch (err) {
+  console.warn('Failed to parse ICE_SERVERS env, using default STUN server', err);
+}
+if (!iceServers || iceServers.length === 0) {
+  iceServers = [
+    { urls: 'stun:stun.l.google.com:19302' },
+    { urls: 'stun:stun1.l.google.com:19302' },
+    { urls: 'stun:global.stun.twilio.com:3478' },
+  ];
+}
+console.log('ICE servers configured:', iceServers);
+
 io.on('connection', (socket) => {
   // optional: token validation
   const { token } = socket.handshake.query;
@@ -41,14 +59,22 @@ io.on('connection', (socket) => {
   socket.on('join-room', ({ roomId, user }) => {
     socket.join(roomId);
     const list = rooms.get(roomId) || [];
-    list.push({ socketId: socket.id, user });
+    const existingIdx = list.findIndex((p) => p.socketId === socket.id);
+    if (existingIdx >= 0) {
+      list[existingIdx] = { socketId: socket.id, user };
+    } else {
+      list.push({ socketId: socket.id, user });
+    }
     rooms.set(roomId, list);
     // notify others
-    socket.to(roomId).emit('user-joined', { socketId: socket.id, user });
+    if (existingIdx < 0) socket.to(roomId).emit('user-joined', { socketId: socket.id, user });
     // send existing participants to the joining socket
     const others = list.filter((p) => p.socketId !== socket.id);
     socket.emit('participants', others);
   });
+
+  // send ICE server list to client so they can configure RTCPeerConnection if needed
+  socket.emit('ice-servers', iceServers);
 
   socket.on('signal', ({ to, data }) => {
     io.to(to).emit('signal', { from: socket.id, data });

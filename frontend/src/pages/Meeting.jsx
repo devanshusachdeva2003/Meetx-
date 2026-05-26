@@ -19,6 +19,9 @@ export default function Meeting() {
   const { id } = useParams();
   const navigate = useNavigate();
   const localVideoRef = useRef(null);
+  const joinedRef = useRef(false);
+  const initialPeersCreatedRef = useRef(false);
+  const gotInitialParticipantsRef = useRef(false);
   
   // State for UI toggles
   const [showParticipants, setShowParticipants] = useState(false);
@@ -63,13 +66,25 @@ export default function Meeting() {
     if (!socket) return;
 
     function onParticipants(list) {
-      setParticipants(list.map((p) => p.user || p));
-      handleExistingParticipants(list);
+      // keep full participant objects { socketId, user } so we can map streams to ids
+      setParticipants(list);
+      gotInitialParticipantsRef.current = true;
+      initialPeersCreatedRef.current = !list || list.length === 0;
+      // defer peer creation until local stream is ready (handled by effect below)
     }
 
     function onUserJoined(p) {
-      setParticipants((prev) => [...prev, p.user]);
-      handleNewParticipant(p);
+      setParticipants((prev) => {
+        if (prev.some(x => x.socketId === p.socketId)) return prev;
+        return [...prev, p];
+      });
+      // if local stream is ready, create peer to handle this new participant
+      if (localStreamRef.current) {
+        // small delay to avoid simultaneous offer/answer races causing renegotiation
+        setTimeout(() => {
+          if (localStreamRef.current) handleNewParticipant(p);
+        }, 200);
+      }
     }
 
     function onUserLeft(p) {
@@ -86,9 +101,16 @@ export default function Meeting() {
     socket.on('user-left', onUserLeft);
     socket.on('chat', onChat);
 
-    if (connected && localStreamRef.current) {
+    if (!connected) {
+      joinedRef.current = false;
+      gotInitialParticipantsRef.current = false;
+      initialPeersCreatedRef.current = false;
+    }
+
+    if (connected && localStreamRef.current && !joinedRef.current) {
       const me = { name };
       join(id, me);
+      joinedRef.current = true;
     }
 
     return () => {
@@ -98,6 +120,25 @@ export default function Meeting() {
       socket.off('chat', onChat);
     };
   }, [socketRef.current, connected, localStreamRef.current, id, name, join, handleExistingParticipants, handleNewParticipant, removeParticipant]);
+
+  // When local stream becomes available (or participants change), ensure we create peers
+  useEffect(() => {
+    if (!localStreamRef.current) return;
+    if (!participants || participants.length === 0) return;
+    if (!gotInitialParticipantsRef.current) return;
+    if (initialPeersCreatedRef.current) return;
+
+    // when we get the initial participants list and local media is ready,
+    // create offerer peers to each existing participant.
+    (async () => {
+      try {
+        await handleExistingParticipants(participants);
+        initialPeersCreatedRef.current = true;
+      } catch (err) {
+        console.error('Error creating peers:', err);
+      }
+    })();
+  }, [localStreamRef.current, participants]);
 
   function handleCopy() {
     navigator.clipboard?.writeText(window.location.href);
@@ -150,35 +191,54 @@ export default function Meeting() {
 
       {/* Video Grid */}
       <main className="flex-1 overflow-y-auto p-4 space-y-4">
-        {/* Local Video Feed */}
-        <div className="relative aspect-video rounded-2xl overflow-hidden bg-[#191b24] ring-2 ring-transparent">
-          <video 
-            ref={localVideoRef} 
-            autoPlay 
-            muted 
-            playsInline 
-            className="w-full h-full object-cover" 
-          />
-          <div className="absolute bottom-3 left-3 bg-black/40 backdrop-blur-md px-2 py-1 rounded-md text-[10px] flex items-center gap-2">
-            {name} (You)
-            {isMuted ? <MicOff className="text-red-500" /> : <Mic className="text-green-400" />}
-          </div>
-        </div>
-
-        {/* Remote Video Feeds */}
-        {remoteStreams.map((r) => (
-          <div key={r.socketId} className="relative aspect-video rounded-2xl overflow-hidden bg-[#191b24]">
-            <video 
-              autoPlay 
-              playsInline 
-              ref={(el) => { if (el) el.srcObject = r.stream; }} 
-              className="w-full h-full object-cover"
-            />
-            <div className="absolute bottom-3 left-3 bg-black/40 backdrop-blur-md px-2 py-1 rounded-md text-[10px]">
-              {participants.find(p => p.socketId === r.socketId)?.name || 'Guest'}
+          {/* Video Grid (local + remotes) */}
+          <div
+            className="grid gap-4"
+            style={{
+              gridTemplateColumns: (() => {
+                const count = (remoteStreams?.length || 0) + (localStreamRef.current ? 1 : 0);
+                if (count <= 1) return 'repeat(1, minmax(0, 1fr))';
+                if (count === 2) return 'repeat(2, minmax(0, 1fr))';
+                if (count <= 4) return 'repeat(2, minmax(0, 1fr))';
+                if (count <= 9) return 'repeat(3, minmax(0, 1fr))';
+                return 'repeat(4, minmax(0, 1fr))';
+              })(),
+            }}
+          >
+            {/* Local tile */}
+            <div className="relative aspect-video rounded-2xl overflow-hidden bg-[#191b24]">
+              <video
+                ref={localVideoRef}
+                autoPlay
+                muted
+                playsInline
+                className="w-full h-full object-cover"
+              />
+              <div className="absolute bottom-3 left-3 bg-black/40 backdrop-blur-md px-2 py-1 rounded-md text-[10px] flex items-center gap-2">
+                {name} (You)
+                {isMuted ? <MicOff className="text-red-500" /> : <Mic className="text-green-400" />}
+              </div>
             </div>
+
+            {/* Remote tiles */}
+            {remoteStreams.map((r) => {
+              const participant = participants.find(p => p.socketId === r.socketId);
+              const label = participant?.user?.name || 'Guest';
+              return (
+                <div key={r.socketId} className="relative aspect-video rounded-2xl overflow-hidden bg-[#191b24]">
+                  <video
+                    autoPlay
+                    playsInline
+                    ref={(el) => { if (el) el.srcObject = r.stream; }}
+                    className="w-full h-full object-cover"
+                  />
+                  <div className="absolute bottom-3 left-3 bg-black/40 backdrop-blur-md px-2 py-1 rounded-md text-[10px]">
+                    {label}
+                  </div>
+                </div>
+              );
+            })}
           </div>
-        ))}
       </main>
 
       {/* Bottom Controls */}
@@ -257,17 +317,48 @@ export default function Meeting() {
                     {isMuted ? <MicOff className="text-red-500" /> : <Mic className="text-green-400" />}
                   </div>
                 </li>
-                {participants.map((p, i) => (
-                  <li key={i} className="flex items-center justify-between p-3 bg-white/5 rounded-xl">
-                    <div className="flex items-center gap-3">
-                      <div className="w-8 h-8 rounded-full bg-white/10 flex items-center justify-center font-bold text-xs uppercase">
-                        {(p.name || p).charAt(0)}
+                {participants.map((p) => {
+                  const isMe = p.socketId === socketRef.current?.id;
+                  const displayName = p.user?.name || p.user || 'Guest';
+                  const initial = (displayName || 'G').charAt(0).toUpperCase();
+                  // try to detect if we have a remote stream for this participant
+                  const hasStream = remoteStreams.some(r => r.socketId === p.socketId);
+                  return (
+                    <li key={p.socketId} className="flex items-center justify-between p-3 bg-white/5 rounded-xl">
+                      <div className="flex items-center gap-3">
+                        <div className="relative w-10 h-10">
+                          {p.user?.avatar ? (
+                            <img
+                              src={p.user.avatar}
+                              alt={displayName}
+                              onError={(e) => { e.currentTarget.style.display = 'none'; }}
+                              className="w-10 h-10 rounded-full object-cover"
+                            />
+                          ) : null}
+                          <div className="absolute inset-0 rounded-full bg-gradient-to-br from-[#7c5dff] to-[#4ea1ff] flex items-center justify-center font-bold text-sm text-white uppercase">
+                            {initial}
+                          </div>
+                        </div>
+                        <div className="flex flex-col">
+                          <span className="text-sm truncate max-w-[180px]">{displayName}{isMe ? ' (You)' : ''}</span>
+                          <div className="text-[11px] text-white/60 flex items-center gap-2">
+                            {isMe && <span className="text-[#7c5dff] bg-[#7c5dff]/10 px-2 py-0.5 rounded-full font-bold">Host</span>}
+                            <span>{hasStream ? 'Video' : 'No video'}</span>
+                          </div>
+                        </div>
                       </div>
-                      <span className="text-sm truncate max-w-[150px]">{p.name || p}</span>
-                    </div>
-                    <Mic className="text-white/40" />
-                  </li>
-                ))}
+
+                      <div className="flex items-center gap-3">
+                        <div className="p-1 rounded-md bg-white/5">
+                          {isMe ? (isMuted ? <MicOff className="text-red-400" /> : <Mic className="text-green-400" />) : <Mic className="text-white/40" />}
+                        </div>
+                        <div className="p-1 rounded-md bg-white/5">
+                          {hasStream ? <Camera className="text-white/40" /> : <CameraOff className="text-white/30" />}
+                        </div>
+                      </div>
+                    </li>
+                  );
+                })}
               </ul>
             ) : (
               <div className="space-y-4">
