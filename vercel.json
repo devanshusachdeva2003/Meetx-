@@ -8,7 +8,7 @@
         "backend": {
                 "root": "backend",
                 "routePrefix": "/_/backend",
-                "framework": "nodejs",
+                "runtime": "nodejs",
                 "entrypoint": "src/index.js"
         }
     }
