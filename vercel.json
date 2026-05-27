@@ -12,7 +12,6 @@
             "root": "backend",
             "framework": "express",
             "buildCommand": "npm install",
-            "functions": "src",
             "routePrefix": "/_/backend"
         }
     }
