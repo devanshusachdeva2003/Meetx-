@@ -76,7 +76,8 @@ const OtpVerify = () => {
             <Button 
               disabled={isSubmitting} 
               type="submit" 
-              className="gradient-primary text-white shadow-[0_4px_14px_rgba(168,85,247,0.4)] hover:-translate-y-px hover:shadow-[0_6px_20px_rgba(168,85,247,0.5)] w-full py-3 rounded-2xl border-0 mt-2"
+              size="lg"
+              className="w-full mt-2"
             >
               {isSubmitting ? "Verifying..." : "Verify OTP"}
             </Button>
@@ -85,9 +86,9 @@ const OtpVerify = () => {
 
         <p className="mt-8 text-center text-sm text-gray-400 relative z-10">
           Didn't receive the code?{" "}
-          <button className="font-semibold text-primary hover:text-primary-glow transition-colors bg-transparent border-0">
+          <Button variant="none" size="none" className="font-semibold text-primary hover:text-primary-glow transition-colors">
             Resend
-          </button>
+          </Button>
         </p>
       </div>
     </div>

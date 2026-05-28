@@ -1,6 +1,9 @@
 import { motion } from "framer-motion";
 import { Video, User } from "lucide-react";
 import { useNavigate } from "react-router-dom";
+import Button from "./ui/Button";
+
+const MotionButton = motion(Button);
 
 export function StartMeetingCard() {
   const navigate = useNavigate();
@@ -22,21 +25,23 @@ export function StartMeetingCard() {
           Create a new meeting room and invite others to join instantly.
         </p>
         <div className="flex flex-wrap gap-4">
-          <motion.button
+          <MotionButton
             whileHover={{ scale: 1.03 }}
             whileTap={{ scale: 0.97 }}
-            className="gradient-primary text-white font-medium px-6 py-3 rounded-2xl shadow-[0_0_20px_rgba(168,85,247,0.4)]"
+            size="lg"
             onClick={handleStart}
           >
             Start Meeting
-          </motion.button>
-          <motion.button
+          </MotionButton>
+          <MotionButton
             whileHover={{ scale: 1.03 }}
             whileTap={{ scale: 0.97 }}
-            className="bg-transparent border border-gray-600 text-white font-medium px-6 py-3 rounded-2xl hover:bg-white/5 transition-colors"
+            variant="outline"
+            size="lg"
+            className="border-gray-600 text-white hover:bg-white/5"
           >
             Schedule Meeting
-          </motion.button>
+          </MotionButton>
         </div>
       </div>
       

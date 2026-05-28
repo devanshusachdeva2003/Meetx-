@@ -1,5 +1,6 @@
 import React from 'react';
 import { Shield, Bell, Sliders, ChevronRight } from 'lucide-react';
+import Button from '../component/ui/Button';
 
 export default function Settings() {
   return (
@@ -23,7 +24,7 @@ export default function Settings() {
                   <p className="font-semibold">John Doe</p>
                   <p className="text-sm text-white/60">john.doe@email.com</p>
                   <div className="mt-4">
-                    <button className="px-4 py-2 bg-primary rounded-xl text-sm font-medium hover:bg-primary-dark">Change Photo</button>
+                    <Button size="sm">Change Photo</Button>
                   </div>
                 </div>
               </div>
@@ -57,7 +58,7 @@ export default function Settings() {
               </div>
 
               <div className="flex justify-center sm:justify-end mt-6">
-                <button className="w-full sm:w-auto px-5 py-3 bg-primary rounded-xl font-semibold hover:bg-primary-dark">Save Changes</button>
+                <Button className="w-full sm:w-auto">Save Changes</Button>
               </div>
             </div>
 

@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { Outlet, useLocation } from 'react-router-dom';
 import { Sidebar } from './Sidebar';
 import { Menu } from 'lucide-react';
+import Button from './ui/Button';
 
 export function Layout() {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
@@ -14,12 +15,14 @@ export function Layout() {
   return (
     <div className="app-root flex h-screen bg-background text-gray-200 font-sans overflow-hidden relative">
       {/* Mobile Hamburger Button */}
-      <button 
+      <Button 
+        variant="none"
+        size="none"
         onClick={() => setMobileMenuOpen(true)}
         className="md:hidden absolute top-5 left-4 z-[40] p-2 bg-card/80 backdrop-blur-xl border border-border rounded-xl text-white shadow-lg shadow-black/50"
       >
         <Menu className="w-5 h-5" />
-      </button>
+      </Button>
 
       {/* Mobile Backdrop */}
       {mobileMenuOpen && (

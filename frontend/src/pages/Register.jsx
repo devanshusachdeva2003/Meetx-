@@ -91,7 +91,7 @@ const Register = () => {
               inputClassName={`!bg-input ${!errors.password ? '!border-border focus:!border-primary focus:!ring-primary/20' : ''}`}
             />
 
-            <Button disabled={isSubmitting} type="submit" className="gradient-primary text-white shadow-[0_4px_14px_rgba(168,85,247,0.4)] hover:-translate-y-px hover:shadow-[0_6px_20px_rgba(168,85,247,0.5)] w-full py-3 rounded-2xl border-0 mt-6">
+            <Button disabled={isSubmitting} type="submit" size="lg" className="w-full mt-6">
               {isSubmitting ? "Creating..." : "Sign Up"}
             </Button>
           </form>

@@ -1,5 +1,6 @@
 import React from 'react';
 import { X, Mic, MicOff, Camera, CameraOff, Send } from 'lucide-react';
+import Button from '../ui/Button';
 
 export function MeetingSidePanel({
   showChat,
@@ -21,9 +22,9 @@ export function MeetingSidePanel({
     <div className="absolute top-0 right-0 h-full w-full md:w-[400px] z-50 bg-card/95 backdrop-blur-3xl border-l border-white/10 flex flex-col animate-in slide-in-from-right duration-300 shadow-2xl">
       <header className="p-4 flex items-center justify-between border-b border-white/5">
         <h2 className="text-lg font-bold">{showChat ? 'Chat' : 'Participants'}</h2>
-        <button onClick={onClose} className="p-2 hover:bg-white/5 rounded-full transition-colors">
+        <Button variant="none" size="icon" onClick={onClose} className="hover:bg-white/5">
           <X />
-        </button>
+        </Button>
       </header>
       
       <div className="flex-1 p-4 overflow-y-auto overscroll-contain">
@@ -142,12 +143,13 @@ export function MeetingSidePanel({
               onChange={(e) => setChatMessage(e.target.value)}
               onKeyDown={(e) => e.key === 'Enter' && onSendMessage()}
             />
-            <button 
+            <Button 
+              variant="soft"
+              size="icon"
               onClick={onSendMessage}
-              className="text-primary p-2 hover:bg-primary/10 rounded-lg transition-all"
             >
               <Send />
-            </button>
+            </Button>
           </div>
         </div>
       )}

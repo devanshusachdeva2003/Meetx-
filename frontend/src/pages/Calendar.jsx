@@ -15,6 +15,7 @@ import {
   Filter,
   User
 } from 'lucide-react';
+import Button from '../component/ui/Button';
 
 /**
  * MeetX Calendar UI Component
@@ -87,29 +88,33 @@ const MeetXCalendar = () => {
           </div>
           <h1 className="text-2xl font-bold tracking-tight">Calendar</h1>
         </div>
-        <button 
+        <Button 
+          variant="none"
+          size="none"
           onClick={() => setIsModalOpen(true)}
           className="p-3 bg-primary hover:bg-primary-dark rounded-2xl shadow-lg shadow-primary/20 transition-all active:scale-95"
         >
           <Plus className="w-6 h-6 text-white" />
-        </button>
+        </Button>
       </header>
 
       {/* Calendar Controls */}
       <div className="px-4 md:px-6 mb-6">
         <div className="flex flex-col sm:flex-row items-center justify-between gap-4 sm:gap-0 mb-6">
           <div className="flex items-center gap-4">
-              <button onClick={() => setDisplayDate(new Date(year, month - 1, 1))} className="p-2 bg-white/5 rounded-full hover:bg-white/10 transition-colors">
+              <Button variant="glass" size="icon" onClick={() => setDisplayDate(new Date(year, month - 1, 1))}>
                 <ChevronLeft className="w-5 h-5 text-white/60" />
-              </button>
+              </Button>
               <h2 className="text-xl font-semibold">{displayDate.toLocaleString('default', { month: 'long' })} {year}</h2>
-              <button onClick={() => setDisplayDate(new Date(year, month + 1, 1))} className="p-2 bg-white/5 rounded-full hover:bg-white/10 transition-colors">
+              <Button variant="glass" size="icon" onClick={() => setDisplayDate(new Date(year, month + 1, 1))}>
                 <ChevronRight className="w-5 h-5 text-white/60" />
-              </button>
+              </Button>
           </div>
           <div className="flex bg-white/5 p-1 rounded-xl w-full sm:w-auto justify-center">
             {['Day', 'Week', 'Month'].map((view) => (
-              <button
+              <Button
+                variant="none"
+                size="none"
                 key={view}
                 onClick={() => setCurrentView(view)}
                 className={`flex-1 sm:flex-none px-4 py-1.5 rounded-lg text-sm font-medium transition-all ${
@@ -117,7 +122,7 @@ const MeetXCalendar = () => {
                 }`}
               >
                 {view}
-              </button>
+              </Button>
             ))}
           </div>
         </div>
@@ -135,7 +140,9 @@ const MeetXCalendar = () => {
             const isToday = date === new Date().getDate() && month === new Date().getMonth() && year === new Date().getFullYear();
             return (
               <div key={date} className="relative flex flex-col items-center justify-start h-14 md:h-16">
-                <button
+                <Button
+                  variant="none"
+                  size="none"
                   onClick={() => setSelectedDate(date)}
                   className={`relative w-8 h-8 md:w-10 md:h-10 flex flex-col items-center justify-center rounded-xl text-sm font-medium transition-all ${
                     selectedDate === date 
@@ -146,7 +153,7 @@ const MeetXCalendar = () => {
                   }`}
                 >
                   <span className="relative z-10">{date}</span>
-                </button>
+                </Button>
                 {/* Event Indicators - Fixed height container prevents grid misalignment */}
                 <div className="flex gap-1 mt-1.5 h-1.5 w-full justify-center">
                   {(eventsByDate[date] || []).slice(0,3).map((e, idx) => (
@@ -163,7 +170,7 @@ const MeetXCalendar = () => {
       <div className="flex-1 bg-card rounded-t-[40px] border-t border-white/5 px-4 md:px-6 pt-8 pb-10">
           <div className="flex items-center justify-between mb-6">
           <h3 className="text-xl font-bold">Upcoming Meetings</h3>
-          <button className="text-primary text-sm font-semibold hover:underline">See all</button>
+          <Button variant="none" size="none" className="text-primary text-sm font-semibold hover:underline">See all</Button>
         </div>
 
         <div className="space-y-4">
@@ -199,9 +206,9 @@ const MeetXCalendar = () => {
                         <img key={idx} src={(p.avatar || '')} alt={p.name || p.email} className="w-8 h-8 rounded-full border-2 border-card object-cover" />
                       ))}
                     </div>
-                    <button className="bg-primary hover:bg-primary-dark text-white text-sm font-bold px-6 py-2.5 rounded-2xl transition-all shadow-lg shadow-primary/20">
+                    <Button size="lg" className="px-6 py-2.5 shadow-lg shadow-primary/20">
                       View
-                    </button>
+                    </Button>
                   </div>
                 </div>
               </div>
@@ -220,9 +227,9 @@ const MeetXCalendar = () => {
                 <div className="w-2 h-8 bg-primary rounded-full" />
                 New Meeting
               </h2>
-              <button onClick={() => setIsModalOpen(false)} className="p-2 bg-white/5 rounded-full">
+              <Button variant="glass" size="icon" onClick={() => setIsModalOpen(false)}>
                 <Plus className="w-6 h-6 rotate-45" />
-              </button>
+              </Button>
             </div>
             
             <div className="space-y-6">
@@ -235,12 +242,12 @@ const MeetXCalendar = () => {
               </div>
               
               <div className="grid grid-cols-2 gap-4">
-                <button className="flex items-center justify-center gap-2 bg-primary p-4 rounded-2xl font-bold">
+                <Button size="none" className="p-4 rounded-2xl w-full">
                   <Video className="w-5 h-5" /> Video Call
-                </button>
-                <button className="flex items-center justify-center gap-2 bg-white/5 p-4 rounded-2xl font-bold text-white/40">
+                </Button>
+                <Button variant="glass" size="none" className="p-4 rounded-2xl w-full text-white/40">
                   <Mic className="w-5 h-5" /> Audio Only
-                </button>
+                </Button>
               </div>
 
               <div className="flex flex-col md:flex-row gap-4">
@@ -254,7 +261,10 @@ const MeetXCalendar = () => {
                 </div>
               </div>
 
-              <button onClick={async () => {
+              <Button 
+                variant="none" 
+                size="none"
+                onClick={async () => {
                 if (!newTitle) return alert('Please enter a title');
                 setCreating(true);
                 const start = new Date(year, month, selectedDate, 11, 0).toISOString();
@@ -275,7 +285,7 @@ const MeetXCalendar = () => {
               }} className="w-full bg-primary py-5 rounded-3xl font-black text-lg shadow-xl shadow-primary/20 flex items-center justify-center gap-3 hover:bg-primary-dark transition-all">
                 {creating ? 'Scheduling...' : 'Schedule Meeting'}
                 <span className="text-xl">🚀</span>
-              </button>
+              </Button>
             </div>
           </div>
         </div>
