@@ -1,9 +1,13 @@
 import React, { useEffect, useRef, useState } from "react";
 import { useParams, useNavigate } from "react-router-dom";
-import { Lock, Users, Mic, MicOff, Camera, CameraOff, Monitor, MessageCircle, MoreVertical, PhoneOff, Star, Send, X, Copy } from 'lucide-react';
+import { Lock, Users, Mic, MicOff, Camera, CameraOff, Monitor, MessageSquare, MoreVertical, PhoneOff, Star, Send, X, Copy } from 'lucide-react';
 import { useLocalStream } from "../hooks/useLocalStream";
 import { useSocket } from "../hooks/useSocket";
 import { usePeerConnections } from "../hooks/usePeerConnections";
+import { MeetingHeader } from "../component/meeting/MeetingHeader";
+import { MeetingDock } from "../component/meeting/MeetingDock";
+import { MeetingSidePanel } from "../component/meeting/MeetingSidePanel";
+import { VideoTile } from "../component/meeting/VideoTile";
 
 /**
  * Obsidian Flux Video Conferencing - Integrated Version
@@ -170,227 +174,118 @@ export default function Meeting() {
     }
   };
 
+  const handleSendMessage = () => {
+    if (chatMessage.trim()) {
+      sendChat(id, chatMessage, { name });
+      setChatMessage('');
+    }
+  };
+
+  const hasRemotes = remoteStreams && remoteStreams.length > 0;
+  const mainIsLocal = !hasRemotes;
+  const mainStream = hasRemotes ? remoteStreams[0] : null;
+
   return (
-    <div className="flex flex-col h-screen bg-background text-white font-manrope overflow-hidden">
-      <header className="flex items-center justify-between px-4 py-4 bg-background z-10 border-b border-white/5">
-        <div className="flex items-center gap-4">
-          <Lock className="text-primary" />
-          <h1 className="text-sm font-semibold truncate">Meeting: {id}</h1>
-          <button onClick={handleCopy} className="p-1.5 hover:bg-white/5 rounded-lg transition-colors">
-            <Copy className="text-white/60" />
-          </button>
-        </div>
-        <button 
-          onClick={doLeave}
-          className="bg-[#cc2b2b] hover:bg-[#a32222] text-white text-xs font-bold px-4 py-2 rounded-lg transition-colors whitespace-nowrap shadow-lg shadow-red-900/20"
-        >
-          Leave meeting
-        </button>
-      </header>
+    <div className="relative flex flex-col h-screen bg-[#0B0C10] text-white font-manrope overflow-hidden">
+      
+      <MeetingHeader id={id} onLeave={doLeave} />
 
       {/* Video Grid */}
-      <main className="flex-1 overflow-y-auto p-4 space-y-4">
-          <div
-            className="grid gap-4"
-            style={{
-              gridTemplateColumns: (() => {
-                const count = (remoteStreams?.length || 0) + (localStreamRef.current ? 1 : 0);
-                if (count <= 1) return 'repeat(1, minmax(0, 1fr))';
-                if (count === 2) return 'repeat(2, minmax(0, 1fr))';
-                if (count <= 4) return 'repeat(2, minmax(0, 1fr))';
-                if (count <= 9) return 'repeat(3, minmax(0, 1fr))';
-                return 'repeat(4, minmax(0, 1fr))';
-              })(),
-            }}
-          >
-            <div className="relative aspect-video rounded-2xl overflow-hidden bg-card">
-              <video
-                ref={localVideoRef}
-                autoPlay
-                muted
-                playsInline
-                className="w-full h-full object-cover"
-              />
-              <div className="absolute bottom-3 left-3 bg-black/40 backdrop-blur-md px-2 py-1 rounded-md text-[10px] flex items-center gap-2">
-                {name} (You)
-                {isMuted ? <MicOff className="text-red-500" /> : <Mic className="text-green-400" />}
-              </div>
-            </div>
-
-            {remoteStreams.map((r) => {
-              const participant = participants.find(p => p.socketId === r.socketId);
-              const label = participant?.user?.name || 'Guest';
-              return (
-                <div key={r.socketId} className="relative aspect-video rounded-2xl overflow-hidden bg-card">
-                  <video
-                    autoPlay
-                    playsInline
-                    ref={(el) => { if (el) el.srcObject = r.stream; }}
-                    className="w-full h-full object-cover"
+      <main className="flex-1 w-full h-full pt-20 pb-28 px-4 md:px-8 overflow-hidden relative z-0 flex items-center justify-center">
+          <div className="flex flex-col lg:flex-row gap-4 w-full h-full max-w-7xl mx-auto">
+             
+             {/* Main View */}
+             <div className="flex-1 min-h-0 min-w-0 rounded-3xl overflow-hidden flex items-center justify-center relative">
+                {mainIsLocal ? (
+                  <VideoTile
+                    isMain={true}
+                    isLocal={true}
+                    stream={localStreamRef.current}
+                    label={`${name} (You)`}
+                    isMuted={isMuted}
+                    localVideoRef={localVideoRef}
                   />
-                  <div className="absolute bottom-3 left-3 bg-black/40 backdrop-blur-md px-2 py-1 rounded-md text-[10px]">
-                    {label}
+                ) : (
+                  <VideoTile
+                    isMain={true}
+                    isLocal={false}
+                    stream={mainStream.stream}
+                    label={participants.find(p => p.socketId === mainStream.socketId)?.user?.name || 'Guest'}
+                  />
+                )}
+             </div>
+
+             {/* Sidebar (Always show for this preview, mixing real remotes and mock users) */}
+             <div className="w-full lg:w-72 flex lg:flex-col gap-4 overflow-x-auto lg:overflow-y-auto shrink-0 snap-x lg:snap-y pb-2 lg:pb-0 hide-scrollbar">
+                {/* Local video moves to sidebar when remotes exist */}
+                {hasRemotes && (
+                  <VideoTile
+                    isMain={false}
+                    isLocal={true}
+                    stream={localStreamRef.current}
+                    label={`${name} (You)`}
+                    isMuted={isMuted}
+                    localVideoRef={localVideoRef}
+                  />
+                )}
+                
+                {/* Rest of the remote streams */}
+                {hasRemotes && remoteStreams.slice(1).map((r) => {
+                   const participant = participants.find(p => p.socketId === r.socketId);
+                   return (
+                     <VideoTile
+                       key={r.socketId}
+                       isMain={false}
+                       isLocal={false}
+                       stream={r.stream}
+                       label={participant?.user?.name || 'Guest'}
+                     />
+                   );
+                })}
+
+                {/* MOCK USERS FOR DEMONSTRATION */}
+                {[1, 2, 3, 4, 5, 6, 7].map((i) => (
+                  <div key={`mock-${i}`} className="relative w-48 lg:w-full aspect-video rounded-2xl overflow-hidden bg-card border border-white/10 shadow-lg group shrink-0 snap-center">
+                    <div className="w-full h-full bg-gradient-to-br from-primary/20 to-secondary/20 flex items-center justify-center">
+                      <Users className="w-8 h-8 text-white/20" />
+                    </div>
+                    <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-transparent pointer-events-none" />
+                    <div className="absolute bottom-2 left-2 bg-black/40 backdrop-blur-xl border border-white/10 px-2 py-1 rounded-lg text-[10px] font-medium flex items-center gap-2 shadow-lg">
+                      Mock User {i}
+                      <MicOff className="text-red-400 w-3 h-3" />
+                    </div>
                   </div>
-                </div>
-              );
-            })}
+                ))}
+             </div>
           </div>
       </main>
 
-      {/* Bottom Controls */}
-      <nav className="bg-card p-4 flex justify-between items-center border-t border-white/5 pb-8">
-        <div className="flex flex-col items-center gap-1">
-          <button 
-            onClick={toggleMute}
-            className={`p-3 rounded-xl transition-all ${isMuted ? 'bg-red-500 text-white' : 'bg-white/5 text-white hover:bg-white/10'}`}
-          >
-            {isMuted ? <MicOff /> : <Mic />}
-          </button>
-          <span className="text-[10px] text-white/60">Mute</span>
-        </div>
+      <MeetingDock
+        isMuted={isMuted}
+        isVideoOff={isVideoOff}
+        showParticipants={showParticipants}
+        showChat={showChat}
+        onToggleMute={toggleMute}
+        onToggleVideo={toggleVideo}
+        onToggleParticipants={() => { setShowParticipants(!showParticipants); setShowChat(false); }}
+        onToggleChat={() => { setShowChat(!showChat); setShowParticipants(false); }}
+      />
 
-        <div className="flex flex-col items-center gap-1">
-          <button 
-            onClick={toggleVideo}
-            className={`p-3 rounded-xl transition-all ${isVideoOff ? 'bg-red-500 text-white' : 'bg-white/5 text-white hover:bg-white/10'}`}
-          >
-            {isVideoOff ? <CameraOff /> : <Camera />}
-          </button>
-          <span className="text-[10px] text-white/60">Video</span>
-        </div>
+      <MeetingSidePanel
+        showChat={showChat}
+        showParticipants={showParticipants}
+        onClose={() => { setShowChat(false); setShowParticipants(false); }}
+        participants={participants}
+        remoteStreams={remoteStreams}
+        localUser={{ name }}
+        isLocalMuted={isMuted}
+        chatMessages={chatMessages}
+        chatMessage={chatMessage}
+        setChatMessage={setChatMessage}
+        onSendMessage={handleSendMessage}
+        socketId={socketRef.current?.id}
+      />
 
-        <div className="flex flex-col items-center gap-1">
-          <button 
-            onClick={() => { setShowParticipants(!showParticipants); setShowChat(false); }}
-            className={`p-3 rounded-xl transition-all ${showParticipants ? 'bg-primary/20 text-primary' : 'bg-white/5 text-white'}`}
-          >
-            <Users />
-          </button>
-          <span className="text-[10px] text-white/60">Participants</span>
-        </div>
-
-        <div className="flex flex-col items-center gap-1">
-          <button 
-            onClick={() => { setShowChat(!showChat); setShowParticipants(false); }}
-            className={`p-3 rounded-xl transition-all relative ${showChat ? 'bg-primary/20 text-primary' : 'bg-white/5 text-white'}`}
-          >
-            <MessageSquare className="w-6 h-6" />
-            <div className="absolute top-2 right-2 w-2 h-2 bg-primary rounded-full border-2 border-card" />
-          </button>
-          <span className="text-[10px] text-white/60">Chat</span>
-        </div>
-
-        <div className="flex flex-col items-center gap-1">
-          <button className="p-3 bg-white/5 text-white rounded-xl">
-            <MoreVertical />
-          </button>
-          <span className="text-[10px] text-white/60">More</span>
-        </div>
-      </nav>
-
-      {/* Side Overlays (Chat/Participants) */}
-      {(showChat || showParticipants) && (
-        <div className="absolute inset-0 z-50 bg-background flex flex-col animate-in slide-in-from-bottom duration-300">
-          <header className="p-4 flex items-center justify-between border-b border-white/5">
-            <h2 className="text-lg font-bold">{showChat ? 'Chat' : 'Participants'}</h2>
-            <button onClick={() => { setShowChat(false); setShowParticipants(false); }} className="p-2 hover:bg-white/5 rounded-full transition-colors">
-              <X />
-            </button>
-          </header>
-          
-          <div className="flex-1 p-4 overflow-y-auto">
-            {showParticipants ? (
-              <ul className="space-y-3">
-                <div className="flex items-center justify-between p-3 bg-card rounded-2xl border border-white/5">
-                  <div className="flex items-center gap-3">
-                    <div className="w-8 h-8 rounded-full bg-primary flex items-center justify-center font-bold text-xs">
-                      ME
-                    </div>
-                    <div className="flex flex-col">
-                      <span className="font-semibold text-sm">You (Host)</span>
-                      <span className="text-[10px] text-primary bg-primary/10 px-2 py-0.5 rounded-full font-bold">Host</span>
-                    </div>
-                  </div>
-                  {isMuted ? <MicOff className="text-red-500" /> : <Mic className="text-green-400" />}
-                </div>
-                {participants.map((p) => {
-                  const isMe = p.socketId === socketRef.current?.id;
-                  const displayName = p.user?.name || p.user || 'Guest';
-                  const initial = (displayName || 'G').charAt(0).toUpperCase();
-                  const hasStream = remoteStreams.some(r => r.socketId === p.socketId);
-                  return (
-                    <li key={p.socketId} className="flex items-center justify-between p-3 bg-white/5 rounded-xl">
-                      <div className="flex items-center gap-3">
-                        <div className="relative w-10 h-10">
-                          {p.user?.avatar ? (
-                            <img
-                              src={p.user.avatar}
-                              alt={displayName}
-                              onError={(e) => { e.currentTarget.style.display = 'none'; }}
-                              className="w-10 h-10 rounded-full object-cover"
-                            />
-                          ) : null}
-                          <div className="absolute inset-0 rounded-full bg-gradient-to-br from-primary to-[#4ea1ff] flex items-center justify-center font-bold text-sm text-white uppercase">
-                            {initial}
-                          </div>
-                        </div>
-                        <div className="flex flex-col">
-                          <span className="text-sm truncate max-w-[180px]">{displayName}{isMe ? ' (You)' : ''}</span>
-                          <div className="text-[11px] text-white/60 flex items-center gap-2">
-                            {isMe && <span className="text-primary bg-primary/10 px-2 py-0.5 rounded-full font-bold">Host</span>}
-                            <span>{hasStream ? 'Video' : 'No video'}</span>
-                          </div>
-                        </div>
-                      </div>
-
-                      <div className="flex items-center gap-3">
-                        <div className="p-1 rounded-md bg-white/5">
-                          {isMe ? (isMuted ? <MicOff className="text-red-400" /> : <Mic className="text-green-400" />) : <Mic className="text-white/40" />}
-                        </div>
-                        <div className="p-1 rounded-md bg-white/5">
-                          {hasStream ? <Camera className="text-white/40" /> : <CameraOff className="text-white/30" />}
-                        </div>
-                      </div>
-                    </li>
-                  );
-                })}
-              </ul>
-            ) : (
-              <div className="space-y-4">
-                <div className="text-center py-10 text-white/40 italic text-sm">
-                  No messages yet. Start the conversation!
-                </div>
-              </div>
-            )}
-          </div>
-
-          {showChat && (
-            <div className="p-4 border-t border-white/5 pb-10 bg-card">
-              <div className="flex gap-2 items-center bg-white/5 rounded-xl p-2 px-4 border border-white/10">
-                <input 
-                  type="text" 
-                  placeholder="Type a message..." 
-                  className="bg-transparent flex-1 text-sm outline-none py-2"
-                  value={chatMessage}
-                  onChange={(e) => setChatMessage(e.target.value)}
-                />
-                <button 
-                  onClick={() => {
-                    if (chatMessage.trim()) {
-                      // sendChat signature: (roomId, message, user)
-                      sendChat(id, chatMessage, { name });
-                      setChatMessage('');
-                    }
-                  }}
-                  className="text-primary p-2 hover:bg-primary/10 rounded-lg transition-all"
-                >
-                  <Send />
-                </button>
-              </div>
-            </div>
-          )}
-        </div>
-      )}
     </div>
   );
 }
