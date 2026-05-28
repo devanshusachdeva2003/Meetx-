@@ -78,9 +78,9 @@ const MeetXCalendar = () => {
   useEffect(() => { fetchEventsForMonth(displayDate); }, [displayDate]);
 
   return (
-    <div className="flex flex-col h-screen bg-[#0c0e17] text-white font-sans overflow-hidden">
+    <div className="flex flex-col min-h-full bg-[#0c0e17] text-white font-sans">
       {/* Top Bar */}
-      <header className="flex items-center justify-between px-6 py-6">
+      <header className="flex items-center justify-between px-4 md:px-6 pt-16 md:pt-6 pb-6">
         <div className="flex items-center gap-3">
           <div className="p-2 bg-[#7c5dff]/20 rounded-xl">
             <CalendarIcon className="text-[#7c5dff] w-6 h-6" />
@@ -96,8 +96,8 @@ const MeetXCalendar = () => {
       </header>
 
       {/* Calendar Controls */}
-      <div className="px-6 mb-6">
-        <div className="flex items-center justify-between mb-6">
+      <div className="px-4 md:px-6 mb-6">
+        <div className="flex flex-col sm:flex-row items-center justify-between gap-4 sm:gap-0 mb-6">
           <div className="flex items-center gap-4">
               <button onClick={() => setDisplayDate(new Date(year, month - 1, 1))} className="p-2 bg-white/5 rounded-full hover:bg-white/10 transition-colors">
                 <ChevronLeft className="w-5 h-5 text-white/60" />
@@ -107,12 +107,12 @@ const MeetXCalendar = () => {
                 <ChevronRight className="w-5 h-5 text-white/60" />
               </button>
           </div>
-          <div className="flex bg-white/5 p-1 rounded-xl">
+          <div className="flex bg-white/5 p-1 rounded-xl w-full sm:w-auto justify-center">
             {['Day', 'Week', 'Month'].map((view) => (
               <button
                 key={view}
                 onClick={() => setCurrentView(view)}
-                className={`px-4 py-1.5 rounded-lg text-sm font-medium transition-all ${
+                className={`flex-1 sm:flex-none px-4 py-1.5 rounded-lg text-sm font-medium transition-all ${
                   currentView === view ? 'bg-[#7c5dff] text-white shadow-md' : 'text-white/40 hover:text-white/60'
                 }`}
               >
@@ -131,32 +131,36 @@ const MeetXCalendar = () => {
           {Array.from({ length: startOffset }).map((_, i) => (
             <div key={`empty-${i}`} className="h-10" />
           ))}
-          {dates.map(date => (
-            <div key={date} className="relative flex flex-col items-center">
-              <button
-                onClick={() => setSelectedDate(date)}
-                className={`w-10 h-10 flex items-center justify-center rounded-xl text-sm font-medium transition-all ${
-                  selectedDate === date 
-                  ? 'bg-[#7c5dff] text-white shadow-lg shadow-[#7c5dff]/30 ring-2 ring-[#7c5dff]/50' 
-                  : 'text-white/60 hover:bg-white/5'
-                }`}
-              >
-                {date}
-                {date === new Date().getDate() && new Date().getMonth() === new Date().getMonth() && <span className="absolute bottom-1 text-[8px] font-bold">TODAY</span>}
-              </button>
-              {/* Event Indicators */}
-              <div className="flex gap-0.5 mt-1">
-                {(eventsByDate[date] || []).slice(0,3).map((e, idx) => (
-                  <div key={idx} className={`w-1 h-1 rounded-full ${idx === 0 ? 'bg-[#7c5dff]' : 'bg-green-400'}`} />
-                ))}
+          {dates.map(date => {
+            const isToday = date === new Date().getDate() && month === new Date().getMonth() && year === new Date().getFullYear();
+            return (
+              <div key={date} className="relative flex flex-col items-center justify-start h-14 md:h-16">
+                <button
+                  onClick={() => setSelectedDate(date)}
+                  className={`relative w-8 h-8 md:w-10 md:h-10 flex flex-col items-center justify-center rounded-xl text-sm font-medium transition-all ${
+                    selectedDate === date 
+                    ? 'bg-[#7c5dff] text-white shadow-lg shadow-[#7c5dff]/30 ring-2 ring-[#7c5dff]/50' 
+                    : isToday 
+                      ? 'text-[#7c5dff] font-bold border border-[#7c5dff]/30'
+                      : 'text-white/60 hover:bg-white/5'
+                  }`}
+                >
+                  <span className="relative z-10">{date}</span>
+                </button>
+                {/* Event Indicators - Fixed height container prevents grid misalignment */}
+                <div className="flex gap-1 mt-1.5 h-1.5 w-full justify-center">
+                  {(eventsByDate[date] || []).slice(0,3).map((e, idx) => (
+                    <div key={idx} className={`w-1.5 h-1.5 rounded-full ${idx === 0 ? 'bg-[#7c5dff]' : 'bg-green-400'}`} />
+                  ))}
+                </div>
               </div>
-            </div>
-          ))}
+            );
+          })}
         </div>
       </div>
 
       {/* Upcoming Meetings Section */}
-      <div className="flex-1 bg-[#11131c] rounded-t-[40px] border-t border-white/5 px-6 pt-8 overflow-y-auto pb-32">
+      <div className="flex-1 bg-[#11131c] rounded-t-[40px] border-t border-white/5 px-4 md:px-6 pt-8 pb-10">
           <div className="flex items-center justify-between mb-6">
           <h3 className="text-xl font-bold">Upcoming Meetings</h3>
           <button className="text-[#7c5dff] text-sm font-semibold hover:underline">See all</button>
@@ -176,15 +180,15 @@ const MeetXCalendar = () => {
                   </div>
                   <p className="text-white/40 text-sm mb-4 line-clamp-2">{meeting.description}</p>
 
-                  <div className="flex items-center gap-4 text-xs text-white/40 mb-4">
+                  <div className="flex flex-wrap items-center gap-2 md:gap-4 text-xs text-white/40 mb-4">
                     <div className="flex items-center gap-1.5">
-                      <Clock className="w-3.5 h-3.5" />
+                      <Clock className="w-3.5 h-3.5 shrink-0" />
                       {new Date(meeting.start).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
                     </div>
                     {meeting.location && (
                       <div className="flex items-center gap-1.5">
-                        <MapPin className="w-3.5 h-3.5" />
-                        {meeting.location}
+                        <MapPin className="w-3.5 h-3.5 shrink-0" />
+                        <span className="truncate max-w-[120px] sm:max-w-none">{meeting.location}</span>
                       </div>
                     )}
                   </div>
@@ -206,20 +210,11 @@ const MeetXCalendar = () => {
         </div>
       </div>
 
-      {/* Bottom Navigation */}
-      <nav className="fixed bottom-0 left-0 right-0 bg-[#11131c]/80 backdrop-blur-2xl border-t border-white/5 px-6 pt-4 pb-10 flex justify-between items-center z-50">
-        <NavItem icon={<Home />} label="Home" />
-        <NavItem icon={<Video />} label="Meetings" />
-        <NavItem icon={<CalendarIcon />} label="Calendar" active />
-        <NavItem icon={<Search />} label="Recs" />
-        <NavItem icon={<Settings />} label="Settings" />
-      </nav>
-
       {/* Simple Modal Overlay Simulation */}
       {isModalOpen && (
-        <div className="fixed inset-0 bg-black/60 backdrop-blur-sm z-[100] flex items-end animate-in fade-in duration-200">
-          <div className="w-full bg-[#11131c] rounded-t-[40px] p-8 border-t border-[#7c5dff]/20 animate-in slide-in-from-bottom duration-300">
-            <div className="w-12 h-1 bg-white/10 rounded-full mx-auto mb-8" />
+        <div className="fixed inset-0 bg-black/60 backdrop-blur-sm z-[100] flex items-end sm:items-center justify-center animate-in fade-in duration-200 p-0 sm:p-4">
+          <div className="w-full md:w-[500px] bg-[#11131c] rounded-t-[40px] sm:rounded-[40px] p-6 md:p-8 border-t sm:border border-[#7c5dff]/20 animate-in slide-in-from-bottom duration-300 max-h-[90vh] overflow-y-auto">
+            <div className="w-12 h-1 bg-white/10 rounded-full mx-auto mb-6 sm:hidden" />
             <div className="flex justify-between items-center mb-8">
               <h2 className="text-2xl font-bold flex items-center gap-3">
                 <div className="w-2 h-8 bg-[#7c5dff] rounded-full" />
@@ -248,7 +243,7 @@ const MeetXCalendar = () => {
                 </button>
               </div>
 
-              <div className="flex gap-4">
+              <div className="flex flex-col md:flex-row gap-4">
                 <div className="flex-1 p-4 bg-white/5 rounded-2xl border border-white/5 flex items-center gap-3">
                   <CalendarIcon className="w-5 h-5 text-[#7c5dff]" />
                   <span className="text-sm font-medium">{displayDate.toLocaleString('default', { month: 'long' })} {selectedDate}, {year}</span>
@@ -288,15 +283,6 @@ const MeetXCalendar = () => {
     </div>
   );
 };
-
-const NavItem = ({ icon, label, active = false }) => (
-  <div className="flex flex-col items-center gap-1">
-    <div className={`p-3 rounded-2xl transition-all ${active ? 'bg-[#7c5dff] text-white shadow-lg shadow-[#7c5dff]/20' : 'text-white/40'}`}>
-      {React.cloneElement(icon, { className: "w-6 h-6" })}
-    </div>
-    <span className={`text-[10px] font-bold ${active ? 'text-white' : 'text-white/40'}`}>{label}</span>
-  </div>
-);
 
 const InputGroup = ({ label, placeholder }) => (
   <div className="space-y-2">
