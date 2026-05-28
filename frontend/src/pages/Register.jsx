@@ -4,20 +4,19 @@ import { Link, useNavigate } from "react-router-dom";
 import ControlledTextField from "../component/ui/ControlledTextField";
 import ControlledPasswordField from "../component/ui/ControlledPasswordField";
 import Button from "../component/ui/Button";
-import { useUser } from "../context/UserContext";
 import api from "../utils/api";
 
-const Login = () => {
+const Register = () => {
   const methods = useForm();
   const { formState: { errors, isSubmitting } } = methods;
   const navigate = useNavigate();
-  const { loginContext } = useUser();
   const [errorMsg, setErrorMsg] = useState("");
 
   const onSubmit = async (data) => {
     setErrorMsg("");
     try {
-      const response = await api.post('/auth/login', {
+      const response = await api.post('/auth/register', {
+        name: data.name,
         email: data.email,
         password: data.password
       });
@@ -28,21 +27,20 @@ const Login = () => {
         localStorage.setItem('authEmail', data.email);
         navigate('/verify-otp');
       } else {
-        loginContext(result.user, result.token);
-        navigate('/');
+        navigate('/login');
       }
     } catch (err) {
-      setErrorMsg(err.response?.data?.error || "Login failed");
+      setErrorMsg(err.response?.data?.error || "Registration failed");
     }
   };
 
   return (
     <div className="min-h-screen bg-background flex flex-col justify-center items-center p-4 text-gray-200 font-sans">
       <div className="w-full max-w-md bg-card rounded-3xl shadow-xl p-8 border border-border relative overflow-hidden">
+        <div className="absolute top-0 right-0 w-64 h-64 bg-primary/10 rounded-full blur-3xl -translate-y-1/2 translate-x-1/2 pointer-events-none" />
         <div className="mb-8 text-center relative z-10">
-          <div className="absolute -top-10 left-1/2 -translate-x-1/2 w-48 h-48 rounded-full bg-primary/10 blur-3xl pointer-events-none" />
-          <h1 className="text-3xl font-bold text-white mb-2 relative z-10">Welcome Back</h1>
-          <p className="text-gray-400 relative z-10">Please sign in to your account</p>
+          <h1 className="text-3xl font-bold text-white mb-2">Create Account</h1>
+          <p className="text-gray-400">Join Meetx today</p>
         </div>
 
         {errorMsg && (
@@ -52,7 +50,17 @@ const Login = () => {
         )}
 
         <FormProvider {...methods}>
-          <form onSubmit={methods.handleSubmit(onSubmit)} className="space-y-6 relative z-10">
+          <form onSubmit={methods.handleSubmit(onSubmit)} className="space-y-5 relative z-10">
+            <ControlledTextField
+              field={{
+                name: "name",
+                placeholder: "Enter your full name",
+                validation: { required: "Name is required" }
+              }}
+              label="Full Name"
+              inputClassName={`!bg-input ${!errors.name ? '!border-border focus:!border-primary focus:!ring-primary/20' : ''}`}
+            />
+
             <ControlledTextField
               field={{
                 name: "email",
@@ -73,45 +81,26 @@ const Login = () => {
             <ControlledPasswordField
               field={{
                 name: "password",
-                placeholder: "Enter your password",
+                placeholder: "Create a password",
                 validation: {
                   required: "Password is required",
-                  minLength: {
-                    value: 6,
-                    message: "Password must be at least 6 characters"
-                  }
+                  minLength: { value: 6, message: "Must be at least 6 characters" }
                 }
               }}
               label="Password"
               inputClassName={`!bg-input ${!errors.password ? '!border-border focus:!border-primary focus:!ring-primary/20' : ''}`}
             />
 
-            <div className="flex items-center justify-between mt-2 mb-6">
-              <div className="flex items-center">
-                <input
-                  id="remember-me"
-                  type="checkbox"
-                  className="w-4 h-4 rounded bg-input border-border text-primary focus:ring-primary/20 accent-primary"
-                />
-                <label htmlFor="remember-me" className="ml-2 text-sm text-gray-400 cursor-pointer">
-                  Remember me
-                </label>
-              </div>
-              <a href="#" className="text-sm font-medium text-primary hover:text-primary-glow transition-colors">
-                Forgot password?
-              </a>
-            </div>
-
-            <Button disabled={isSubmitting} type="submit" className="gradient-primary text-white shadow-[0_4px_14px_rgba(168,85,247,0.4)] hover:-translate-y-px hover:shadow-[0_6px_20px_rgba(168,85,247,0.5)] w-full py-3 rounded-2xl border-0">
-              {isSubmitting ? "Signing In..." : "Sign In"}
+            <Button disabled={isSubmitting} type="submit" className="gradient-primary text-white shadow-[0_4px_14px_rgba(168,85,247,0.4)] hover:-translate-y-px hover:shadow-[0_6px_20px_rgba(168,85,247,0.5)] w-full py-3 rounded-2xl border-0 mt-6">
+              {isSubmitting ? "Creating..." : "Sign Up"}
             </Button>
           </form>
         </FormProvider>
 
         <p className="mt-8 text-center text-sm text-gray-400 relative z-10">
-          Don't have an account?{" "}
-          <Link to="/register" className="font-semibold text-primary hover:text-primary-glow transition-colors">
-            Sign up
+          Already have an account?{" "}
+          <Link to="/login" className="font-semibold text-primary hover:text-primary-glow transition-colors">
+            Sign in
           </Link>
         </p>
       </div>
@@ -119,4 +108,4 @@ const Login = () => {
   );
 };
 
-export default Login;
+export default Register;
