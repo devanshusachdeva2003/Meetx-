@@ -3,9 +3,9 @@ import { MeetingCard } from "./MeetingCard";
 export function UpcomingMeetings() {
   return (
     <div className="bg-card border border-border rounded-3xl p-6 flex flex-col">
-      <div className="flex items-center justify-between mb-4">
-        <h3 className="font-semibold text-white">Upcoming Meetings</h3>
-        <button className="text-xs text-[#A855F7] hover:text-[#D946EF] transition">View all</button>
+      <div className="flex items-center justify-between mb-6">
+        <h2 className="text-xl font-semibold text-white">Upcoming Meetings</h2>
+        <button className="text-xs text-primary hover:text-primary-glow transition">View all</button>
       </div>
       <div className="divide-y divide-border/50">
         <MeetingCard title="Design Team Standup" meta="Today, 10:30 AM" avatars={3} extra={3} />

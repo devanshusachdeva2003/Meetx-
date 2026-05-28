@@ -7,7 +7,7 @@ import { PersonalLink } from "./PersonalLink";
 
 export function Dashboard() {
   return (
-    <main className="flex-1 min-w-0 px-8 py-10 flex flex-col gap-8 h-full">
+    <main className="flex-1 min-w-0 px-4 py-16 md:px-8 md:py-10 flex flex-col gap-8 h-full">
       <Header />
 
       <section className="grid grid-cols-1 xl:grid-cols-3 gap-6">

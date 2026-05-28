@@ -3,9 +3,9 @@ import { MeetingCard } from "./MeetingCard";
 export function RecentMeetings() {
   return (
     <div className="bg-card border border-border rounded-3xl p-6 flex flex-col">
-      <div className="flex items-center justify-between mb-4">
-        <h3 className="font-semibold text-white">Recent Meetings</h3>
-        <button className="text-xs text-[#A855F7] hover:text-[#D946EF] transition">View all</button>
+      <div className="flex justify-between items-center mb-6">
+        <h2 className="text-xl font-semibold text-white">Recent Meetings</h2>
+        <button className="text-xs text-primary hover:text-primary-glow transition">View all</button>
       </div>
       <div className="divide-y divide-border/50">
         <MeetingCard title="Product Discussion" meta="Yesterday, 4:30 PM · 30 min" avatars={3} extra={3} action="view" icon="video" />
