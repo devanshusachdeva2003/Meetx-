@@ -12,7 +12,6 @@ const Router = () => {
     <Routes>
       <Route element={<Layout />}>
         <Route path="/" element={<Dashboard />} />
-        <Route path="/meeting/:id" element={<Meeting />} />
         <Route path="/settings" element={<Settings />} />
         <Route path="/calendar" element={<Calendar />} />
         <Route path="*" element={
@@ -22,6 +21,7 @@ const Router = () => {
           </div>
         } />
       </Route>
+      <Route path="/meeting/:id" element={<Meeting />} />
       <Route path="/login" element={<Login />} />
     </Routes>
   );
