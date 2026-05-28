@@ -171,11 +171,10 @@ export default function Meeting() {
   };
 
   return (
-    <div className="flex flex-col h-screen bg-[#11131c] text-white font-manrope overflow-hidden">
-      {/* Top App Bar */}
-      <header className="flex items-center justify-between px-4 py-4 bg-[#11131c] z-10 border-b border-white/5">
-        <div className="flex items-center gap-2 overflow-hidden">
-          <Lock className="text-[#7c5dff]" />
+    <div className="flex flex-col h-screen bg-background text-white font-manrope overflow-hidden">
+      <header className="flex items-center justify-between px-4 py-4 bg-background z-10 border-b border-white/5">
+        <div className="flex items-center gap-4">
+          <Lock className="text-primary" />
           <h1 className="text-sm font-semibold truncate">Meeting: {id}</h1>
           <button onClick={handleCopy} className="p-1.5 hover:bg-white/5 rounded-lg transition-colors">
             <Copy className="text-white/60" />
@@ -191,7 +190,6 @@ export default function Meeting() {
 
       {/* Video Grid */}
       <main className="flex-1 overflow-y-auto p-4 space-y-4">
-          {/* Video Grid (local + remotes) */}
           <div
             className="grid gap-4"
             style={{
@@ -205,8 +203,7 @@ export default function Meeting() {
               })(),
             }}
           >
-            {/* Local tile */}
-            <div className="relative aspect-video rounded-2xl overflow-hidden bg-[#191b24]">
+            <div className="relative aspect-video rounded-2xl overflow-hidden bg-card">
               <video
                 ref={localVideoRef}
                 autoPlay
@@ -220,12 +217,11 @@ export default function Meeting() {
               </div>
             </div>
 
-            {/* Remote tiles */}
             {remoteStreams.map((r) => {
               const participant = participants.find(p => p.socketId === r.socketId);
               const label = participant?.user?.name || 'Guest';
               return (
-                <div key={r.socketId} className="relative aspect-video rounded-2xl overflow-hidden bg-[#191b24]">
+                <div key={r.socketId} className="relative aspect-video rounded-2xl overflow-hidden bg-card">
                   <video
                     autoPlay
                     playsInline
@@ -242,7 +238,7 @@ export default function Meeting() {
       </main>
 
       {/* Bottom Controls */}
-      <nav className="bg-[#191b24] p-4 flex justify-between items-center border-t border-white/5 pb-8">
+      <nav className="bg-card p-4 flex justify-between items-center border-t border-white/5 pb-8">
         <div className="flex flex-col items-center gap-1">
           <button 
             onClick={toggleMute}
@@ -265,8 +261,8 @@ export default function Meeting() {
 
         <div className="flex flex-col items-center gap-1">
           <button 
-            onClick={() => { setShowParticipants(true); setShowChat(false); }}
-            className={`p-3 rounded-xl transition-all ${showParticipants ? 'bg-[#7c5dff]/20 text-[#7c5dff]' : 'bg-white/5 text-white'}`}
+            onClick={() => { setShowParticipants(!showParticipants); setShowChat(false); }}
+            className={`p-3 rounded-xl transition-all ${showParticipants ? 'bg-primary/20 text-primary' : 'bg-white/5 text-white'}`}
           >
             <Users />
           </button>
@@ -275,11 +271,11 @@ export default function Meeting() {
 
         <div className="flex flex-col items-center gap-1">
           <button 
-            onClick={() => { setShowChat(true); setShowParticipants(false); }}
-            className={`p-3 rounded-xl transition-all relative ${showChat ? 'bg-[#7c5dff]/20 text-[#7c5dff]' : 'bg-white/5 text-white'}`}
+            onClick={() => { setShowChat(!showChat); setShowParticipants(false); }}
+            className={`p-3 rounded-xl transition-all relative ${showChat ? 'bg-primary/20 text-primary' : 'bg-white/5 text-white'}`}
           >
-            <MessageCircle />
-            <div className="absolute top-2 right-2 w-2 h-2 bg-[#7c5dff] rounded-full border-2 border-[#191b24]" />
+            <MessageSquare className="w-6 h-6" />
+            <div className="absolute top-2 right-2 w-2 h-2 bg-primary rounded-full border-2 border-card" />
           </button>
           <span className="text-[10px] text-white/60">Chat</span>
         </div>
@@ -294,7 +290,7 @@ export default function Meeting() {
 
       {/* Side Overlays (Chat/Participants) */}
       {(showChat || showParticipants) && (
-        <div className="absolute inset-0 z-50 bg-[#11131c] flex flex-col animate-in slide-in-from-bottom duration-300">
+        <div className="absolute inset-0 z-50 bg-background flex flex-col animate-in slide-in-from-bottom duration-300">
           <header className="p-4 flex items-center justify-between border-b border-white/5">
             <h2 className="text-lg font-bold">{showChat ? 'Chat' : 'Participants'}</h2>
             <button onClick={() => { setShowChat(false); setShowParticipants(false); }} className="p-2 hover:bg-white/5 rounded-full transition-colors">
@@ -305,23 +301,22 @@ export default function Meeting() {
           <div className="flex-1 p-4 overflow-y-auto">
             {showParticipants ? (
               <ul className="space-y-3">
-                <li className="flex items-center justify-between p-3 bg-white/5 rounded-xl border border-white/5">
+                <div className="flex items-center justify-between p-3 bg-card rounded-2xl border border-white/5">
                   <div className="flex items-center gap-3">
-                    <div className="w-8 h-8 rounded-full bg-[#7c5dff] flex items-center justify-center font-bold text-xs">
-                      {name.charAt(0)}
+                    <div className="w-8 h-8 rounded-full bg-primary flex items-center justify-center font-bold text-xs">
+                      ME
                     </div>
-                    <span className="text-sm font-medium">{name} (You)</span>
+                    <div className="flex flex-col">
+                      <span className="font-semibold text-sm">You (Host)</span>
+                      <span className="text-[10px] text-primary bg-primary/10 px-2 py-0.5 rounded-full font-bold">Host</span>
+                    </div>
                   </div>
-                  <div className="flex items-center gap-2">
-                    <span className="text-[10px] text-[#7c5dff] bg-[#7c5dff]/10 px-2 py-0.5 rounded-full font-bold">Host</span>
-                    {isMuted ? <MicOff className="text-red-500" /> : <Mic className="text-green-400" />}
-                  </div>
-                </li>
+                  {isMuted ? <MicOff className="text-red-500" /> : <Mic className="text-green-400" />}
+                </div>
                 {participants.map((p) => {
                   const isMe = p.socketId === socketRef.current?.id;
                   const displayName = p.user?.name || p.user || 'Guest';
                   const initial = (displayName || 'G').charAt(0).toUpperCase();
-                  // try to detect if we have a remote stream for this participant
                   const hasStream = remoteStreams.some(r => r.socketId === p.socketId);
                   return (
                     <li key={p.socketId} className="flex items-center justify-between p-3 bg-white/5 rounded-xl">
@@ -335,14 +330,14 @@ export default function Meeting() {
                               className="w-10 h-10 rounded-full object-cover"
                             />
                           ) : null}
-                          <div className="absolute inset-0 rounded-full bg-gradient-to-br from-[#7c5dff] to-[#4ea1ff] flex items-center justify-center font-bold text-sm text-white uppercase">
+                          <div className="absolute inset-0 rounded-full bg-gradient-to-br from-primary to-[#4ea1ff] flex items-center justify-center font-bold text-sm text-white uppercase">
                             {initial}
                           </div>
                         </div>
                         <div className="flex flex-col">
                           <span className="text-sm truncate max-w-[180px]">{displayName}{isMe ? ' (You)' : ''}</span>
                           <div className="text-[11px] text-white/60 flex items-center gap-2">
-                            {isMe && <span className="text-[#7c5dff] bg-[#7c5dff]/10 px-2 py-0.5 rounded-full font-bold">Host</span>}
+                            {isMe && <span className="text-primary bg-primary/10 px-2 py-0.5 rounded-full font-bold">Host</span>}
                             <span>{hasStream ? 'Video' : 'No video'}</span>
                           </div>
                         </div>
@@ -370,7 +365,7 @@ export default function Meeting() {
           </div>
 
           {showChat && (
-            <div className="p-4 border-t border-white/5 pb-10 bg-[#191b24]">
+            <div className="p-4 border-t border-white/5 pb-10 bg-card">
               <div className="flex gap-2 items-center bg-white/5 rounded-xl p-2 px-4 border border-white/10">
                 <input 
                   type="text" 
@@ -387,7 +382,7 @@ export default function Meeting() {
                       setChatMessage('');
                     }
                   }}
-                  className="text-[#7c5dff] p-2 hover:bg-[#7c5dff]/10 rounded-lg transition-all"
+                  className="text-primary p-2 hover:bg-primary/10 rounded-lg transition-all"
                 >
                   <Send />
                 </button>

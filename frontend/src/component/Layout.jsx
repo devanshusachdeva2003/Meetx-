@@ -12,11 +12,11 @@ export function Layout() {
   }, [location.pathname]);
 
   return (
-    <div className="app-root flex h-screen bg-[#0B0C10] text-[#f3f4f6] font-sans overflow-hidden relative">
+    <div className="app-root flex h-screen bg-background text-gray-200 font-sans overflow-hidden relative">
       {/* Mobile Hamburger Button */}
       <button 
         onClick={() => setMobileMenuOpen(true)}
-        className="md:hidden absolute top-5 left-4 z-[40] p-2 bg-[#11131c]/80 backdrop-blur-xl border border-white/10 rounded-xl text-white shadow-lg shadow-black/50"
+        className="md:hidden absolute top-5 left-4 z-[40] p-2 bg-card/80 backdrop-blur-xl border border-border rounded-xl text-white shadow-lg shadow-black/50"
       >
         <Menu className="w-5 h-5" />
       </button>

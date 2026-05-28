@@ -47,30 +47,30 @@ export function StartMeetingCard() {
            <div className="absolute w-40 h-40 border border-white/5 rounded-full" />
            
            {/* Center Video Icon */}
-           <div className="relative z-10 w-20 h-20 rounded-2xl border-2 border-[#D946EF] flex items-center justify-center shadow-[0_0_30px_rgba(217,70,239,0.5)] bg-black/50">
-             <Video className="w-10 h-10 text-[#D946EF]" />
+           <div className="relative z-10 w-20 h-20 rounded-2xl border-2 border-secondary flex items-center justify-center shadow-[0_0_30px_rgba(var(--color-secondary),0.5)] bg-black/50">
+             <Video className="w-10 h-10 text-secondary" />
            </div>
 
            {/* Connected nodes */}
-           <div className="absolute top-12 left-10 w-10 h-10 rounded-full bg-primary/20 border border-primary/50 flex items-center justify-center shadow-[0_0_15px_rgba(168,85,247,0.5)]">
+           <div className="absolute top-[25%] left-[25%] -translate-x-1/2 -translate-y-1/2 w-10 h-10 rounded-full bg-primary/20 border border-primary/50 flex items-center justify-center shadow-[0_0_15px_rgba(var(--color-primary),0.5)]">
              <User className="w-5 h-5 text-primary" />
            </div>
-           <div className="absolute bottom-12 left-10 w-10 h-10 rounded-full bg-primary/20 border border-primary/50 flex items-center justify-center shadow-[0_0_15px_rgba(168,85,247,0.5)]">
+           <div className="absolute top-[75%] left-[25%] -translate-x-1/2 -translate-y-1/2 w-10 h-10 rounded-full bg-primary/20 border border-primary/50 flex items-center justify-center shadow-[0_0_15px_rgba(var(--color-primary),0.5)]">
              <User className="w-5 h-5 text-primary" />
            </div>
-           <div className="absolute top-12 right-10 w-10 h-10 rounded-full bg-primary/20 border border-primary/50 flex items-center justify-center shadow-[0_0_15px_rgba(168,85,247,0.5)]">
+           <div className="absolute top-[25%] left-[75%] -translate-x-1/2 -translate-y-1/2 w-10 h-10 rounded-full bg-primary/20 border border-primary/50 flex items-center justify-center shadow-[0_0_15px_rgba(var(--color-primary),0.5)]">
              <User className="w-5 h-5 text-primary" />
            </div>
-           <div className="absolute bottom-12 right-10 w-10 h-10 rounded-full bg-primary/20 border border-primary/50 flex items-center justify-center shadow-[0_0_15px_rgba(168,85,247,0.5)]">
+           <div className="absolute top-[75%] left-[75%] -translate-x-1/2 -translate-y-1/2 w-10 h-10 rounded-full bg-primary/20 border border-primary/50 flex items-center justify-center shadow-[0_0_15px_rgba(var(--color-primary),0.5)]">
              <User className="w-5 h-5 text-primary" />
            </div>
            
            {/* Connecting lines */}
            <svg className="absolute inset-0 w-full h-full pointer-events-none" style={{ zIndex: 0 }}>
-              <line x1="25%" y1="25%" x2="50%" y2="50%" stroke="rgba(168,85,247,0.4)" strokeWidth="2" />
-              <line x1="25%" y1="75%" x2="50%" y2="50%" stroke="rgba(168,85,247,0.4)" strokeWidth="2" />
-              <line x1="75%" y1="25%" x2="50%" y2="50%" stroke="rgba(168,85,247,0.4)" strokeWidth="2" />
-              <line x1="75%" y1="75%" x2="50%" y2="50%" stroke="rgba(168,85,247,0.4)" strokeWidth="2" />
+              <line x1="25%" y1="25%" x2="50%" y2="50%" stroke="var(--color-primary)" strokeOpacity="0.4" strokeWidth="2" />
+              <line x1="25%" y1="75%" x2="50%" y2="50%" stroke="var(--color-primary)" strokeOpacity="0.4" strokeWidth="2" />
+              <line x1="75%" y1="25%" x2="50%" y2="50%" stroke="var(--color-primary)" strokeOpacity="0.4" strokeWidth="2" />
+              <line x1="75%" y1="75%" x2="50%" y2="50%" stroke="var(--color-primary)" strokeOpacity="0.4" strokeWidth="2" />
            </svg>
         </div>
       </div>

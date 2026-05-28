@@ -27,7 +27,7 @@ export function Sidebar({ mobileOpen, setMobileOpen }) {
   return (
     <motion.aside 
       animate={{ width: isCollapsed && !mobileOpen ? 80 : 260 }}
-      className={`sidebar shrink-0 h-screen bg-[#0B0C10] border-r border-border flex flex-col p-4 gap-6 z-[100] transition-transform duration-300 md:sticky md:top-0 fixed top-0 left-0 ${mobileOpen ? 'translate-x-0' : '-translate-x-full md:translate-x-0'}`}
+      className={`sidebar shrink-0 h-screen bg-background border-r border-border flex flex-col p-4 gap-6 z-[100] transition-transform duration-300 md:sticky md:top-0 fixed top-0 left-0 ${mobileOpen ? 'translate-x-0' : '-translate-x-full md:translate-x-0'}`}
     >
       <button 
         onClick={() => setIsCollapsed(!isCollapsed)}
@@ -40,7 +40,7 @@ export function Sidebar({ mobileOpen, setMobileOpen }) {
       {mobileOpen && (
         <button 
           onClick={() => setMobileOpen(false)}
-          className="md:hidden absolute top-4 -right-12 p-2 bg-[#11131c] rounded-xl border border-white/10 text-white shadow-lg"
+          className="md:hidden absolute top-4 -right-12 p-2 bg-card rounded-xl border border-white/10 text-white shadow-lg"
         >
           <ChevronLeft className="w-5 h-5" />
         </button>
@@ -50,14 +50,11 @@ export function Sidebar({ mobileOpen, setMobileOpen }) {
         <div className="w-9 h-9 rounded-xl gradient-primary grid place-items-center shadow-[0_0_15px_rgba(168,85,247,0.5)] shrink-0">
           <Video className="w-5 h-5 text-white" />
         </div>
-        {!(isCollapsed && !mobileOpen) && (
-          <motion.h1 
-            initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}
-            className="text-2xl font-bold tracking-tight text-white whitespace-nowrap"
-          >
-            Meet<span className="text-[#A855F7]">X</span>
-          </motion.h1>
-        )}
+        {!isCollapsed || mobileOpen ? (
+          <span className="font-bold text-xl tracking-tight text-white whitespace-nowrap">
+            Meet<span className="text-primary">X</span>
+          </span>
+        ) : null}
       </div>
 
       <nav className="flex flex-col gap-2">
@@ -91,23 +88,21 @@ export function Sidebar({ mobileOpen, setMobileOpen }) {
 
       <div className="mt-auto flex flex-col gap-4">
         {!(isCollapsed && !mobileOpen) && (
-          <motion.div
-            initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}
-            whileHover={{ y: -2 }}
-            className="bg-card rounded-2xl p-4 relative overflow-hidden border border-border"
-          >
-            <div className="absolute -top-8 -right-8 w-24 h-24 rounded-full bg-primary/20 blur-2xl pointer-events-none" />
-            <div className="flex items-center gap-2 mb-1 relative z-10">
-              <Sparkles className="w-4 h-4 text-[#A855F7]" />
-              <h3 className="font-semibold text-sm text-white whitespace-nowrap">Upgrade to Pro</h3>
+          <div className="mt-auto pt-6 border-t border-border">
+            <div className="bg-card rounded-2xl p-4 border border-white/5 relative overflow-hidden group">
+              <div className="absolute top-0 right-0 w-24 h-24 bg-primary/10 rounded-full blur-2xl -mr-10 -mt-10 group-hover:bg-primary/20 transition-all duration-500" />
+              <div className="flex items-center gap-2 mb-3 relative z-10">
+                <Sparkles className="w-4 h-4 text-primary" />
+                <span className="font-bold text-sm text-white">Upgrade to Pro</span>
+              </div>
+              <p className="text-xs text-white/50 mb-4 relative z-10">
+                Get unlimited meetings & 4K video quality.
+              </p>
+              <button className="w-full bg-primary text-white text-sm font-medium py-2 rounded-xl hover:opacity-90 transition-all hover:shadow-[0_0_15px_rgba(var(--primary),0.4)] relative z-10">
+                Upgrade Now
+              </button>
             </div>
-            <p className="text-xs text-gray-400 mb-3 relative z-10">
-              Unlock more features and higher limits.
-            </p>
-            <button className="w-full bg-[#A855F7] text-white text-sm font-medium py-2 rounded-xl hover:opacity-90 transition-all hover:shadow-[0_0_15px_rgba(168,85,247,0.4)] relative z-10">
-              Upgrade Now
-            </button>
-          </motion.div>
+          </div>
         )}
 
         <div className={`flex items-center ${isCollapsed && !mobileOpen ? 'justify-center' : 'gap-3 p-2'} rounded-xl hover:bg-white/5 transition-colors cursor-pointer mt-2`}>
