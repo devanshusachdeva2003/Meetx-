@@ -127,5 +127,6 @@ module.exports = {
   registerUser,
   verifyOTP,
   loginUser,
-  getUserById
+  getUserById,
+  createAndSendOTP
 };

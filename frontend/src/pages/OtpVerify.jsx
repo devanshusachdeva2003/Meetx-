@@ -3,6 +3,7 @@ import { useNavigate } from "react-router-dom";
 import { useForm, FormProvider } from "react-hook-form";
 import Button from "../component/ui/Button";
 import ControlledOTPInput from "../component/ui/ControlledOTPInput";
+import CountdownTimer from "../component/ui/CountdownTimer";
 import { useUser } from "../context/UserContext";
 import api from "../utils/api";
 
@@ -17,6 +18,10 @@ const OtpVerify = () => {
   const { loginContext } = useUser();
   const [email, setEmail] = useState("");
   const [errorMsg, setErrorMsg] = useState("");
+  const [successMsg, setSuccessMsg] = useState("");
+  const [isResending, setIsResending] = useState(false);
+  const [showResendButton, setShowResendButton] = useState(false);
+  const [timerKey, setTimerKey] = useState(0);
 
   useEffect(() => {
     const storedEmail = localStorage.getItem('authEmail');
@@ -31,6 +36,7 @@ const OtpVerify = () => {
     if (!data.otp || data.otp.length !== 6) return;
 
     setErrorMsg("");
+    setSuccessMsg("");
     try {
       const response = await api.post('/auth/verify-otp', {
         email,
@@ -43,6 +49,25 @@ const OtpVerify = () => {
       navigate('/');
     } catch (err) {
       setErrorMsg(err.response?.data?.error || "OTP Verification failed");
+    }
+  };
+
+  const handleResend = async () => {
+    if (isResending) return;
+    
+    setIsResending(true);
+    setErrorMsg("");
+    setSuccessMsg("");
+    
+    try {
+      const response = await api.post('/auth/resend-otp', { email });
+      setSuccessMsg(response.data.message || "OTP resent successfully");
+      setShowResendButton(false);
+      setTimerKey(prev => prev + 1);
+    } catch (err) {
+      setErrorMsg(err.response?.data?.error || "Failed to resend OTP");
+    } finally {
+      setIsResending(false);
     }
   };
 
@@ -62,6 +87,12 @@ const OtpVerify = () => {
         {errorMsg && (
           <div className="mb-4 p-3 bg-red-500/10 border border-red-500/50 rounded-xl text-red-400 text-sm text-center">
             {errorMsg}
+          </div>
+        )}
+        
+        {successMsg && (
+          <div className="mb-4 p-3 bg-green-500/10 border border-green-500/50 rounded-xl text-green-400 text-sm text-center">
+            {successMsg}
           </div>
         )}
 
@@ -84,11 +115,25 @@ const OtpVerify = () => {
           </form>
         </FormProvider>
 
-        <p className="mt-8 text-center text-sm text-gray-400 relative z-10">
+        <p className="mt-8 text-center text-sm text-gray-400 relative z-10 flex items-center justify-center gap-1">
           Didn't receive the code?{" "}
-          <Button variant="none" size="none" className="font-semibold text-primary hover:text-primary-glow transition-colors">
-            Resend
-          </Button>
+          {!showResendButton ? (
+            <CountdownTimer 
+              key={timerKey}
+              initialSeconds={60}
+              setShowResendButton={setShowResendButton}
+            />
+          ) : (
+            <Button 
+              variant="none" 
+              size="none" 
+              onClick={handleResend}
+              disabled={isResending}
+              className="font-semibold text-primary hover:text-primary-glow transition-colors"
+            >
+              {isResending ? "Sending..." : "Resend"}
+            </Button>
+          )}
         </p>
       </div>
     </div>

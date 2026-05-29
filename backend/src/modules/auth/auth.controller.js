@@ -1,19 +1,17 @@
 const authService = require('./auth.service');
+const { sendSuccess, sendError } = require('../../utils/responseHandler');
 
 const register = async (req, res) => {
   try {
     const { name, email, password } = req.body;
     if (!name || !email || !password) {
-      return res.status(400).json({ error: 'Please provide all required fields' });
+      return sendError(res, 400, 'Please provide all required fields');
     }
 
     const user = await authService.registerUser(name, email, password);
-    res.status(201).json({ 
-      message: 'Registration successful. OTP sent to email.', 
-      requireOtp: true 
-    });
+    return sendSuccess(res, 201, 'Registration successful. OTP sent to email.', { requireOtp: true });
   } catch (error) {
-    res.status(400).json({ error: error.message });
+    return sendError(res, 400, error.message);
   }
 };
 
@@ -21,17 +19,16 @@ const verifyOtp = async (req, res) => {
   try {
     const { email, otp } = req.body;
     if (!email || !otp) {
-      return res.status(400).json({ error: 'Email and OTP are required' });
+      return sendError(res, 400, 'Email and OTP are required');
     }
 
     const { user, token } = await authService.verifyOTP(email, otp);
-    res.status(200).json({ 
-      message: 'OTP verified successfully',
+    return sendSuccess(res, 200, 'OTP verified successfully', {
       token,
       user: { id: user._id, name: user.name, email: user.email }
     });
   } catch (error) {
-    res.status(400).json({ error: error.message });
+    return sendError(res, 400, error.message);
   }
 };
 
@@ -39,25 +36,21 @@ const login = async (req, res) => {
   try {
     const { email, password } = req.body;
     if (!email || !password) {
-      return res.status(400).json({ error: 'Email and password are required' });
+      return sendError(res, 400, 'Email and password are required');
     }
 
     const result = await authService.loginUser(email, password);
     
     if (result.requireOtp) {
-      return res.status(200).json({ 
-        message: 'Please verify your OTP to continue.', 
-        requireOtp: true 
-      });
+      return sendSuccess(res, 200, 'Please verify your OTP to continue.', { requireOtp: true });
     }
 
-    res.status(200).json({ 
-      message: 'Login successful', 
+    return sendSuccess(res, 200, 'Login successful', {
       token: result.token,
       user: { id: result.user._id, name: result.user.name, email: result.user.email }
     });
   } catch (error) {
-    res.status(400).json({ error: error.message });
+    return sendError(res, 400, error.message);
   }
 };
 
@@ -65,11 +58,26 @@ const getMe = async (req, res) => {
   try {
     const user = await authService.getUserById(req.user.id);
     if (!user) {
-      return res.status(404).json({ error: 'User not found' });
+      return sendError(res, 404, 'User not found');
     }
-    res.status(200).json({ user: { id: user._id, name: user.name, email: user.email } });
+    return sendSuccess(res, 200, 'User retrieved successfully', {
+      user: { id: user._id, name: user.name, email: user.email }
+    });
   } catch (error) {
-    res.status(400).json({ error: error.message });
+    return sendError(res, 400, error.message);
+  }
+};
+
+const resendOtp = async (req, res) => {
+  try {
+    const { email } = req.body;
+    if (!email) {
+      return sendError(res, 400, 'Email is required');
+    }
+    await authService.createAndSendOTP(email);
+    return sendSuccess(res, 200, 'OTP resent successfully');
+  } catch (error) {
+    return sendError(res, 400, error.message);
   }
 };
 
@@ -77,5 +85,6 @@ module.exports = {
   register,
   verifyOtp,
   login,
-  getMe
+  getMe,
+  resendOtp
 };
