@@ -5,12 +5,19 @@ const register = async (req, res) => {
   try {
     const { name, email, password } = req.body;
     if (!name || !email || !password) {
+      console.warn('Register validation failed', { hasName: !!name, hasEmail: !!email, hasPassword: !!password });
       return sendError(res, 400, 'Please provide all required fields');
     }
 
     const user = await authService.registerUser(name, email, password);
     return sendSuccess(res, 201, 'Registration successful. OTP sent to email.', { requireOtp: true });
   } catch (error) {
+    console.error('Register error', {
+      message: error.message,
+      name: error.name,
+      stack: error.stack,
+      body: { name: req.body?.name, email: req.body?.email }
+    });
     return sendError(res, 400, error.message);
   }
 };
