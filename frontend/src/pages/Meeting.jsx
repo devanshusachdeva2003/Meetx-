@@ -23,7 +23,8 @@ function randomName() {
 export default function Meeting() {
   const { id } = useParams();
   const [token, setToken] = useState("");
-  const [name] = useState(randomName());
+  const [name, setName] = useState("");
+  const [hasJoined, setHasJoined] = useState(false);
   const serverUrl = import.meta.env.VITE_LIVEKIT_URL;
 
   console.log("=== FRONTEND ENV CHECK ===");
@@ -32,21 +33,56 @@ export default function Meeting() {
   console.log("==========================");
 
   useEffect(() => {
+    if (!hasJoined || !name.trim()) return;
+
     (async () => {
       try {
-        const resp = await api.get(`/livekit/token?room=${id}&username=${name}`);
+        const resp = await api.get(`/livekit/token?room=${id}&username=${name.trim()}`);
         setToken(resp.data.token);
       } catch (e) {
         console.error(e);
       }
     })();
-  }, [id, name]);
+  }, [id, name, hasJoined]);
 
   if (!serverUrl) {
     return (
       <div className="flex h-screen items-center justify-center bg-[#0B0C10] text-white flex-col gap-4">
         <h2 className="text-xl font-bold text-red-500">Configuration Error</h2>
         <p>VITE_LIVEKIT_URL is missing. Please add it to your Vercel Environment Variables and redeploy.</p>
+      </div>
+    );
+  }
+
+  if (!hasJoined) {
+    return (
+      <div className="flex h-screen items-center justify-center bg-[#0B0C10] text-white p-4">
+        <div className="bg-card p-8 rounded-3xl border border-white/10 shadow-2xl max-w-sm w-full text-center">
+          <h2 className="text-2xl font-bold mb-2">Join Meeting</h2>
+          <p className="text-white/60 mb-6 text-sm">Please enter your name to continue</p>
+          <input 
+            type="text" 
+            placeholder="Your Name"
+            value={name}
+            onChange={(e) => setName(e.target.value)}
+            className="w-full bg-black/50 border border-white/10 rounded-xl px-4 py-3 mb-6 focus:outline-none focus:border-primary text-white"
+            onKeyDown={(e) => {
+              if (e.key === 'Enter' && name.trim()) {
+                setHasJoined(true);
+              }
+            }}
+            autoFocus
+          />
+          <button 
+            onClick={() => {
+              if (name.trim()) setHasJoined(true);
+            }}
+            disabled={!name.trim()}
+            className="w-full bg-primary hover:bg-primary/90 text-white font-bold py-3 px-4 rounded-xl transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+          >
+            Join Room
+          </button>
+        </div>
       </div>
     );
   }
