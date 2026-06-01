@@ -1,5 +1,6 @@
 const express = require("express");
 const cors = require("cors");
+const morgan = require("morgan");
 const apiRoutes = require("./routes");
 const { errorHandler } = require("./middleware/errorMiddleware");
 
@@ -7,13 +8,18 @@ const app = express();
 app.use(cors());
 app.use(express.json());
 
+// HTTP Request Logging
+if (process.env.NODE_ENV !== "production") {
+  app.use(morgan("dev"));
+}
+
 // Health Check Route
 app.get("/health", (req, res) => {
-  res.status(200).json({ 
-    status: "OK", 
-    message: "Server is healthy", 
+  res.status(200).json({
+    status: "OK",
+    message: "Server is healthy",
     env: process.env.NODE_ENV || "development",
-    timestamp: new Date() 
+    timestamp: new Date(),
   });
 });
 
