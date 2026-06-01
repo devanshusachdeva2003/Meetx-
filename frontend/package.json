@@ -4,15 +4,18 @@
   "version": "0.0.0",
   "type": "module",
   "scripts": {
-    "dev": "vite",
+    "dev:local": "vite --mode localhost",
+    "dev": "vite --mode production",
     "build": "vite build",
     "lint": "eslint .",
     "tunnel": "lt --port 3000 --subdomain meetx-uttam",
     "preview": "vite preview"
   },
   "dependencies": {
+    "@livekit/components-react": "^2.9.21",
     "axios": "^1.7.2",
     "framer-motion": "latest",
+    "livekit-client": "^2.19.1",
     "lucide-react": "latest",
     "react": "^19.2.6",
     "react-dom": "^19.2.6",
