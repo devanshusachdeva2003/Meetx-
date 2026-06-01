@@ -44,8 +44,12 @@ export const UserProvider = ({ children }) => {
     localStorage.removeItem('authEmail'); // Clear stored email for OTP
   };
 
+  const updateUserContext = (userData) => {
+    setUser(userData);
+  };
+
   return (
-    <UserContext.Provider value={{ user, loading, loginContext, logoutContext }}>
+    <UserContext.Provider value={{ user, loading, loginContext, logoutContext, updateUserContext }}>
       {children}
     </UserContext.Provider>
   );

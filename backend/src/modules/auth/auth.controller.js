@@ -1,5 +1,6 @@
 const authService = require('./auth.service');
 const { sendSuccess, sendError } = require('../../utils/responseHandler');
+const asyncHandler = require('../../utils/asyncHandler');
 
 const register = async (req, res) => {
   try {
@@ -68,12 +69,20 @@ const getMe = async (req, res) => {
       return sendError(res, 404, 'User not found');
     }
     return sendSuccess(res, 200, 'User retrieved successfully', {
-      user: { id: user._id, name: user.name, email: user.email }
+      user: { id: user._id, name: user.name, email: user.email, phone: user.phone }
     });
   } catch (error) {
     return sendError(res, 400, error.message);
   }
 };
+
+const updateMe = asyncHandler(async (req, res) => {
+  const user = await authService.updateUserById(req.user.id, req.body);
+  
+  return sendSuccess(res, 200, 'Profile updated successfully', {
+    user: { id: user._id, name: user.name, email: user.email, phone: user.phone }
+  });
+});
 
 const resendOtp = async (req, res) => {
   try {
@@ -93,5 +102,6 @@ module.exports = {
   verifyOtp,
   login,
   getMe,
+  updateMe,
   resendOtp
 };

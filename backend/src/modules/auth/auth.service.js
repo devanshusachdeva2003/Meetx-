@@ -123,10 +123,24 @@ const getUserById = async (id) => {
   return await User.findById(id).select('-passwordHash');
 };
 
+const updateUserById = async (id, data) => {
+  // Only allow updating specific fields
+  const updates = {};
+  if (data.name !== undefined) updates.name = data.name;
+  if (data.phone !== undefined) updates.phone = data.phone;
+  
+  const user = await User.findByIdAndUpdate(id, updates, { new: true }).select('-passwordHash');
+  if (!user) {
+    throw new Error('User not found');
+  }
+  return user;
+};
+
 module.exports = {
   registerUser,
   verifyOTP,
   loginUser,
   getUserById,
+  updateUserById,
   createAndSendOTP
 };
