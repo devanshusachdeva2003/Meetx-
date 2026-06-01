@@ -14,6 +14,7 @@ import { MeetingDock } from "../component/meeting/MeetingDock";
 import { MeetingSidePanel } from "../component/meeting/MeetingSidePanel";
 import { VideoTile } from "../component/meeting/VideoTile";
 import { Users, MicOff } from 'lucide-react';
+import api from '../utils/api';
 
 function randomName() {
   return `Guest-${Math.random().toString(36).slice(2, 8)}`;
@@ -28,9 +29,8 @@ export default function Meeting() {
   useEffect(() => {
     (async () => {
       try {
-        const resp = await fetch(`http://localhost:4000/api/livekit/token?room=${id}&username=${name}`);
-        const data = await resp.json();
-        setToken(data.token);
+        const resp = await api.get(`/livekit/token?room=${id}&username=${name}`);
+        setToken(resp.data.token);
       } catch (e) {
         console.error(e);
       }
