@@ -1,11 +1,10 @@
-const Event = require('../models/Event');
+const Event = require('./calendar.model');
 
 // Create an event
 async function createEvent(req, res) {
   try {
     const payload = req.body;
-    // optional: attach creator
-    if (req.userId) payload.createdBy = req.userId;
+    if (req.user && req.user.id) payload.createdBy = req.user.id;
     const ev = await Event.create(payload);
     res.status(201).json({ event: ev });
   } catch (err) {

@@ -17,6 +17,7 @@ import { VideoTile } from "../component/meeting/VideoTile";
 import { Users, MicOff } from "lucide-react";
 import api from "../utils/api";
 import { PreJoinScreen } from "../component/meeting/PreJoinScreen";
+import { useUser } from "../context/UserContext";
 
 function randomName() {
   return `Guest-${Math.random().toString(36).slice(2, 8)}`;
@@ -26,6 +27,7 @@ export default function Meeting() {
   const { id } = useParams();
   const location = useLocation();
   const navigate = useNavigate();
+  const { user, loading } = useUser();
   
   const [token, setToken] = useState("");
   const [name, setName] = useState("");
@@ -54,10 +56,13 @@ export default function Meeting() {
     }
   }, [location.state, id]);
 
-  console.log("=== FRONTEND ENV CHECK ===");
-  console.log("VITE_API_URL:", import.meta.env.VITE_API_URL);
-  console.log("VITE_LIVEKIT_URL:", import.meta.env.VITE_LIVEKIT_URL);
-  console.log("==========================");
+  useEffect(() => {
+    if (!id && !loading && !user) {
+      navigate('/login', { replace: true });
+    }
+  }, [id, user, loading, navigate]);
+
+
 
   useEffect(() => {
     if (!hasJoined || !name.trim()) return;
@@ -65,7 +70,7 @@ export default function Meeting() {
     (async () => {
       try {
         const resp = await api.get(
-          `/livekit/token?room=${id}&username=${name.trim()}`,
+          `/meetings/livekit/token?room=${id}&username=${name.trim()}`,
         );
         setToken(resp.data.token);
       } catch (e) {
@@ -87,14 +92,22 @@ export default function Meeting() {
   }
 
   if (!hasJoined) {
+    if (!id && loading) return <div className="flex h-screen items-center justify-center bg-[#0B0C10] text-white">Loading...</div>;
+
     return (
       <PreJoinScreen 
         name={name} 
-        onJoin={(settings) => {
+        onJoin={async (settings) => {
           if (!id) {
-            // This is a "Create Meeting" flow, generate ID and navigate
-            const newId = (crypto?.randomUUID?.() ?? Math.random().toString(36).slice(2, 8));
-            navigate(`/meeting/${newId}`, { state: { settings }, replace: true });
+            try {
+              // This is a "Create Meeting" flow, request ID from backend
+              const response = await api.post('/meetings', { title: `${user?.name || 'User'}'s Meeting` });
+              const newId = response.data.meeting.roomId;
+              navigate(`/meeting/${newId}`, { state: { settings }, replace: true });
+            } catch (err) {
+              console.error("Failed to create meeting", err);
+              alert("Failed to create meeting. Are you logged in?");
+            }
           } else {
             // Regular join flow for existing room
             setName(settings.name);

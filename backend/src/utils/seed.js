@@ -1,6 +1,6 @@
 require('dotenv').config({ path: '../../.env' });
 const mongoose = require('mongoose');
-const User = require('../models/User');
+const User = require('../modules/auth/user.model');
 const bcrypt = require('bcryptjs');
 
 const seedDatabase = async () => {

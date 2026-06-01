@@ -1,0 +1,12 @@
+const express = require('express');
+const router = express.Router();
+
+const { authRoutes } = require("./modules/auth/auth.routes");
+const meetingRoutes = require("./modules/meeting/meeting.routes");
+const calendarRoutes = require("./modules/calendar/calendar.routes");
+
+router.use("/auth", authRoutes);
+router.use("/meetings", meetingRoutes);
+router.use("/calendar", calendarRoutes);
+
+module.exports = router;
