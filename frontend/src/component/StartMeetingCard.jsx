@@ -3,14 +3,13 @@ import { Video, User } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import Button from "./ui/Button";
 
-const MotionButton = motion(Button);
+const MotionButton = motion.create(Button);
 
 export function StartMeetingCard() {
   const navigate = useNavigate();
 
   function handleStart() {
-    const id = (crypto?.randomUUID?.() ?? Math.random().toString(36).slice(2, 8));
-    navigate(`/meeting/${id}`);
+    navigate(`/meeting`);
   }
   return (
     <motion.div

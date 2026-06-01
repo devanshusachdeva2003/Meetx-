@@ -1,5 +1,5 @@
 import React, { useEffect, useState, useMemo } from "react";
-import { useParams, useNavigate } from "react-router-dom";
+import { useParams, useNavigate, useLocation } from "react-router-dom";
 import {
   LiveKitRoom,
   useTracks,
@@ -16,6 +16,7 @@ import { MeetingSidePanel } from "../component/meeting/MeetingSidePanel";
 import { VideoTile } from "../component/meeting/VideoTile";
 import { Users, MicOff } from "lucide-react";
 import api from "../utils/api";
+import { PreJoinScreen } from "../component/meeting/PreJoinScreen";
 
 function randomName() {
   return `Guest-${Math.random().toString(36).slice(2, 8)}`;
@@ -23,10 +24,35 @@ function randomName() {
 
 export default function Meeting() {
   const { id } = useParams();
+  const location = useLocation();
+  const navigate = useNavigate();
+  
   const [token, setToken] = useState("");
   const [name, setName] = useState("");
   const [hasJoined, setHasJoined] = useState(false);
+  const [joinOptions, setJoinOptions] = useState({
+    videoEnabled: true,
+    audioEnabled: true,
+    videoDeviceId: "",
+    audioDeviceId: ""
+  });
   const serverUrl = import.meta.env.VITE_LIVEKIT_URL;
+
+  useEffect(() => {
+    // If we were redirected here with pre-join settings, apply them immediately
+    if (location.state?.settings && id) {
+      setName(location.state.settings.name);
+      setJoinOptions({
+        videoEnabled: location.state.settings.videoEnabled,
+        audioEnabled: location.state.settings.audioEnabled,
+        videoDeviceId: location.state.settings.videoDeviceId,
+        audioDeviceId: location.state.settings.audioDeviceId
+      });
+      setHasJoined(true);
+      // Clear the state so a page refresh shows the PreJoin screen again
+      window.history.replaceState({}, document.title);
+    }
+  }, [location.state, id]);
 
   console.log("=== FRONTEND ENV CHECK ===");
   console.log("VITE_API_URL:", import.meta.env.VITE_API_URL);
@@ -62,36 +88,26 @@ export default function Meeting() {
 
   if (!hasJoined) {
     return (
-      <div className="flex h-screen items-center justify-center bg-[#0B0C10] text-white p-4">
-        <div className="bg-card p-8 rounded-3xl border border-white/10 shadow-2xl max-w-sm w-full text-center">
-          <h2 className="text-2xl font-bold mb-2">Join Meeting</h2>
-          <p className="text-white/60 mb-6 text-sm">
-            Please enter your name to continue
-          </p>
-          <input
-            type="text"
-            placeholder="Your Name"
-            value={name}
-            onChange={(e) => setName(e.target.value)}
-            className="w-full bg-black/50 border border-white/10 rounded-xl px-4 py-3 mb-6 focus:outline-none focus:border-primary text-white"
-            onKeyDown={(e) => {
-              if (e.key === "Enter" && name.trim()) {
-                setHasJoined(true);
-              }
-            }}
-            autoFocus
-          />
-          <button
-            onClick={() => {
-              if (name.trim()) setHasJoined(true);
-            }}
-            disabled={!name.trim()}
-            className="w-full bg-primary hover:bg-primary/90 text-white font-bold py-3 px-4 rounded-xl transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
-          >
-            Join Room
-          </button>
-        </div>
-      </div>
+      <PreJoinScreen 
+        name={name} 
+        onJoin={(settings) => {
+          if (!id) {
+            // This is a "Create Meeting" flow, generate ID and navigate
+            const newId = (crypto?.randomUUID?.() ?? Math.random().toString(36).slice(2, 8));
+            navigate(`/meeting/${newId}`, { state: { settings }, replace: true });
+          } else {
+            // Regular join flow for existing room
+            setName(settings.name);
+            setJoinOptions({
+              videoEnabled: settings.videoEnabled,
+              audioEnabled: settings.audioEnabled,
+              videoDeviceId: settings.videoDeviceId,
+              audioDeviceId: settings.audioDeviceId
+            });
+            setHasJoined(true);
+          }
+        }} 
+      />
     );
   }
 
@@ -105,11 +121,15 @@ export default function Meeting() {
 
   return (
     <LiveKitRoom
-      video={true}
-      audio={true}
+      video={joinOptions.videoEnabled}
+      audio={joinOptions.audioEnabled}
       token={token}
       serverUrl={serverUrl}
       connect={true}
+      options={{
+        videoCaptureDefaults: joinOptions.videoDeviceId ? { deviceId: joinOptions.videoDeviceId } : undefined,
+        audioCaptureDefaults: joinOptions.audioDeviceId ? { deviceId: joinOptions.audioDeviceId } : undefined
+      }}
     >
       <MeetingUI id={id} name={name} />
       <RoomAudioRenderer />
