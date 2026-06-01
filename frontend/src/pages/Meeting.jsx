@@ -26,6 +26,11 @@ export default function Meeting() {
   const [name] = useState(randomName());
   const serverUrl = import.meta.env.VITE_LIVEKIT_URL;
 
+  console.log("=== FRONTEND ENV CHECK ===");
+  console.log("VITE_API_URL:", import.meta.env.VITE_API_URL);
+  console.log("VITE_LIVEKIT_URL:", import.meta.env.VITE_LIVEKIT_URL);
+  console.log("==========================");
+
   useEffect(() => {
     (async () => {
       try {

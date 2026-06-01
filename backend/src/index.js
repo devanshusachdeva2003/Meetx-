@@ -3,6 +3,14 @@ const envFile = process.env.NODE_ENV
   ? `.env.${process.env.NODE_ENV.trim()}`
   : ".env.local";
 require("dotenv").config({ path: path.resolve(process.cwd(), envFile) });
+
+console.log("=== BACKEND ENV CHECK ===");
+console.log("NODE_ENV:", process.env.NODE_ENV);
+console.log("Env File Loaded:", envFile);
+console.log("MONGODB_URI:", process.env.MONGODB_URI);
+console.log("LIVEKIT_URL:", process.env.LIVEKIT_URL);
+console.log("=========================");
+
 const express = require("express");
 const http = require("http");
 const cors = require("cors");
