@@ -1,6 +1,7 @@
 const express = require("express");
 const cors = require("cors");
 const apiRoutes = require("./routes");
+const { errorHandler } = require("./middleware/errorMiddleware");
 
 const app = express();
 app.use(cors());
@@ -18,5 +19,8 @@ app.get("/health", (req, res) => {
 
 // Modular Routes Mount Point
 app.use("/api", apiRoutes);
+
+// Global Error Handler MUST be the very last middleware
+app.use(errorHandler);
 
 module.exports = app;

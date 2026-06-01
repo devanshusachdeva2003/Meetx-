@@ -1,61 +1,52 @@
 const Meeting = require('./meeting.model');
 const { AccessToken } = require('livekit-server-sdk');
+const asyncHandler = require('../../utils/asyncHandler');
 
-async function createMeeting(req, res) {
-  try {
-    const { title } = req.body;
-    const roomId = (Date.now().toString(36) + Math.random().toString(36).slice(2,8));
-    
-    // Ensure only logged in users can create meetings
-    if (!req.user || !req.user.id) {
-      return res.status(401).json({ message: 'Unauthorized. Must be logged in to create a meeting.' });
-    }
-
-    const meeting = await Meeting.create({ roomId, title, host: req.user.id });
-    res.json({ meeting });
-  } catch (error) {
-    console.error('Error creating meeting:', error);
-    res.status(500).json({ message: 'Failed to create meeting', error: error.message });
+const createMeeting = asyncHandler(async (req, res) => {
+  const { title } = req.body;
+  const roomId = (Date.now().toString(36) + Math.random().toString(36).slice(2,8));
+  
+  if (!req.user || !req.user.id) {
+    res.status(401);
+    throw new Error('Unauthorized. Must be logged in to create a meeting.');
   }
-}
 
-async function getMeeting(req, res) {
-  try {
-    const { id } = req.params;
-    const meeting = await Meeting.findOne({ roomId: id });
-    if (!meeting) return res.status(404).json({ message: 'Meeting not found' });
-    res.json({ meeting });
-  } catch (error) {
-    res.status(500).json({ message: 'Failed to get meeting', error: error.message });
+  const meeting = await Meeting.create({ roomId, title, host: req.user.id });
+  res.json({ meeting });
+});
+
+const getMeeting = asyncHandler(async (req, res) => {
+  const { id } = req.params;
+  const meeting = await Meeting.findOne({ roomId: id });
+  
+  if (!meeting) {
+    res.status(404);
+    throw new Error('Meeting not found');
   }
-}
+  
+  res.json({ meeting });
+});
 
-async function getLiveKitToken(req, res) {
-  try {
-    const { room, username } = req.query;
-    if (!room || !username) {
-      return res.status(400).json({ error: "room and username are required" });
-    }
-
-    if (!process.env.LIVEKIT_API_KEY || !process.env.LIVEKIT_API_SECRET) {
-      return res
-        .status(500)
-        .json({ error: "LiveKit API key or secret is not configured" });
-    }
-
-    const at = new AccessToken(
-      process.env.LIVEKIT_API_KEY,
-      process.env.LIVEKIT_API_SECRET,
-      { identity: username },
-    );
-
-    at.addGrant({ roomJoin: true, room: room });
-
-    res.json({ token: await at.toJwt() });
-  } catch (error) {
-    console.error('Error getting LiveKit token:', error);
-    res.status(500).json({ message: 'Failed to generate token', error: error.message });
+const getLiveKitToken = asyncHandler(async (req, res) => {
+  const { room, username } = req.query;
+  if (!room || !username) {
+    res.status(400);
+    throw new Error('Room and username are required');
   }
-}
+
+  if (!process.env.LIVEKIT_API_KEY || !process.env.LIVEKIT_API_SECRET) {
+    res.status(500);
+    throw new Error('LiveKit API key or secret is not configured');
+  }
+
+  const at = new AccessToken(
+    process.env.LIVEKIT_API_KEY,
+    process.env.LIVEKIT_API_SECRET,
+    { identity: username },
+  );
+
+  at.addGrant({ roomJoin: true, room: room });
+  res.json({ token: await at.toJwt() });
+});
 
 module.exports = { createMeeting, getMeeting, getLiveKitToken };
