@@ -42,6 +42,15 @@ export default function Meeting() {
     })();
   }, [id, name]);
 
+  if (!serverUrl) {
+    return (
+      <div className="flex h-screen items-center justify-center bg-[#0B0C10] text-white flex-col gap-4">
+        <h2 className="text-xl font-bold text-red-500">Configuration Error</h2>
+        <p>VITE_LIVEKIT_URL is missing. Please add it to your Vercel Environment Variables and redeploy.</p>
+      </div>
+    );
+  }
+
   if (!token) {
     return (
       <div className="flex h-screen items-center justify-center bg-[#0B0C10] text-white">
