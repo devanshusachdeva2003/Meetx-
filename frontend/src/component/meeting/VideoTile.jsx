@@ -20,7 +20,11 @@ export const VideoTile = React.memo(
     useEffect(() => {
       const videoNode = internalRef.current;
       if (videoNode && stream) {
-        if (videoNode.srcObject !== stream) {
+        const currentStream = videoNode.srcObject;
+        const currentTrack = currentStream?.getTracks()[0];
+        const newTrack = stream.getTracks()[0];
+
+        if (!currentStream || currentTrack !== newTrack) {
           videoNode.srcObject = stream;
         }
       }

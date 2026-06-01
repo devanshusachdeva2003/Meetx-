@@ -1,14 +1,16 @@
 import React from 'react';
-import { Mic, MicOff, Camera, CameraOff, Users, MessageSquare, MoreVertical } from 'lucide-react';
+import { Mic, MicOff, Camera, CameraOff, Users, MessageSquare, MoreVertical, MonitorUp, MonitorOff } from 'lucide-react';
 import Button from '../ui/Button';
 
 export function MeetingDock({
   isMuted,
   isVideoOff,
+  isScreenSharing,
   showParticipants,
   showChat,
   onToggleMute,
   onToggleVideo,
+  onToggleScreenShare,
   onToggleParticipants,
   onToggleChat
 }) {
@@ -31,6 +33,15 @@ export function MeetingDock({
           className="group"
         >
           {isVideoOff ? <CameraOff className="w-5 h-5 group-hover:scale-110 transition-transform" /> : <Camera className="w-5 h-5 group-hover:scale-110 transition-transform" />}
+        </Button>
+
+        <Button 
+          onClick={onToggleScreenShare}
+          size="icon-lg"
+          variant={isScreenSharing ? 'primary' : 'glass'}
+          className="group"
+        >
+          {isScreenSharing ? <MonitorOff className="w-5 h-5 group-hover:scale-110 transition-transform" /> : <MonitorUp className="w-5 h-5 group-hover:scale-110 transition-transform" />}
         </Button>
       </div>
 
