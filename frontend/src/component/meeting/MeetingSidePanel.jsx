@@ -84,33 +84,6 @@ export function MeetingSidePanel({
               );
             })}
 
-            {/* MOCK PARTICIPANTS FOR DEMONSTRATION */}
-            {[1, 2, 3, 4, 5, 6, 7].map((i) => (
-              <li key={`mock-list-${i}`} className="flex items-center justify-between p-3 bg-white/5 rounded-xl">
-                <div className="flex items-center gap-3">
-                  <div className="relative w-10 h-10">
-                    <div className="absolute inset-0 rounded-full bg-gradient-to-br from-primary to-[#4ea1ff] flex items-center justify-center font-bold text-sm text-white uppercase">
-                      M
-                    </div>
-                  </div>
-                  <div className="flex flex-col">
-                    <span className="text-sm truncate max-w-[180px]">Mock User {i}</span>
-                    <div className="text-[11px] text-white/60 flex items-center gap-2">
-                      <span>No video</span>
-                    </div>
-                  </div>
-                </div>
-
-                <div className="flex items-center gap-3">
-                  <div className="p-1 rounded-md bg-white/5">
-                    <MicOff className="text-red-400 w-4 h-4" />
-                  </div>
-                  <div className="p-1 rounded-md bg-white/5">
-                    <CameraOff className="text-white/30 w-4 h-4" />
-                  </div>
-                </div>
-              </li>
-            ))}
           </ul>
         ) : (
           <div className="space-y-4">

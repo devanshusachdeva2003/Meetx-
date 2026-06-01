@@ -42,7 +42,7 @@ export const VideoTile = React.memo(
         <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-transparent pointer-events-none" />
         <div className="absolute bottom-4 left-4 bg-black/40 backdrop-blur-xl border border-white/10 px-3 py-1.5 rounded-xl text-xs font-medium flex items-center gap-2 shadow-lg">
           {label}
-          {isLocal &&
+          {isMuted !== undefined &&
             (isMuted ? (
               <MicOff className="text-red-400 w-3.5 h-3.5" />
             ) : (

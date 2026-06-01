@@ -193,6 +193,7 @@ function MeetingUI({ id, name }) {
                     isLocal={false}
                     stream={mainStream.stream}
                     label={mainStream.socketId}
+                    isMuted={uiParticipants.find(p => p.socketId === mainStream.socketId)?.isMuted}
                   />
                 )}
              </div>
@@ -208,28 +209,36 @@ function MeetingUI({ id, name }) {
                   />
                 )}
                 
-                {hasRemotes && remoteStreams.slice(1).map((r) => (
+                {hasRemotes && remoteStreams.map((r) => (
                      <VideoTile
                        key={r.socketId}
                        isMain={false}
                        isLocal={false}
                        stream={r.stream}
                        label={r.socketId}
+                       isMuted={uiParticipants.find(p => p.socketId === r.socketId)?.isMuted}
                      />
                 ))}
 
-                {[1, 2, 3, 4, 5, 6, 7].map((i) => (
-                  <div key={`mock-${i}`} className="relative w-48 lg:w-full aspect-video rounded-2xl overflow-hidden bg-card border border-white/10 shadow-lg group shrink-0 snap-center">
-                    <div className="w-full h-full bg-gradient-to-br from-primary/20 to-secondary/20 flex items-center justify-center">
-                      <Users className="w-8 h-8 text-white/20" />
+                {uiParticipants.filter(p => p.socketId !== localParticipant?.identity && !remoteStreams.some(r => r.socketId === p.socketId)).map((p) => {
+                  const displayName = p.user?.name || p.socketId || "G";
+                  const initial = displayName.charAt(0).toUpperCase();
+                  
+                  return (
+                    <div key={`no-video-${p.socketId}`} className="relative w-48 lg:w-full aspect-video rounded-2xl overflow-hidden bg-card border border-white/10 shadow-lg group shrink-0 snap-center">
+                      <div className="w-full h-full bg-gradient-to-br from-primary/20 to-secondary/20 flex items-center justify-center">
+                        <div className="w-16 h-16 rounded-full bg-gradient-to-br from-primary to-[#4ea1ff] flex items-center justify-center font-bold text-2xl text-white uppercase shadow-lg">
+                          {initial}
+                        </div>
+                      </div>
+                      <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-transparent pointer-events-none" />
+                      <div className="absolute bottom-2 left-2 bg-black/40 backdrop-blur-xl border border-white/10 px-2 py-1 rounded-lg text-[10px] font-medium flex items-center gap-2 shadow-lg">
+                        {displayName}
+                        {p.isMuted ? <MicOff className="text-red-400 w-3 h-3" /> : null}
+                      </div>
                     </div>
-                    <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-transparent pointer-events-none" />
-                    <div className="absolute bottom-2 left-2 bg-black/40 backdrop-blur-xl border border-white/10 px-2 py-1 rounded-lg text-[10px] font-medium flex items-center gap-2 shadow-lg">
-                      Mock User {i}
-                      <MicOff className="text-red-400 w-3 h-3" />
-                    </div>
-                  </div>
-                ))}
+                  );
+                })}
              </div>
           </div>
       </main>
