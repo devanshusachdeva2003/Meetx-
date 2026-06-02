@@ -1,6 +1,7 @@
 import React from 'react';
-import { Shield, Bell, Sliders, ChevronRight } from 'lucide-react';
+import { Bell, Sliders, ChevronRight } from 'lucide-react';
 import ProfileSettings from '../component/settings/ProfileSettings';
+import SecuritySettings from '../component/settings/SecuritySettings';
 import { useUser } from '../context/UserContext';
 
 export default function Settings() {
@@ -23,18 +24,9 @@ export default function Settings() {
           {/* Static Cards */}
           <section className="lg:col-span-8 lg:col-start-5 mt-2">
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-              <div className="bg-card rounded-2xl p-6 border border-white/5 flex items-center justify-between cursor-pointer hover:bg-white/5 transition-colors">
-                <div>
-                  <div className="flex items-center gap-3 mb-2">
-                    <div className="p-3 rounded-lg bg-background">
-                      <Shield className="w-5 h-5 text-green-400" />
-                    </div>
-                    <h4 className="font-semibold">Security</h4>
-                  </div>
-                  <p className="text-sm text-white/60">Update your password and manage security settings.</p>
-                </div>
-                <ChevronRight className="w-5 h-5 text-white/30 shrink-0 ml-4" />
-              </div>
+              
+              {/* Security Settings (Dynamic 2FA) */}
+              <SecuritySettings />
 
               <div className="bg-card rounded-2xl p-6 border border-white/5 flex items-center justify-between cursor-pointer hover:bg-white/5 transition-colors">
                 <div>

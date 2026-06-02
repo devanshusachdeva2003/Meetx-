@@ -6,6 +6,7 @@ const UserSchema = new mongoose.Schema({
   phone: { type: String },
   passwordHash: { type: String, required: true },
   isOtpVerified: { type: Boolean, default: false },
+  requiresTwoFactorAuth: { type: Boolean, default: false },
 }, { timestamps: true });
 
 module.exports = mongoose.model('User', UserSchema);
