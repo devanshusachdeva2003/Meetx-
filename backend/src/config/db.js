@@ -1,15 +1,17 @@
 const mongoose = require("mongoose");
 
-async function connectDB(uri) {
+async function connectDB(uri, dbName) {
   try {
     console.log("🚀 Attempting to connect to MongoDB...");
-    
+
     // Safely log the URI by masking the password so you don't leak it in Vercel logs
-    const safeUri = uri ? uri.replace(/:([^:@]+)@/, ':****@') : 'UNDEFINED URI';
+    const safeUri = uri ? uri.replace(/:([^:@]+)@/, ":****@") : "UNDEFINED URI";
     console.log("🔗 Connecting with URI:", safeUri);
 
     if (!uri) {
-      console.error("❌ FATAL: MONGODB_URI is totally missing from environment variables!");
+      console.error(
+        "❌ FATAL: MONGODB_URI is totally missing from environment variables!",
+      );
       throw new Error("MONGODB_URI is required");
     }
 
@@ -17,6 +19,7 @@ async function connectDB(uri) {
       useNewUrlParser: true,
       useUnifiedTopology: true,
       // dbName: "meetx",
+      dbName: dbName || "meetx",
     });
     console.log("✅ MongoDB successfully connected!");
   } catch (error) {
