@@ -1,33 +1,48 @@
 const mongoose = require("mongoose");
 
-async function connectDB(uri, dbName) {
-  try {
-    console.log("🚀 Attempting to connect to MongoDB...");
+let connectionPromise = null;
 
-    // Safely log the URI by masking the password so you don't leak it in Vercel logs
-    const safeUri = uri ? uri.replace(/:([^:@]+)@/, ":****@") : "UNDEFINED URI";
+async function connectDB(uri, dbName) {
+  if (!uri) {
+    throw new Error("MONGODB_URI is required");
+  }
+
+  if (mongoose.connection.readyState === 1) {
+    return mongoose.connection;
+  }
+
+  if (!connectionPromise) {
+    const safeUri = uri.replace(/:([^:@]+)@/, ":****@");
     console.log("🔗 Connecting with URI:", safeUri);
 
-    if (!uri) {
-      console.error(
-        "❌ FATAL: MONGODB_URI is totally missing from environment variables!",
-      );
-      throw new Error("MONGODB_URI is required");
-    }
-
-    await mongoose.connect(uri, {
-      useNewUrlParser: true,
-      useUnifiedTopology: true,
-      // dbName: "meetx",
+    connectionPromise = mongoose.connect(uri, {
       dbName: dbName || "meetx",
     });
-    console.log("✅ MongoDB successfully connected!");
+
+    connectionPromise
+      .then(() => {
+        console.log("✅ MongoDB successfully connected!");
+      })
+      .catch((error) => {
+        connectionPromise = null;
+        console.error("❌ MONGODB CONNECTION ERROR:");
+        console.error("Name:", error.name);
+        console.error("Message:", error.message);
+      });
+  }
+
+  return connectionPromise;
+}
+
+async function ensureDBConnection(req, res, next) {
+  try {
+    if (process.env.MONGODB_URI) {
+      await connectDB(process.env.MONGODB_URI, process.env.DB_NAME);
+    }
+    next();
   } catch (error) {
-    console.error("❌ MONGODB CONNECTION ERROR:");
-    console.error("Name:", error.name);
-    console.error("Message:", error.message);
-    throw error;
+    next(error);
   }
 }
 
-module.exports = { connectDB };
+module.exports = { connectDB, ensureDBConnection };
