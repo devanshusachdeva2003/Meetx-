@@ -17,7 +17,11 @@ async function start() {
       await connectDB(process.env.MONGODB_URI);
     } catch (err) {
       console.error("Database connection error:", err);
+      process.exit(1); // Exit process if DB connection fails
     }
+  } else {
+    console.error("MONGODB_URI environment variable is missing.");
+    process.exit(1); // Exit if no DB URI is provided
   }
   server.listen(port, () => console.log(`Server listening on ${port}`));
 }
