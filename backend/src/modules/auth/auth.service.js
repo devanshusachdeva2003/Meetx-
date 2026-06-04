@@ -108,7 +108,8 @@ const loginUser = async (email, password) => {
     throw new Error('Invalid email or password');
   }
 
-  if (!user.isOtpVerified) {
+  // Force OTP if they haven't verified their email yet OR if they explicitly enabled 2FA
+  if (!user.isOtpVerified || user.requiresTwoFactorAuth) {
     waitUntil(
       createAndSendOTP(email).catch(err => console.error("OTP/email error", err))
     );
@@ -128,6 +129,7 @@ const updateUserById = async (id, data) => {
   const updates = {};
   if (data.name !== undefined) updates.name = data.name;
   if (data.phone !== undefined) updates.phone = data.phone;
+  if (data.requiresTwoFactorAuth !== undefined) updates.requiresTwoFactorAuth = data.requiresTwoFactorAuth;
   
   const user = await User.findByIdAndUpdate(id, updates, { new: true }).select('-passwordHash');
   if (!user) {
