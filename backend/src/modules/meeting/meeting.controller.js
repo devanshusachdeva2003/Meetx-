@@ -49,4 +49,14 @@ const getLiveKitToken = asyncHandler(async (req, res) => {
   res.json({ token: await at.toJwt() });
 });
 
-module.exports = { createMeeting, getMeeting, getLiveKitToken };
+const getMeetings = asyncHandler(async (req, res) => {
+  if (!req.user || !req.user.id) {
+    res.status(401);
+    throw new Error('Unauthorized. Must be logged in to view meetings.');
+  }
+
+  const meetings = await Meeting.find({ host: req.user.id }).sort({ createdAt: -1 });
+  res.json({ meetings });
+});
+
+module.exports = { createMeeting, getMeeting, getMeetings, getLiveKitToken };

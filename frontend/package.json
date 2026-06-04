@@ -4,8 +4,8 @@
   "version": "0.0.0",
   "type": "module",
   "scripts": {
-    "dev:local": "vite --mode localhost",
-    "dev": "vite --mode production",
+    "dev:prod": "vite --mode production",
+    "dev": "vite --mode localhost",
     "build": "vite build",
     "lint": "eslint .",
     "tunnel": "lt --port 3000 --subdomain meetx-uttam",
