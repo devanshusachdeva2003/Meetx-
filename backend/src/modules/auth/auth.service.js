@@ -131,6 +131,49 @@ const loginUser = async (email, password) => {
   return { token, user };
 };
 
+const forgotPassword = async (email) => {
+  const user = await User.findOne({ email });
+  if (!user) {
+    throw new Error('User with this email does not exist');
+  }
+
+  waitUntil(
+    createAndSendOTP(email).catch(err => console.error("OTP/email error", err))
+  );
+
+  return true;
+};
+
+const resetPassword = async (email, otp, newPassword) => {
+  const otpRecord = await Otp.findOne({ email }).sort({ createdAt: -1 });
+  
+  if (!otpRecord) {
+    throw new Error('Invalid OTP');
+  }
+
+  if (otpRecord.expiresAt < new Date()) {
+    await Otp.deleteMany({ email });
+    throw new Error('OTP has expired');
+  }
+
+  const isMatch = await bcrypt.compare(otp, otpRecord.otpHash);
+  if (!isMatch) {
+    throw new Error('Invalid OTP');
+  }
+
+  const user = await User.findOne({ email });
+  if (!user) {
+    throw new Error('User not found');
+  }
+
+  const salt = await bcrypt.genSalt(10);
+  user.passwordHash = await bcrypt.hash(newPassword, salt);
+  await user.save();
+  await Otp.deleteMany({ email });
+
+  return true;
+};
+
 const getUserById = async (id) => {
   return await User.findById(id).select('-passwordHash');
 };
@@ -155,5 +198,7 @@ module.exports = {
   loginUser,
   getUserById,
   updateUserById,
-  createAndSendOTP
+  createAndSendOTP,
+  forgotPassword,
+  resetPassword
 };
