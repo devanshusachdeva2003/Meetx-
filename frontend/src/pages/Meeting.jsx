@@ -160,6 +160,32 @@ function MeetingUI({ id, name }) {
   const room = useRoomContext();
   const { localParticipant } = useLocalParticipant();
   const allParticipants = useParticipants();
+  const { user } = useUser();
+  const [meetingData, setMeetingData] = useState(null);
+
+  useEffect(() => {
+    if (id) {
+      api.get(`/meetings/${id}`).then(res => setMeetingData(res.data.meeting)).catch(console.error);
+    }
+  }, [id]);
+
+  const isHost = Boolean(meetingData && user && meetingData.host === user._id);
+
+  const handleMute = async (identity, trackType) => {
+    try {
+      await api.post(`/meetings/${id}/mute`, { identity, trackType });
+    } catch (e) {
+      console.error('Failed to mute', e);
+    }
+  };
+
+  const handleRemove = async (identity) => {
+    try {
+      await api.post(`/meetings/${id}/remove`, { identity });
+    } catch (e) {
+      console.error('Failed to remove', e);
+    }
+  };
 
   // We want to display all video tracks and screen shares
   const tracks = useTracks([
@@ -171,7 +197,7 @@ function MeetingUI({ id, name }) {
   const uiParticipants = useMemo(() => {
     return allParticipants.map((p) => ({
       socketId: p.identity,
-      user: { name: p.identity },
+      user: { name: p.name || p.identity },
       isMuted: !p.isMicrophoneEnabled,
       hasVideo: p.isCameraEnabled,
     }));
@@ -192,16 +218,17 @@ function MeetingUI({ id, name }) {
           const isLocalScreenShare =
             trackRef.participant.identity === localParticipant.identity;
 
-          let label = trackRef.participant.identity;
+          let displayLabel = trackRef.participant.name || trackRef.participant.identity;
           if (trackRef.source === Track.Source.ScreenShare) {
-            label = isLocalScreenShare
+            displayLabel = isLocalScreenShare
               ? `${name}'s Screen`
-              : `${trackRef.participant.identity}'s Screen`;
+              : `${displayLabel}'s Screen`;
           }
 
           streams.push({
             id: trackRef.publication.trackSid || Math.random().toString(),
-            socketId: label,
+            socketId: trackRef.participant.identity,
+            label: displayLabel,
             stream: mediaStream,
             isScreenShare: trackRef.source === Track.Source.ScreenShare,
           });
@@ -315,7 +342,7 @@ function MeetingUI({ id, name }) {
                 isMain={true}
                 isLocal={false}
                 stream={mainStream.stream}
-                label={mainStream.socketId}
+                label={mainStream.label}
                 isMuted={
                   uiParticipants.find((p) => p.socketId === mainStream.socketId)
                     ?.isMuted
@@ -342,7 +369,7 @@ function MeetingUI({ id, name }) {
                   isMain={false}
                   isLocal={false}
                   stream={r.stream}
-                  label={r.socketId}
+                  label={r.label}
                   isMuted={
                     uiParticipants.find((p) => p.socketId === r.socketId)
                       ?.isMuted
@@ -390,6 +417,9 @@ function MeetingUI({ id, name }) {
         setChatMessage={setChatMessage}
         onSendMessage={handleSendMessage}
         socketId={localParticipant.identity}
+        isHost={isHost}
+        onMute={handleMute}
+        onRemove={handleRemove}
       />
     </div>
   );

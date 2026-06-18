@@ -14,7 +14,10 @@ export function MeetingSidePanel({
   chatMessage,
   setChatMessage,
   onSendMessage,
-  socketId
+  socketId,
+  isHost,
+  onMute,
+  onRemove
 }) {
   if (!showChat && !showParticipants) return null;
 
@@ -79,6 +82,13 @@ export function MeetingSidePanel({
                     <div className="p-1 rounded-md bg-white/5">
                       {hasStream ? <Camera className="text-white/40" /> : <CameraOff className="text-white/30" />}
                     </div>
+                    {isHost && !isMe && (
+                      <div className="flex gap-1 ml-2">
+                        <Button variant="danger" size="sm" className="px-2 py-1 text-[10px] h-auto" onClick={() => onMute(p.socketId, 'audio')}>Mute</Button>
+                        <Button variant="danger" size="sm" className="px-2 py-1 text-[10px] h-auto" onClick={() => onMute(p.socketId, 'video')}>No Video</Button>
+                        <Button variant="danger" size="sm" className="px-2 py-1 text-[10px] h-auto" onClick={() => onRemove(p.socketId)}>Kick</Button>
+                      </div>
+                    )}
                   </div>
                 </li>
               );
