@@ -43,8 +43,12 @@ const createAndSendOTP = async (email) => {
   const otp = generateOTP();
   const expiresAt = new Date(Date.now() + 10 * 60 * 1000); // 10 minutes
   
+  // Hash the OTP securely
+  const salt = await bcrypt.genSalt(10);
+  const otpHash = await bcrypt.hash(otp, salt);
+  
   await Otp.deleteMany({ email }); // Clear existing
-  await Otp.create({ email, otp, expiresAt });
+  await Otp.create({ email, otpHash, expiresAt });
   
   await sendOTPEmail(email, otp);
 };
@@ -73,7 +77,8 @@ const registerUser = async (name, email, password) => {
 };
 
 const verifyOTP = async (email, otp) => {
-  const otpRecord = await Otp.findOne({ email, otp });
+  // Find the latest OTP record for this email
+  const otpRecord = await Otp.findOne({ email }).sort({ createdAt: -1 });
   
   if (!otpRecord) {
     throw new Error('Invalid OTP');
@@ -82,6 +87,12 @@ const verifyOTP = async (email, otp) => {
   if (otpRecord.expiresAt < new Date()) {
     await Otp.deleteMany({ email }); // Cleanup expired OTPs
     throw new Error('OTP has expired');
+  }
+
+  // Securely verify the hash
+  const isMatch = await bcrypt.compare(otp, otpRecord.otpHash);
+  if (!isMatch) {
+    throw new Error('Invalid OTP');
   }
 
   const user = await User.findOne({ email });
