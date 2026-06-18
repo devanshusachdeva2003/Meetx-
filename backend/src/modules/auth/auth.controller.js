@@ -109,11 +109,39 @@ const resendOtp = async (req, res) => {
   }
 };
 
+const forgotPassword = async (req, res) => {
+  try {
+    const { email } = req.body;
+    if (!email) {
+      return sendError(res, 400, 'Email is required');
+    }
+    await authService.forgotPassword(email);
+    return sendSuccess(res, 200, 'OTP sent to email successfully');
+  } catch (error) {
+    return sendError(res, 400, error.message);
+  }
+};
+
+const resetPassword = async (req, res) => {
+  try {
+    const { email, otp, newPassword } = req.body;
+    if (!email || !otp || !newPassword) {
+      return sendError(res, 400, 'Email, OTP, and new password are required');
+    }
+    await authService.resetPassword(email, otp, newPassword);
+    return sendSuccess(res, 200, 'Password reset successfully');
+  } catch (error) {
+    return sendError(res, 400, error.message);
+  }
+};
+
 module.exports = {
   register,
   verifyOtp,
   login,
   getMe,
   updateMe,
-  resendOtp
+  resendOtp,
+  forgotPassword,
+  resetPassword
 };

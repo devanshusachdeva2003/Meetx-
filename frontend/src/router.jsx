@@ -4,6 +4,8 @@ import { Dashboard } from './component/Dashboard.jsx';
 import Login from './pages/Login.jsx';
 import Register from './pages/Register.jsx';
 import OtpVerify from './pages/OtpVerify.jsx';
+import ForgotPassword from './pages/ForgotPassword.jsx';
+import ResetPassword from './pages/ResetPassword.jsx';
 import Meeting from './pages/Meeting.jsx';
 import Meetings from './pages/Meetings.jsx';
 import Calendar from './pages/Calendar.jsx';
@@ -64,6 +66,8 @@ const Router = () => {
       <Route path="/login" element={<Login />} />
       <Route path="/register" element={<Register />} />
       <Route path="/verify-otp" element={<OtpVerify />} />
+      <Route path="/forgot-password" element={<ForgotPassword />} />
+      <Route path="/reset-password" element={<ResetPassword />} />
     </Routes>
   );
 };
