@@ -99,7 +99,7 @@ const removeParticipant = asyncHandler(async (req, res) => {
 
 const muteParticipant = asyncHandler(async (req, res) => {
   const { id } = req.params; // room id
-  const { identity, trackType } = req.body; // 'audio' or 'video'
+  const { identity, trackType, muted = true } = req.body; // 'audio' or 'video'
 
   if (!req.user || !req.user.id) {
     res.status(401);
@@ -129,14 +129,14 @@ const muteParticipant = asyncHandler(async (req, res) => {
     const isVideo = track.type === 2 || track.type === 'VIDEO';
     
     if (trackType === 'audio' && isAudio) {
-      await roomService.mutePublishedTrack(id, identity, track.sid, true);
+      await roomService.mutePublishedTrack(id, identity, track.sid, muted);
     }
     if (trackType === 'video' && isVideo) {
-      await roomService.mutePublishedTrack(id, identity, track.sid, true);
+      await roomService.mutePublishedTrack(id, identity, track.sid, muted);
     }
   }
 
-  res.json({ success: true, message: `Participant ${trackType} muted` });
+  res.json({ success: true, message: `Participant ${trackType} ${muted ? 'muted' : 'unmuted'}` });
 });
 
 module.exports = { createMeeting, getMeeting, getMeetings, getLiveKitToken, removeParticipant, muteParticipant };

@@ -84,8 +84,8 @@ export function MeetingSidePanel({
                     </div>
                     {isHost && !isMe && (
                       <div className="flex gap-1 ml-2">
-                        <Button variant="danger" size="sm" className="px-2 py-1 text-[10px] h-auto" onClick={() => onMute(p.socketId, 'audio')}>Mute</Button>
-                        <Button variant="danger" size="sm" className="px-2 py-1 text-[10px] h-auto" onClick={() => onMute(p.socketId, 'video')}>No Video</Button>
+                        <Button variant="danger" size="sm" className="px-2 py-1 text-[10px] h-auto" onClick={() => onMute(p.socketId, 'audio', !p.isMuted)}>{p.isMuted ? 'Unmute' : 'Mute'}</Button>
+                        <Button variant="danger" size="sm" className="px-2 py-1 text-[10px] h-auto" onClick={() => onMute(p.socketId, 'video', p.hasVideo)}>{p.hasVideo ? 'No Video' : 'On Video'}</Button>
                         <Button variant="danger" size="sm" className="px-2 py-1 text-[10px] h-auto" onClick={() => onRemove(p.socketId)}>Kick</Button>
                       </div>
                     )}

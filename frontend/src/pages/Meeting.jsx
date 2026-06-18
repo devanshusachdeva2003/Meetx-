@@ -171,11 +171,11 @@ function MeetingUI({ id, name }) {
 
   const isHost = Boolean(meetingData && user && meetingData.host === user._id);
 
-  const handleMute = async (identity, trackType) => {
+  const handleMute = async (identity, trackType, muted) => {
     try {
-      await api.post(`/meetings/${id}/mute`, { identity, trackType });
+      await api.post(`/meetings/${id}/mute`, { identity, trackType, muted });
     } catch (e) {
-      console.error('Failed to mute', e);
+      console.error(`Failed to ${muted ? 'mute' : 'unmute'}`, e);
     }
   };
 
