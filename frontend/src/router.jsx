@@ -13,6 +13,7 @@ import Calendar from './pages/Calendar.jsx';
 import Settings from './pages/Settings.jsx';
 import PrivacyPolicy from './pages/PrivacyPolicy.jsx';
 import TermsOfService from './pages/TermsOfService.jsx';
+import GoogleCallback from './pages/GoogleCallback.jsx';
 import { Layout } from './component/Layout.jsx';
 import { useUser } from './context/UserContext.jsx';
 
@@ -72,6 +73,7 @@ const Router = () => {
       <Route path="/verify-otp" element={<OtpVerify />} />
       <Route path="/forgot-password" element={<ForgotPassword />} />
       <Route path="/reset-password" element={<ResetPassword />} />
+      <Route path="/auth/google/callback" element={<GoogleCallback />} />
       <Route path="/privacy-policy" element={<PrivacyPolicy />} />
       <Route path="/terms-of-service" element={<TermsOfService />} />
     </Routes>
