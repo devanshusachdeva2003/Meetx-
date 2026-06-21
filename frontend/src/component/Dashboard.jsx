@@ -4,6 +4,7 @@ import { JoinMeeting } from "./JoinMeeting";
 import { UpcomingMeetings } from "./UpcomingMeetings";
 import { RecentMeetings } from "./RecentMeetings";
 import { PersonalLink } from "./PersonalLink";
+import { Link } from "react-router-dom";
 
 export function Dashboard() {
   return (
@@ -26,8 +27,8 @@ export function Dashboard() {
       <footer className="mt-auto pt-6 border-t border-border flex flex-wrap items-center justify-between gap-3 text-xs text-gray-500">
         <p>© 2026 MeetX. All rights reserved.</p>
         <div className="flex gap-5">
-          <a href="#" className="hover:text-white transition">Privacy Policy</a>
-          <a href="#" className="hover:text-white transition">Terms of Service</a>
+          <Link to="/privacy-policy" className="hover:text-white transition">Privacy Policy</Link>
+          <Link to="/terms-of-service" className="hover:text-white transition">Terms of Service</Link>
         </div>
       </footer>
     </main>
