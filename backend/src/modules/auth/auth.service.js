@@ -4,6 +4,15 @@ const bcrypt = require('bcryptjs');
 const jwt = require('jsonwebtoken');
 const nodemailer = require('nodemailer');
 const { waitUntil } = require('@vercel/functions');
+const { OAuth2Client } = require('google-auth-library');
+
+const getGoogleClient = () => {
+  return new OAuth2Client(
+    process.env.GOOGLE_CLIENT_ID,
+    process.env.GOOGLE_CLIENT_SECRET,
+    process.env.GOOGLE_REDIRECT_URI
+  );
+};
 
 const generateOTP = () => {
   return Math.floor(100000 + Math.random() * 900000).toString();
@@ -192,6 +201,60 @@ const updateUserById = async (id, data) => {
   return user;
 };
 
+const generateGoogleAuthUrl = () => {
+  const client = getGoogleClient();
+  const url = client.generateAuthUrl({
+    access_type: 'offline',
+    scope: ['https://www.googleapis.com/auth/userinfo.profile', 'https://www.googleapis.com/auth/userinfo.email']
+  });
+  return url;
+};
+
+const verifyGoogleTokenAndLogin = async (code) => {
+  const client = getGoogleClient();
+  const { tokens } = await client.getToken(code);
+  client.setCredentials(tokens);
+  
+  const ticket = await client.verifyIdToken({
+    idToken: tokens.id_token,
+    audience: process.env.GOOGLE_CLIENT_ID,
+  });
+  
+  const payload = ticket.getPayload();
+  const { sub: googleId, email, name, picture: avatar } = payload;
+  
+  let user = await User.findOne({ email });
+  if (user) {
+    if (!user.googleId) {
+      user.googleId = googleId;
+      if (!user.avatar && avatar) {
+        user.avatar = avatar;
+      }
+      user.isOtpVerified = true;
+      await user.save();
+    }
+  } else {
+    // Create new user
+    user = await User.create({
+      name,
+      email,
+      googleId,
+      avatar,
+      isOtpVerified: true,
+    });
+  }
+
+  if (user.requiresTwoFactorAuth) {
+    waitUntil(
+      createAndSendOTP(email).catch(err => console.error("OTP/email error", err))
+    );
+    return { requireOtp: true, user };
+  }
+
+  const token = jwt.sign({ id: user._id }, process.env.JWT_SECRET || 'fallback_secret', { expiresIn: '7d' });
+  return { token, user };
+};
+
 module.exports = {
   registerUser,
   verifyOTP,
@@ -200,5 +263,7 @@ module.exports = {
   updateUserById,
   createAndSendOTP,
   forgotPassword,
-  resetPassword
+  resetPassword,
+  generateGoogleAuthUrl,
+  verifyGoogleTokenAndLogin
 };

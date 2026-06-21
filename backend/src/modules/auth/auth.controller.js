@@ -135,6 +135,39 @@ const resetPassword = async (req, res) => {
   }
 };
 
+const getGoogleAuthUrl = (req, res) => {
+  try {
+    const url = authService.generateGoogleAuthUrl();
+    return sendSuccess(res, 200, 'Google Auth URL generated', { url });
+  } catch (error) {
+    return sendError(res, 400, error.message);
+  }
+};
+
+const googleLogin = async (req, res) => {
+  try {
+    const { code } = req.body;
+    if (!code) {
+      return sendError(res, 400, 'Authorization code is required');
+    }
+    const result = await authService.verifyGoogleTokenAndLogin(code);
+    
+    if (result.requireOtp) {
+      return sendSuccess(res, 200, 'Please verify your OTP to continue.', { 
+        requireOtp: true,
+        email: result.user.email 
+      });
+    }
+
+    return sendSuccess(res, 200, 'Login successful', {
+      token: result.token,
+      user: { id: result.user._id, name: result.user.name, email: result.user.email, avatar: result.user.avatar }
+    });
+  } catch (error) {
+    return sendError(res, 400, error.message);
+  }
+};
+
 module.exports = {
   register,
   verifyOtp,
@@ -143,5 +176,7 @@ module.exports = {
   updateMe,
   resendOtp,
   forgotPassword,
-  resetPassword
+  resetPassword,
+  getGoogleAuthUrl,
+  googleLogin
 };
