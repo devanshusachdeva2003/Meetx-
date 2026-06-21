@@ -1,15 +1,21 @@
 import { Copy, Share2 } from "lucide-react";
 import { motion } from "framer-motion";
 import { useState } from "react";
+import { useUser } from "../context/UserContext";
 
 export function PersonalLink() {
   const [copied, setCopied] = useState(false);
-  const link = "meetx.com/john.doe";
+  const { user } = useUser();
+  
+  const formattedName = user?.name ? user.name.toLowerCase().replace(/\s+/g, '.') : 'guest';
+  const link = `meetx.com/${formattedName}`;
+
   const copy = () => {
     navigator.clipboard?.writeText(link);
     setCopied(true);
     setTimeout(() => setCopied(false), 1500);
   };
+
   return (
     <div className="bg-card border border-border rounded-3xl p-6 flex flex-col h-full">
       <h3 className="font-semibold mb-4 text-white">Your Personal Meeting Link</h3>

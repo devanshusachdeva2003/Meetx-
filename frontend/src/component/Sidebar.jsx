@@ -1,4 +1,4 @@
-import { Home, Calendar, Users, Video, Settings, PlayCircle, ChevronDown, Sparkles, ChevronLeft, ChevronRight } from "lucide-react";
+import { Home, Calendar, Users, Video, Settings, PlayCircle, ChevronDown, Sparkles, ChevronLeft, ChevronRight, FileText } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 import { useState, useEffect } from "react";
 import { useNavigate, useLocation, NavLink } from 'react-router-dom';
@@ -11,6 +11,7 @@ const menu = [
   { icon: Home, label: "Home", key: "home", path: '/', public: true },
   { icon: Video, label: "Meetings", key: "meetings", path: '/meetings', public: true },
   { icon: Calendar, label: "Calendar", key: "calendar", path: '/calendar' },
+  { icon: FileText, label: "Notes", key: "notes", path: '/notes', public: true },
   { icon: Users, label: "Contacts", key: "contacts", path: '/contacts' },
   { icon: PlayCircle, label: "Recordings", key: "recordings", path: '/recordings' },
   { icon: Settings, label: "Settings", key: "settings", path: '/settings' },

@@ -1,12 +1,16 @@
 import { Plus } from "lucide-react";
 import { motion } from "framer-motion";
+import { useUser } from "../context/UserContext";
 
 export function Header() {
+  const { user } = useUser();
+  const firstName = user?.name ? user.name.split(' ')[0] : 'Guest';
+
   return (
     <header className="flex items-start justify-between gap-4 flex-wrap">
       <div>
         <h1 className="text-3xl md:text-4xl font-bold tracking-tight text-white">
-          Welcome back, Ds! <span className="inline-block">👋</span>
+          Welcome back, {firstName}! <span className="inline-block">👋</span>
         </h1>
         <p className="text-gray-400 mt-1">Ready to connect and collaborate?</p>
       </div>
