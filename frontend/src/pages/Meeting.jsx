@@ -28,7 +28,7 @@ export default function Meeting() {
   const location = useLocation();
   const navigate = useNavigate();
   const { user, loading } = useUser();
-  
+
   const [token, setToken] = useState("");
   const [name, setName] = useState("");
   const [hasJoined, setHasJoined] = useState(false);
@@ -36,7 +36,7 @@ export default function Meeting() {
     videoEnabled: true,
     audioEnabled: true,
     videoDeviceId: "",
-    audioDeviceId: ""
+    audioDeviceId: "",
   });
   const serverUrl = import.meta.env.VITE_LIVEKIT_URL;
 
@@ -48,7 +48,7 @@ export default function Meeting() {
         videoEnabled: location.state.settings.videoEnabled,
         audioEnabled: location.state.settings.audioEnabled,
         videoDeviceId: location.state.settings.videoDeviceId,
-        audioDeviceId: location.state.settings.audioDeviceId
+        audioDeviceId: location.state.settings.audioDeviceId,
       });
       setHasJoined(true);
       // Clear the state so a page refresh shows the PreJoin screen again
@@ -58,11 +58,9 @@ export default function Meeting() {
 
   useEffect(() => {
     if (!id && !loading && !user) {
-      navigate('/login', { replace: true });
+      navigate("/login", { replace: true });
     }
   }, [id, user, loading, navigate]);
-
-
 
   useEffect(() => {
     if (!hasJoined || !name.trim()) return;
@@ -92,18 +90,28 @@ export default function Meeting() {
   }
 
   if (!hasJoined) {
-    if (!id && loading) return <div className="flex h-screen items-center justify-center bg-[#0B0C10] text-white">Loading...</div>;
+    if (!id && loading)
+      return (
+        <div className="flex h-screen items-center justify-center bg-[#0B0C10] text-white">
+          Loading...
+        </div>
+      );
 
     return (
-      <PreJoinScreen 
-        name={name} 
+      <PreJoinScreen
+        name={name}
         onJoin={async (settings) => {
           if (!id) {
             try {
               // This is a "Create Meeting" flow, request ID from backend
-              const response = await api.post('/meetings', { title: `${user?.name || 'User'}'s Meeting` });
+              const response = await api.post("/meetings", {
+                title: `${user?.name || "User"}'s Meeting`,
+              });
               const newId = response.data.meeting.roomId;
-              navigate(`/meeting/${newId}`, { state: { settings }, replace: true });
+              navigate(`/meeting/${newId}`, {
+                state: { settings },
+                replace: true,
+              });
             } catch (err) {
               console.error("Failed to create meeting", err);
               alert("Failed to create meeting. Are you logged in?");
@@ -115,11 +123,11 @@ export default function Meeting() {
               videoEnabled: settings.videoEnabled,
               audioEnabled: settings.audioEnabled,
               videoDeviceId: settings.videoDeviceId,
-              audioDeviceId: settings.audioDeviceId
+              audioDeviceId: settings.audioDeviceId,
             });
             setHasJoined(true);
           }
-        }} 
+        }}
       />
     );
   }
@@ -140,8 +148,12 @@ export default function Meeting() {
       serverUrl={serverUrl}
       connect={true}
       options={{
-        videoCaptureDefaults: joinOptions.videoDeviceId ? { deviceId: joinOptions.videoDeviceId } : undefined,
-        audioCaptureDefaults: joinOptions.audioDeviceId ? { deviceId: joinOptions.audioDeviceId } : undefined
+        videoCaptureDefaults: joinOptions.videoDeviceId
+          ? { deviceId: joinOptions.videoDeviceId }
+          : undefined,
+        audioCaptureDefaults: joinOptions.audioDeviceId
+          ? { deviceId: joinOptions.audioDeviceId }
+          : undefined,
       }}
     >
       <MeetingUI id={id} name={name} />
@@ -165,17 +177,24 @@ function MeetingUI({ id, name }) {
 
   useEffect(() => {
     if (id) {
-      api.get(`/meetings/${id}`).then(res => setMeetingData(res.data.meeting)).catch(console.error);
+      api
+        .get(`/meetings/${id}`)
+        .then((res) => setMeetingData(res.data.meeting))
+        .catch(console.error);
     }
   }, [id]);
 
-  const isHost = Boolean(meetingData && user && meetingData.host === user._id);
+  const isHost = Boolean(
+    meetingData &&
+    user &&
+    (meetingData.host === user.id || meetingData.host === user._id),
+  );
 
   const handleMute = async (identity, trackType, muted) => {
     try {
       await api.post(`/meetings/${id}/mute`, { identity, trackType, muted });
     } catch (e) {
-      console.error(`Failed to ${muted ? 'mute' : 'unmute'}`, e);
+      console.error(`Failed to ${muted ? "mute" : "unmute"}`, e);
     }
   };
 
@@ -183,7 +202,7 @@ function MeetingUI({ id, name }) {
     try {
       await api.post(`/meetings/${id}/remove`, { identity });
     } catch (e) {
-      console.error('Failed to remove', e);
+      console.error("Failed to remove", e);
     }
   };
 
@@ -218,7 +237,8 @@ function MeetingUI({ id, name }) {
           const isLocalScreenShare =
             trackRef.participant.identity === localParticipant.identity;
 
-          let displayLabel = trackRef.participant.name || trackRef.participant.identity;
+          let displayLabel =
+            trackRef.participant.name || trackRef.participant.identity;
           if (trackRef.source === Track.Source.ScreenShare) {
             displayLabel = isLocalScreenShare
               ? `${name}'s Screen`
@@ -376,8 +396,6 @@ function MeetingUI({ id, name }) {
                   }
                 />
               ))}
-
-
           </div>
         </div>
       </main>

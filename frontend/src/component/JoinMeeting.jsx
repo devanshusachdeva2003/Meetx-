@@ -6,6 +6,21 @@ import { useNavigate } from "react-router-dom";
 export function JoinMeeting() {
   const [val, setVal] = useState("");
   const navigate = useNavigate();
+
+  const handleJoin = () => {
+    if (val.trim()) {
+      let id = val.trim();
+      try {
+        const url = new URL(id);
+        const pathParts = url.pathname.split('/').filter(Boolean);
+        id = pathParts[pathParts.length - 1] || id;
+      } catch (e) {
+        id = id.split('/').filter(Boolean).pop() || id;
+      }
+      navigate(`/meeting/${id}`);
+    }
+  };
+
   return (
     <motion.div
       initial={{ opacity: 0, y: 12 }}
@@ -21,21 +36,25 @@ export function JoinMeeting() {
         <input
           value={val}
           onChange={(e) => setVal(e.target.value)}
+          onKeyDown={(e) => {
+            if (e.key === "Enter") {
+              handleJoin();
+            }
+          }}
           placeholder="Enter meeting ID or link"
           className="w-full bg-input border border-border rounded-2xl pl-11 pr-4 py-3.5 text-sm placeholder:text-gray-500 text-white focus:outline-none focus:ring-2 focus:ring-primary/50 transition"
         />
       </div>
       <motion.button
-        whileHover={{ scale: 1.02 }}
-        whileTap={{ scale: 0.98 }}
-        onClick={() => {
-          if (val.trim()) {
-            // Strip out full URLs if they pasted a link, just get the ID
-            const id = val.split('/').pop();
-            navigate(`/meeting/${id}`);
-          }
-        }}
-        className="mt-auto w-full gradient-primary text-white font-medium py-3.5 rounded-2xl shadow-[0_0_20px_rgba(168,85,247,0.4)] hover:shadow-[0_0_30px_rgba(168,85,247,0.6)] transition-shadow"
+        disabled={!val.trim()}
+        whileHover={val.trim() ? { scale: 1.02 } : {}}
+        whileTap={val.trim() ? { scale: 0.98 } : {}}
+        onClick={handleJoin}
+        className={`mt-auto w-full gradient-primary text-white font-medium py-3.5 rounded-2xl transition-all ${
+          val.trim() 
+            ? 'cursor-pointer shadow-[0_0_20px_rgba(168,85,247,0.4)] hover:shadow-[0_0_30px_rgba(168,85,247,0.6)]' 
+            : 'opacity-50 cursor-not-allowed'
+        }`}
       >
         Join Meeting
       </motion.button>
