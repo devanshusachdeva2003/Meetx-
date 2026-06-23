@@ -37,6 +37,7 @@ export function StartMeetingCard() {
             whileTap={{ scale: 0.97 }}
             variant="outline"
             size="lg"
+            onClick={() => navigate('/calendar')}
             className="border-gray-600 text-white hover:bg-white/5"
           >
             Schedule Meeting

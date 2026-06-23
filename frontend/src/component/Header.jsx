@@ -1,10 +1,13 @@
 import { Plus } from "lucide-react";
 import { motion } from "framer-motion";
 import { useUser } from "../context/UserContext";
+import { useNavigate } from "react-router-dom";
 
 export function Header() {
   const { user } = useUser();
   const firstName = user?.name ? user.name.split(' ')[0] : 'Guest';
+
+  const navigate = useNavigate();
 
   return (
     <header className="flex items-start justify-between gap-4 flex-wrap">
@@ -17,6 +20,7 @@ export function Header() {
       <motion.button
         whileHover={{ scale: 1.03 }}
         whileTap={{ scale: 0.97 }}
+        onClick={() => navigate('/meeting')}
         className="gradient-primary text-white font-medium px-5 py-3 rounded-2xl flex items-center gap-2 shadow-[0_0_20px_rgba(168,85,247,0.4)] hover:shadow-[0_0_30px_rgba(168,85,247,0.6)] transition-shadow"
       >
         <Plus className="w-4 h-4" />

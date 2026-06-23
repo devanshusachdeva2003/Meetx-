@@ -16,6 +16,7 @@ import {
   User
 } from 'lucide-react';
 import Button from '../component/ui/Button';
+import api from '../utils/api';
 
 /**
  * MeetX Calendar UI Component
@@ -44,6 +45,9 @@ const MeetXCalendar = () => {
   // modal form state
   const [newTitle, setNewTitle] = useState('');
   const [newDescription, setNewDescription] = useState('');
+  const [startTime, setStartTime] = useState('11:00');
+  const [endTime, setEndTime] = useState('12:00');
+  const [isVideo, setIsVideo] = useState(true);
   const [creating, setCreating] = useState(false);
 
   // helper: build query range for visible month
@@ -58,10 +62,8 @@ const MeetXCalendar = () => {
   async function fetchEventsForMonth(d) {
     const { start, end } = monthRange(d);
     try {
-      const res = await fetch(`/api/calendar?start=${start.toISOString()}&end=${end.toISOString()}`);
-      if (!res.ok) throw new Error('Failed to fetch');
-      const data = await res.json();
-      const evs = data.events || [];
+      const res = await api.get(`/calendar?start=${start.toISOString()}&end=${end.toISOString()}`);
+      const evs = res.data.events || [];
       setEvents(evs);
       const map = {};
       evs.forEach((e) => {
@@ -233,19 +235,30 @@ const MeetXCalendar = () => {
             </div>
             
             <div className="space-y-6">
-              <InputGroup label="Meeting Title" placeholder="Add title..." />
               <div>
-                <input value={newTitle} onChange={(e) => setNewTitle(e.target.value)} placeholder="Meeting title" className="w-full p-3 rounded-xl bg-white/5 outline-none text-white" />
+                <label className="text-xs font-bold text-white/40 uppercase tracking-widest px-1 mb-2 block">Meeting Title</label>
+                <input value={newTitle} onChange={(e) => setNewTitle(e.target.value)} placeholder="Add title..." className="w-full p-4 rounded-2xl bg-white/5 border border-white/5 outline-none text-white focus:border-primary/50 transition-all" />
               </div>
               <div>
-                <textarea value={newDescription} onChange={(e) => setNewDescription(e.target.value)} placeholder="Description" className="w-full p-3 rounded-xl bg-white/5 outline-none text-white h-24" />
+                <label className="text-xs font-bold text-white/40 uppercase tracking-widest px-1 mb-2 block">Description</label>
+                <textarea value={newDescription} onChange={(e) => setNewDescription(e.target.value)} placeholder="Optional description" className="w-full p-4 rounded-2xl bg-white/5 border border-white/5 outline-none text-white h-24 focus:border-primary/50 transition-all resize-none" />
               </div>
               
               <div className="grid grid-cols-2 gap-4">
-                <Button size="none" className="p-4 rounded-2xl w-full">
+                <Button 
+                  size="none" 
+                  variant={isVideo ? "default" : "glass"}
+                  onClick={() => setIsVideo(true)}
+                  className={`p-4 rounded-2xl w-full ${!isVideo ? "text-white/40" : ""}`}
+                >
                   <Video className="w-5 h-5" /> Video Call
                 </Button>
-                <Button variant="glass" size="none" className="p-4 rounded-2xl w-full text-white/40">
+                <Button 
+                  variant={!isVideo ? "default" : "glass"} 
+                  size="none" 
+                  onClick={() => setIsVideo(false)}
+                  className={`p-4 rounded-2xl w-full ${isVideo ? "text-white/40" : ""}`}
+                >
                   <Mic className="w-5 h-5" /> Audio Only
                 </Button>
               </div>
@@ -257,7 +270,11 @@ const MeetXCalendar = () => {
                 </div>
                 <div className="flex-1 p-4 bg-white/5 rounded-2xl border border-white/5 flex items-center gap-3">
                   <Clock className="w-5 h-5 text-primary" />
-                  <span className="text-sm font-medium">11:00 AM - 12:00 PM</span>
+                  <div className="flex items-center gap-2 flex-1">
+                    <input type="time" value={startTime} onChange={e => setStartTime(e.target.value)} className="bg-transparent text-sm font-medium outline-none text-white w-full cursor-pointer [&::-webkit-calendar-picker-indicator]:filter-[invert(1)]" />
+                    <span className="text-white/40">-</span>
+                    <input type="time" value={endTime} onChange={e => setEndTime(e.target.value)} className="bg-transparent text-sm font-medium outline-none text-white w-full cursor-pointer [&::-webkit-calendar-picker-indicator]:filter-[invert(1)]" />
+                  </div>
                 </div>
               </div>
 
@@ -267,20 +284,23 @@ const MeetXCalendar = () => {
                 onClick={async () => {
                 if (!newTitle) return alert('Please enter a title');
                 setCreating(true);
-                const start = new Date(year, month, selectedDate, 11, 0).toISOString();
-                const end = new Date(year, month, selectedDate, 12, 0).toISOString();
+                const [startH, startM] = startTime.split(':').map(Number);
+                const [endH, endM] = endTime.split(':').map(Number);
+                const start = new Date(year, month, selectedDate, startH, startM).toISOString();
+                const end = new Date(year, month, selectedDate, endH, endM).toISOString();
                 try {
-                  const res = await fetch('/api/calendar', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ title: newTitle, description: newDescription, start, end }) });
-                  if (res.status === 401) { setCreating(false); return alert('Authentication required to create events'); }
-                  if (!res.ok) throw new Error('Create failed');
-                  const data = await res.json();
+                  await api.post('/calendar', { title: newTitle, description: newDescription, start, end });
                   setIsModalOpen(false);
                   setNewTitle(''); setNewDescription('');
                   // refresh events for month
                   fetchEventsForMonth(displayDate);
                 } catch (err) {
                   console.error(err);
-                  alert('Could not create event');
+                  if (err.response?.status === 401) {
+                    alert('Authentication required to create events');
+                  } else {
+                    alert('Could not create event');
+                  }
                 } finally { setCreating(false); }
               }} className="w-full bg-primary py-5 rounded-3xl font-black text-lg shadow-xl shadow-primary/20 flex items-center justify-center gap-3 hover:bg-primary-dark transition-all">
                 {creating ? 'Scheduling...' : 'Schedule Meeting'}

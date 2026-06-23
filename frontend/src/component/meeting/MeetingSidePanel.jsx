@@ -33,18 +33,7 @@ export function MeetingSidePanel({
       <div className="flex-1 p-4 overflow-y-auto overscroll-contain">
         {showParticipants ? (
           <ul className="space-y-3">
-            <div className="flex items-center justify-between p-3 bg-card rounded-2xl border border-white/5">
-              <div className="flex items-center gap-3">
-                <div className="w-8 h-8 rounded-full bg-primary flex items-center justify-center font-bold text-xs">
-                  ME
-                </div>
-                <div className="flex flex-col">
-                  <span className="font-semibold text-sm">You (Host)</span>
-                  <span className="text-[10px] text-primary bg-primary/10 px-2 py-0.5 rounded-full font-bold">Host</span>
-                </div>
-              </div>
-              {isLocalMuted ? <MicOff className="text-red-500" /> : <Mic className="text-green-400" />}
-            </div>
+
             {participants.map((p) => {
               const isMe = p.socketId === socketId;
               const displayName = p.user?.name || p.user || 'Guest';

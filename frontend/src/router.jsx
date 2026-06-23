@@ -1,5 +1,6 @@
 import React from 'react';
 import { Routes, Route, Navigate } from 'react-router-dom';
+import { Toaster } from 'sonner';
 import { Dashboard } from './component/Dashboard.jsx';
 import Login from './pages/Login.jsx';
 import Register from './pages/Register.jsx';
@@ -51,30 +52,33 @@ const ProtectedRoute = ({ children }) => {
 
 const Router = () => {
   return (
-    <Routes>
-      <Route element={<Layout />}>
-        <Route path="/" element={<Dashboard />} />
-        <Route path="/settings" element={<ProtectedRoute><Settings /></ProtectedRoute>} />
-        <Route path="/calendar" element={<ProtectedRoute><Calendar /></ProtectedRoute>} />
-        <Route path="/meetings" element={<ProtectedRoute><Meetings /></ProtectedRoute>} />
-        <Route path="/notes" element={<ProtectedRoute><Notes /></ProtectedRoute>} />
-        <Route path="*" element={
-          <div className="flex-1 min-w-0 px-8 py-10 flex flex-col gap-8 h-full items-center justify-center text-gray-400">
-            <h2 className="text-2xl font-bold text-white mb-2">Coming Soon</h2>
-            <p>This page is currently under development.</p>
-          </div>
-        } />
-      </Route>
-      <Route path="/meeting" element={<Meeting />} />
-      <Route path="/meeting/:id" element={<Meeting />} />
-      <Route path="/login" element={<Login />} />
-      <Route path="/register" element={<Register />} />
-      <Route path="/verify-otp" element={<OtpVerify />} />
-      <Route path="/forgot-password" element={<ForgotPassword />} />
-      <Route path="/reset-password" element={<ResetPassword />} />
-      <Route path="/privacy-policy" element={<PrivacyPolicy />} />
-      <Route path="/terms-of-service" element={<TermsOfService />} />
-    </Routes>
+    <>
+      <Toaster theme="dark" position="top-right" />
+      <Routes>
+        <Route element={<Layout />}>
+          <Route path="/" element={<Dashboard />} />
+          <Route path="/settings" element={<ProtectedRoute><Settings /></ProtectedRoute>} />
+          <Route path="/calendar" element={<ProtectedRoute><Calendar /></ProtectedRoute>} />
+          <Route path="/meetings" element={<ProtectedRoute><Meetings /></ProtectedRoute>} />
+          <Route path="/notes" element={<ProtectedRoute><Notes /></ProtectedRoute>} />
+          <Route path="*" element={
+            <div className="flex-1 min-w-0 px-8 py-10 flex flex-col gap-8 h-full items-center justify-center text-gray-400">
+              <h2 className="text-2xl font-bold text-white mb-2">Coming Soon</h2>
+              <p>This page is currently under development.</p>
+            </div>
+          } />
+        </Route>
+        <Route path="/meeting" element={<Meeting />} />
+        <Route path="/meeting/:id" element={<Meeting />} />
+        <Route path="/login" element={<Login />} />
+        <Route path="/register" element={<Register />} />
+        <Route path="/verify-otp" element={<OtpVerify />} />
+        <Route path="/forgot-password" element={<ForgotPassword />} />
+        <Route path="/reset-password" element={<ResetPassword />} />
+        <Route path="/privacy-policy" element={<PrivacyPolicy />} />
+        <Route path="/terms-of-service" element={<TermsOfService />} />
+      </Routes>
+    </>
   );
 };
 

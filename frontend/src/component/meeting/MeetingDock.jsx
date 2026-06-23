@@ -14,9 +14,21 @@ export function MeetingDock({
   onToggleParticipants,
   onToggleChat
 }) {
+  const [time, setTime] = React.useState(new Date());
+
+  React.useEffect(() => {
+    const timer = setInterval(() => setTime(new Date()), 1000);
+    return () => clearInterval(timer);
+  }, []);
+
+  const timeString = time.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+
   return (
     <nav className="absolute bottom-8 left-1/2 -translate-x-1/2 z-40 bg-card/70 backdrop-blur-2xl border border-white/10 p-2 rounded-[2rem] flex items-center gap-2 shadow-[0_20px_40px_rgba(0,0,0,0.4)]">
-      <div className="flex items-center gap-2">
+      <div className="px-4 border-r border-white/10 flex items-center justify-center">
+        <span className="text-white text-sm font-semibold tracking-wider">{timeString}</span>
+      </div>
+      <div className="flex items-center gap-2 pl-1">
         <Button 
           onClick={onToggleMute}
           size="icon-lg"

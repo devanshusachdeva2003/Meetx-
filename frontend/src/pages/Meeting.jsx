@@ -1,5 +1,7 @@
 import React, { useEffect, useState, useMemo } from "react";
 import { useParams, useNavigate, useLocation } from "react-router-dom";
+import { motion, AnimatePresence } from "framer-motion";
+import Button from "../component/ui/Button";
 import {
   LiveKitRoom,
   useTracks,
@@ -168,6 +170,7 @@ function MeetingUI({ id, name }) {
   const [showChat, setShowChat] = useState(false);
   const [chatMessage, setChatMessage] = useState("");
   const [chatMessages, setChatMessages] = useState([]);
+  const [showLeaveConfirm, setShowLeaveConfirm] = useState(false);
 
   const room = useRoomContext();
   const { localParticipant } = useLocalParticipant();
@@ -305,6 +308,10 @@ function MeetingUI({ id, name }) {
     navigate("/");
   };
 
+  const handleLeaveClick = () => {
+    setShowLeaveConfirm(true);
+  };
+
   const isMuted = !localParticipant.isMicrophoneEnabled;
   const isVideoOff = !localParticipant.isCameraEnabled;
 
@@ -344,7 +351,7 @@ function MeetingUI({ id, name }) {
 
   return (
     <div className="relative flex flex-col h-screen bg-[#0B0C10] text-white font-manrope overflow-hidden">
-      <MeetingHeader id={id} onLeave={doLeave} />
+      <MeetingHeader id={id} onLeave={handleLeaveClick} />
 
       <main className="flex-1 w-full h-full pt-20 pb-28 px-4 md:px-8 overflow-hidden relative z-0 flex items-center justify-center">
         <div className="flex flex-col lg:flex-row gap-4 w-full h-full max-w-7xl mx-auto">
@@ -439,6 +446,43 @@ function MeetingUI({ id, name }) {
         onMute={handleMute}
         onRemove={handleRemove}
       />
+
+      <AnimatePresence>
+        {showLeaveConfirm && (
+          <div className="fixed inset-0 z-[200] flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm" onClick={() => setShowLeaveConfirm(false)}>
+            <motion.div
+              initial={{ opacity: 0, scale: 0.95, y: 10 }}
+              animate={{ opacity: 1, scale: 1, y: 0 }}
+              exit={{ opacity: 0, scale: 0.95, y: 10 }}
+              onClick={(e) => e.stopPropagation()}
+              className="bg-card border border-white/10 rounded-2xl p-6 w-full max-w-sm shadow-2xl"
+            >
+              <h3 className="text-xl font-bold text-white mb-2">Leave Meeting</h3>
+              <p className="text-gray-400 mb-6 text-sm">Are you sure you want to leave this meeting?</p>
+              
+              <div className="flex gap-3 justify-end">
+                <Button 
+                  variant="none" 
+                  className="px-4 py-2 text-sm font-medium text-white hover:bg-white/5 rounded-xl transition-colors"
+                  onClick={() => setShowLeaveConfirm(false)}
+                >
+                  Cancel
+                </Button>
+                <Button 
+                  variant="none"
+                  className="px-4 py-2 text-sm font-medium bg-red-500/10 text-red-500 hover:bg-red-500/20 rounded-xl transition-colors"
+                  onClick={() => {
+                    setShowLeaveConfirm(false);
+                    doLeave();
+                  }}
+                >
+                  Leave
+                </Button>
+              </div>
+            </motion.div>
+          </div>
+        )}
+      </AnimatePresence>
     </div>
   );
 }

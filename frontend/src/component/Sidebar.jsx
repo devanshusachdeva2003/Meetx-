@@ -21,6 +21,7 @@ export function Sidebar({ mobileOpen, setMobileOpen }) {
   const [isCollapsed, setIsCollapsed] = useState(() => {
     return localStorage.getItem("sidebarCollapsed") === "true";
   });
+  const [showLogoutConfirm, setShowLogoutConfirm] = useState(false);
   const navigate = useNavigate();
   const { user, logoutContext } = useUser();
 
@@ -31,7 +32,8 @@ export function Sidebar({ mobileOpen, setMobileOpen }) {
   const visibleMenu = user ? menu : menu.filter(item => item.public);
 
   return (
-    <motion.aside 
+    <>
+      <motion.aside 
       animate={{ width: isCollapsed && !mobileOpen ? 80 : 260 }}
       className={`sidebar shrink-0 h-screen bg-background border-r border-border flex flex-col p-4 gap-6 z-[100] transition-transform duration-300 md:sticky md:top-0 fixed top-0 left-0 ${mobileOpen ? 'translate-x-0' : '-translate-x-full md:translate-x-0'}`}
     >
@@ -131,8 +133,7 @@ export function Sidebar({ mobileOpen, setMobileOpen }) {
                     size="none"
                     onClick={(e) => { 
                       e.stopPropagation(); 
-                      logoutContext();
-                      navigate('/login'); 
+                      setShowLogoutConfirm(true);
                     }}
                     className="text-xs text-primary mt-1 hover:text-primary-glow whitespace-nowrap"
                   >
@@ -158,5 +159,44 @@ export function Sidebar({ mobileOpen, setMobileOpen }) {
         )}
       </div>
     </motion.aside>
+
+    <AnimatePresence>
+        {showLogoutConfirm && (
+          <div className="fixed inset-0 z-[200] flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm" onClick={() => setShowLogoutConfirm(false)}>
+            <motion.div
+              initial={{ opacity: 0, scale: 0.95, y: 10 }}
+              animate={{ opacity: 1, scale: 1, y: 0 }}
+              exit={{ opacity: 0, scale: 0.95, y: 10 }}
+              onClick={(e) => e.stopPropagation()}
+              className="bg-card border border-white/10 rounded-2xl p-6 w-full max-w-sm shadow-2xl"
+            >
+              <h3 className="text-xl font-bold text-white mb-2">Sign Out</h3>
+              <p className="text-gray-400 mb-6 text-sm">Are you sure you want to sign out of your account?</p>
+              
+              <div className="flex gap-3 justify-end">
+                <Button 
+                  variant="none" 
+                  className="px-4 py-2 text-sm font-medium text-white hover:bg-white/5 rounded-xl transition-colors"
+                  onClick={() => setShowLogoutConfirm(false)}
+                >
+                  Cancel
+                </Button>
+                <Button 
+                  variant="none"
+                  className="px-4 py-2 text-sm font-medium bg-red-500/10 text-red-500 hover:bg-red-500/20 rounded-xl transition-colors"
+                  onClick={() => {
+                    setShowLogoutConfirm(false);
+                    logoutContext();
+                    navigate('/login');
+                  }}
+                >
+                  Sign Out
+                </Button>
+              </div>
+            </motion.div>
+          </div>
+        )}
+      </AnimatePresence>
+    </>
   );
 }
