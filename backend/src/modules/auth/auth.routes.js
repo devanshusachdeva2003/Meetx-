@@ -13,6 +13,10 @@ router.post('/reset-password', authLimiter, authController.resetPassword);
 router.get('/me', protect, authController.getMe);
 router.put('/me', protect, authLimiter, authController.updateMe);
 
+// Google Auth
+router.get('/google/url', authController.getGoogleAuthUrl);
+router.post('/google/login', authLimiter, authController.googleLogin);
+
 module.exports = {
   authRoutes: router
 };
