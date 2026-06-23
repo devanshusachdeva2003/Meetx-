@@ -9,24 +9,6 @@ import { useUser } from '../context/UserContext';
 import Button from '../component/ui/Button';
 import api from '../utils/api';
 
-const MOCK_ACTION_ITEMS = [
-  { id: 1, text: "Update the design system with new colors", assignee: "Sarah Johnson", date: "May 30, 2024", completed: true },
-  { id: 2, text: "Create high-fidelity mockups for analytics page", assignee: "Michael Chen", date: "May 31, 2024", completed: false },
-  { id: 3, text: "Review and approve new icon set", assignee: "Emily Davis", date: "Jun 02, 2024", completed: false }
-];
-
-const MOCK_DECISIONS = [
-  "We will proceed with the new dashboard layout",
-  "Implement the updated color scheme (v2.0)",
-  "Adopt the new component library in next sprint"
-];
-
-const MOCK_NOTES = [
-  "User feedback on the sidebar: more contrast needed",
-  "Mobile responsive issues on the reports page",
-  "Team feels good about the new progress \ud83c\udf89"
-];
-
 export default function Notes() {
   const { user } = useUser();
   const [notes, setNotes] = useState([]);
@@ -34,6 +16,27 @@ export default function Notes() {
   const [selectedNote, setSelectedNote] = useState(null);
   const [loading, setLoading] = useState(true);
   const [searchQuery, setSearchQuery] = useState('');
+  
+  const [newDecision, setNewDecision] = useState('');
+  const [newActionText, setNewActionText] = useState('');
+  const [newActionAssignee, setNewActionAssignee] = useState('');
+  const [newGeneralNote, setNewGeneralNote] = useState('');
+
+  // Note Update Helper
+  const updateNoteData = async (updates) => {
+    if (!selectedNote || selectedNote._id.startsWith('mock')) return;
+    try {
+      // Optimistic Update
+      const updatedNote = { ...selectedNote, ...updates };
+      setSelectedNote(updatedNote);
+      setNotes(notes.map(n => n._id === updatedNote._id ? updatedNote : n));
+      
+      // API call
+      await api.put(`/notes/${selectedNote._id}`, updates);
+    } catch (e) {
+      console.error('Failed to update note:', e);
+    }
+  };
 
   // We fetch notes from backend, but if empty we can use some mock data for the UI
   useEffect(() => {
@@ -45,39 +48,7 @@ export default function Notes() {
       setLoading(true);
       const res = await api.get('/notes');
       
-      // If user has no notes, let's inject a mock one for presentation purposes
       let fetchedNotes = res.data.notes || [];
-      if (fetchedNotes.length === 0) {
-        fetchedNotes = [
-          {
-            _id: 'mock-1',
-            title: 'Design Team Standup',
-            content: 'The design team discussed the progress of the new dashboard...',
-            isPinned: true,
-            createdAt: new Date().toISOString(),
-            updatedAt: new Date().toISOString(),
-            participants: ['John', 'Sarah', 'Mike'],
-            summary: 'Automatically generated from the meeting transcription.',
-          },
-          {
-            _id: 'mock-2',
-            title: 'Product Roadmap Discussion',
-            content: 'Discussion about Q3 roadmap.',
-            isPinned: true,
-            createdAt: new Date(Date.now() - 86400000).toISOString(),
-            updatedAt: new Date(Date.now() - 86400000).toISOString(),
-          },
-          {
-            _id: 'mock-3',
-            title: 'Marketing Sync',
-            content: 'Sync on the new campaign.',
-            isPinned: false,
-            createdAt: new Date(Date.now() - 172800000).toISOString(),
-            updatedAt: new Date(Date.now() - 172800000).toISOString(),
-          }
-        ];
-      }
-      
       setNotes(fetchedNotes);
       setSelectedNote(fetchedNotes[0]);
     } catch (e) {
@@ -256,7 +227,12 @@ export default function Notes() {
                 {/* Note Title Header */}
                 <div className="flex items-start justify-between mb-6">
                   <div className="flex items-center gap-3">
-                    <h2 className="text-3xl font-bold text-white tracking-tight">{selectedNote.title}</h2>
+                    <input
+                      value={selectedNote.title || ''}
+                      onChange={(e) => updateNoteData({ title: e.target.value })}
+                      className="text-3xl font-bold text-white tracking-tight bg-transparent border-none outline-none focus:ring-0 placeholder-gray-500 w-full p-0 m-0"
+                      placeholder="Note Title"
+                    />
                     <button onClick={() => togglePin(selectedNote)}>
                       <Star className={`w-6 h-6 ${selectedNote.isPinned ? 'text-primary fill-primary' : 'text-gray-500 hover:text-gray-400'}`} />
                     </button>
@@ -279,11 +255,11 @@ export default function Notes() {
                 <div className="flex items-center gap-6 text-sm text-gray-400 mb-8 pb-6 border-b border-border/30">
                   <div className="flex items-center gap-2">
                     <CalendarIcon className="w-4 h-4" />
-                    <span>May 28, 2024 • 10:30 AM - 11:00 AM</span>
+                    <span>{new Date(selectedNote.createdAt).toLocaleDateString()}</span>
                   </div>
                   <div className="flex items-center gap-2">
                     <Users className="w-4 h-4" />
-                    <span>12 participants</span>
+                    <span>{selectedNote.participants?.length || 0} participants</span>
                   </div>
                 </div>
 
@@ -323,13 +299,13 @@ export default function Notes() {
                         <FileText className="w-4 h-4" />
                       </div>
                       <h3 className="text-lg font-semibold text-white">Meeting Summary</h3>
-                      <span className="bg-primary/20 text-primary text-[10px] font-bold px-2 py-0.5 rounded uppercase tracking-wider ml-auto flex items-center gap-1">
-                        <Sparkles className="w-3 h-3" /> AI Generated
-                      </span>
                     </div>
-                    <p className="text-sm text-gray-300 leading-relaxed">
-                      The design team discussed the progress of the new dashboard, reviewed user feedback, and aligned on upcoming tasks. Key decisions were made regarding the color scheme update and new component library.
-                    </p>
+                    <textarea 
+                      value={selectedNote.content || ''}
+                      onChange={(e) => updateNoteData({ content: e.target.value })}
+                      placeholder="Write your meeting summary or general content here..."
+                      className="w-full min-h-[100px] bg-card/30 border border-border rounded-xl p-4 text-sm text-gray-300 outline-none focus:border-primary/50 transition-colors resize-y"
+                    />
                   </div>
 
                   {/* Key Decisions */}
@@ -341,12 +317,39 @@ export default function Notes() {
                       <h3 className="text-lg font-semibold text-white">Key Decisions</h3>
                     </div>
                     <div className="space-y-3">
-                      {MOCK_DECISIONS.map((dec, i) => (
-                        <div key={i} className="flex items-start gap-3">
+                      {(selectedNote.decisions || []).map((dec, i) => (
+                        <div key={i} className="flex items-start gap-3 group">
                           <CheckCircle className="w-5 h-5 text-primary shrink-0 mt-0.5" />
-                          <p className="text-sm text-gray-300">{dec}</p>
+                          <p className="text-sm text-gray-300 flex-1">{dec}</p>
+                          <button onClick={() => {
+                            const newDecisions = [...(selectedNote.decisions || [])];
+                            newDecisions.splice(i, 1);
+                            updateNoteData({ decisions: newDecisions });
+                          }} className="opacity-0 group-hover:opacity-100 text-red-400 hover:text-red-300 transition-opacity">
+                            Delete
+                          </button>
                         </div>
                       ))}
+                      <div className="flex items-center gap-2 mt-2">
+                        <input 
+                          value={newDecision} 
+                          onChange={(e) => setNewDecision(e.target.value)}
+                          onKeyDown={(e) => {
+                            if(e.key === 'Enter' && newDecision.trim()) {
+                              updateNoteData({ decisions: [...(selectedNote.decisions || []), newDecision.trim()] });
+                              setNewDecision('');
+                            }
+                          }}
+                          placeholder="Add a new decision..."
+                          className="flex-1 bg-card/30 border border-border rounded-lg px-3 py-1.5 text-sm text-white outline-none focus:border-primary/50 transition-colors"
+                        />
+                        <Button size="sm" onClick={() => {
+                          if(newDecision.trim()) {
+                            updateNoteData({ decisions: [...(selectedNote.decisions || []), newDecision.trim()] });
+                            setNewDecision('');
+                          }
+                        }}>Add</Button>
+                      </div>
                     </div>
                   </div>
 
@@ -359,25 +362,54 @@ export default function Notes() {
                       <h3 className="text-lg font-semibold text-white">Action Items</h3>
                     </div>
                     <div className="space-y-3">
-                      {MOCK_ACTION_ITEMS.map((item) => (
-                        <div key={item.id} className="flex items-center justify-between group py-1">
-                          <div className="flex items-center gap-3">
-                            <button className="text-primary">
+                      {(selectedNote.actionItems || []).map((item, i) => (
+                        <div key={i} className="flex items-center justify-between group py-1">
+                          <div className="flex items-center gap-3 flex-1">
+                            <button className="text-primary" onClick={() => {
+                              const newActions = [...(selectedNote.actionItems || [])];
+                              newActions[i] = { ...newActions[i], completed: !newActions[i].completed };
+                              updateNoteData({ actionItems: newActions });
+                            }}>
                               {item.completed ? <CheckSquare className="w-5 h-5" /> : <div className="w-5 h-5 border-2 border-gray-500 rounded flex items-center justify-center" />}
                             </button>
                             <span className={`text-sm ${item.completed ? 'text-gray-500 line-through' : 'text-gray-300'}`}>{item.text}</span>
                           </div>
                           <div className="flex items-center gap-4 opacity-0 group-hover:opacity-100 transition-opacity">
-                            <div className="flex items-center gap-2">
-                              <img src="/download.jpg" className="w-5 h-5 rounded-full object-cover" />
-                              <span className="text-xs text-gray-400">{item.assignee}</span>
-                            </div>
-                            <div className="flex items-center gap-1 text-xs text-primary bg-primary/10 px-2 py-1 rounded">
-                              <CalendarIcon className="w-3 h-3" /> {item.date}
-                            </div>
+                            <button onClick={() => {
+                              const newActions = [...(selectedNote.actionItems || [])];
+                              newActions.splice(i, 1);
+                              updateNoteData({ actionItems: newActions });
+                            }} className="text-xs text-red-400 hover:text-red-300 mr-2">Delete</button>
+                            {item.assignee && (
+                              <div className="flex items-center gap-2">
+                                <span className="text-xs text-gray-400">{item.assignee}</span>
+                              </div>
+                            )}
                           </div>
                         </div>
                       ))}
+                      
+                      <div className="flex items-center gap-2 mt-2">
+                        <input 
+                          value={newActionText} 
+                          onChange={(e) => setNewActionText(e.target.value)}
+                          placeholder="New action item..."
+                          className="flex-1 bg-card/30 border border-border rounded-lg px-3 py-1.5 text-sm text-white outline-none focus:border-primary/50 transition-colors"
+                        />
+                        <input 
+                          value={newActionAssignee} 
+                          onChange={(e) => setNewActionAssignee(e.target.value)}
+                          placeholder="Assignee (opt)"
+                          className="w-32 bg-card/30 border border-border rounded-lg px-3 py-1.5 text-sm text-white outline-none focus:border-primary/50 transition-colors"
+                        />
+                        <Button size="sm" onClick={() => {
+                          if(newActionText.trim()) {
+                            updateNoteData({ actionItems: [...(selectedNote.actionItems || []), { text: newActionText.trim(), assignee: newActionAssignee.trim(), completed: false }] });
+                            setNewActionText('');
+                            setNewActionAssignee('');
+                          }
+                        }}>Add</Button>
+                      </div>
                     </div>
                   </div>
 
@@ -390,105 +422,63 @@ export default function Notes() {
                       <h3 className="text-lg font-semibold text-white">Notes</h3>
                     </div>
                     <ul className="space-y-2 list-disc list-inside text-sm text-gray-300">
-                      {MOCK_NOTES.map((note, i) => (
-                        <li key={i}>{note}</li>
+                      {(selectedNote.generalNotes || []).map((note, i) => (
+                        <li key={i} className="group flex justify-between items-start">
+                          <span className="flex-1">{note}</span>
+                          <button onClick={() => {
+                            const newNotes = [...(selectedNote.generalNotes || [])];
+                            newNotes.splice(i, 1);
+                            updateNoteData({ generalNotes: newNotes });
+                          }} className="opacity-0 group-hover:opacity-100 text-xs text-red-400 hover:text-red-300 ml-4 transition-opacity">
+                            Delete
+                          </button>
+                        </li>
                       ))}
                     </ul>
+                    <div className="flex items-center gap-2 mt-4">
+                      <input 
+                        value={newGeneralNote} 
+                        onChange={(e) => setNewGeneralNote(e.target.value)}
+                        onKeyDown={(e) => {
+                          if(e.key === 'Enter' && newGeneralNote.trim()) {
+                            updateNoteData({ generalNotes: [...(selectedNote.generalNotes || []), newGeneralNote.trim()] });
+                            setNewGeneralNote('');
+                          }
+                        }}
+                        placeholder="Add a new note..."
+                        className="flex-1 bg-card/30 border border-border rounded-lg px-3 py-1.5 text-sm text-white outline-none focus:border-primary/50 transition-colors"
+                      />
+                      <Button size="sm" onClick={() => {
+                        if(newGeneralNote.trim()) {
+                          updateNoteData({ generalNotes: [...(selectedNote.generalNotes || []), newGeneralNote.trim()] });
+                          setNewGeneralNote('');
+                        }
+                      }}>Add</Button>
+                    </div>
                   </div>
 
                 </div>
               </div>
 
               {/* Right Column (Sidebar Insights) */}
-              <div className="w-80 shrink-0 space-y-6">
+              <div className="w-80 shrink-0 space-y-6 hidden lg:block">
                 
-                {/* AI Summary Panel */}
-                <div className="bg-card/40 border border-border rounded-2xl p-5">
-                  <div className="flex items-center gap-2 mb-3">
-                    <Sparkles className="w-4 h-4 text-primary" />
-                    <h4 className="text-sm font-semibold text-white">AI Summary</h4>
-                  </div>
-                  <p className="text-xs text-gray-400 mb-4 leading-relaxed">
-                    Automatically generated from the meeting transcription.
-                  </p>
-                  <Button variant="outline" className="w-full text-xs py-2 bg-primary/10 border-primary/20 text-primary hover:bg-primary/20">
-                    Regenerate
-                  </Button>
-                </div>
-
-                {/* Meeting Details */}
+                {/* Note Details */}
                 <div className="bg-card/40 border border-border rounded-2xl p-5">
                   <div className="flex items-center gap-2 mb-4">
                     <CalendarIcon className="w-4 h-4 text-gray-400" />
-                    <h4 className="text-sm font-semibold text-white">Meeting Details</h4>
+                    <h4 className="text-sm font-semibold text-white">Note Details</h4>
                   </div>
                   <div className="space-y-4">
                     <div>
-                      <div className="text-[10px] text-gray-500 uppercase tracking-wider mb-1">Meeting ID</div>
-                      <div className="text-xs text-gray-300">784-512-988</div>
+                      <div className="text-[10px] text-gray-500 uppercase tracking-wider mb-1">Created At</div>
+                      <div className="text-xs text-gray-300">{new Date(selectedNote.createdAt).toLocaleString()}</div>
                     </div>
                     <div>
-                      <div className="text-[10px] text-gray-500 uppercase tracking-wider mb-1">Host</div>
-                      <div className="text-xs text-gray-300">John Doe</div>
-                    </div>
-                    <div>
-                      <div className="text-[10px] text-gray-500 uppercase tracking-wider mb-1">Duration</div>
-                      <div className="text-xs text-gray-300">30 min</div>
-                    </div>
-                    <div>
-                      <div className="text-[10px] text-gray-500 uppercase tracking-wider mb-2 flex justify-between">
-                        Participants <span>+8</span>
-                      </div>
-                      <div className="flex -space-x-2">
-                        {[1,2,3,4].map(i => (
-                          <img key={i} src="/download.jpg" className="w-7 h-7 rounded-full border-2 border-card object-cover" />
-                        ))}
-                      </div>
+                      <div className="text-[10px] text-gray-500 uppercase tracking-wider mb-1">Last Updated</div>
+                      <div className="text-xs text-gray-300">{new Date(selectedNote.updatedAt).toLocaleString()}</div>
                     </div>
                   </div>
-                </div>
-
-                {/* Files */}
-                <div className="bg-card/40 border border-border rounded-2xl p-5">
-                  <div className="flex items-center justify-between mb-4">
-                    <div className="flex items-center gap-2">
-                      <FileText className="w-4 h-4 text-gray-400" />
-                      <h4 className="text-sm font-semibold text-white">Files</h4>
-                    </div>
-                    <span className="w-5 h-5 rounded-full bg-primary/20 text-primary flex items-center justify-center text-[10px] font-bold">3</span>
-                  </div>
-                  <div className="space-y-3">
-                    <div className="flex items-center gap-3">
-                      <div className="w-8 h-8 rounded bg-red-500/20 text-red-400 flex items-center justify-center shrink-0">
-                        <FileText className="w-4 h-4" />
-                      </div>
-                      <div className="min-w-0">
-                        <div className="text-xs text-white truncate">Dashboard Mockup.fig</div>
-                        <div className="text-[10px] text-gray-500">2.4 MB</div>
-                      </div>
-                    </div>
-                    <div className="flex items-center gap-3">
-                      <div className="w-8 h-8 rounded bg-red-500/20 text-red-400 flex items-center justify-center shrink-0">
-                        <FileText className="w-4 h-4" />
-                      </div>
-                      <div className="min-w-0">
-                        <div className="text-xs text-white truncate">Design System v2.0.pdf</div>
-                        <div className="text-[10px] text-gray-500">1.8 MB</div>
-                      </div>
-                    </div>
-                    <div className="flex items-center gap-3">
-                      <div className="w-8 h-8 rounded bg-green-500/20 text-green-400 flex items-center justify-center shrink-0">
-                        <FileText className="w-4 h-4" />
-                      </div>
-                      <div className="min-w-0">
-                        <div className="text-xs text-white truncate">User Feedback.xlsx</div>
-                        <div className="text-[10px] text-gray-500">1.2 MB</div>
-                      </div>
-                    </div>
-                  </div>
-                  <button className="w-full mt-4 text-xs text-gray-400 hover:text-white transition-colors">
-                    View all files
-                  </button>
                 </div>
 
               </div>

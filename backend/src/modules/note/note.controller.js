@@ -32,7 +32,7 @@ const getNote = asyncHandler(async (req, res) => {
 // @route   POST /api/notes
 // @access  Private
 const createNote = asyncHandler(async (req, res) => {
-  const { title, content, isPinned, meetingId, participants, actionItems, summary } = req.body;
+  const { title, content, isPinned, meetingId, participants, actionItems, decisions, generalNotes, summary } = req.body;
 
   if (!title) {
     res.status(400);
@@ -47,6 +47,8 @@ const createNote = asyncHandler(async (req, res) => {
     meetingId,
     participants,
     actionItems,
+    decisions,
+    generalNotes,
     summary
   });
 

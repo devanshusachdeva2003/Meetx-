@@ -13,6 +13,8 @@ const NoteSchema = new mongoose.Schema({
     assignee: { type: String },
     dueDate: { type: Date }
   }],
+  decisions: [{ type: String }],
+  generalNotes: [{ type: String }],
   summary: { type: String }, // AI Summary text
   createdAt: { type: Date, default: Date.now },
   updatedAt: { type: Date, default: Date.now }

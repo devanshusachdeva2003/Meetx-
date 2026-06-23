@@ -10,11 +10,14 @@ import {
   ChevronLeft,
   ChevronRight,
   FileText,
+  Sun,
+  Moon,
 } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 import { useState, useEffect } from "react";
 import { useNavigate, useLocation, NavLink } from "react-router-dom";
 import { useUser } from "../context/UserContext";
+import { useTheme } from "../context/ThemeContext";
 import Button from "./ui/Button";
 
 const avatarJohn = "/download.jpg";
@@ -53,6 +56,7 @@ export function Sidebar({ mobileOpen, setMobileOpen }) {
   const [showLogoutConfirm, setShowLogoutConfirm] = useState(false);
   const navigate = useNavigate();
   const { user, logoutContext } = useUser();
+  const { theme, toggleTheme } = useTheme();
 
   useEffect(() => {
     localStorage.setItem("sidebarCollapsed", isCollapsed);
@@ -139,7 +143,7 @@ export function Sidebar({ mobileOpen, setMobileOpen }) {
         </nav>
 
         <div className="mt-auto flex flex-col gap-4">
-          {/* {!(isCollapsed && !mobileOpen) && user && (
+          {!(isCollapsed && !mobileOpen) && user && (
             <div className="mt-auto pt-6 border-t border-border">
               <div className="bg-card rounded-2xl p-4 border border-white/5 relative overflow-hidden group">
                 <div className="absolute top-0 right-0 w-24 h-24 bg-primary/10 rounded-full blur-2xl -mr-10 -mt-10 group-hover:bg-primary/20 transition-all duration-500 pointer-events-none" />
