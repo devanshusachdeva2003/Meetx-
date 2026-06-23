@@ -143,8 +143,20 @@ export function Sidebar({ mobileOpen, setMobileOpen }) {
         </nav>
 
         <div className="mt-auto flex flex-col gap-4">
+          <Button
+            variant="none"
+            size="none"
+            onClick={toggleTheme}
+            className={`flex items-center ${isCollapsed && !mobileOpen ? "justify-center" : "gap-3 px-4"} py-3 rounded-2xl text-sm font-medium transition-all cursor-pointer text-gray-400 hover:text-white hover:bg-white/5 border border-border mt-auto`}
+          >
+            {theme === 'dark' ? <Sun className="w-[18px] h-[18px] shrink-0" /> : <Moon className="w-[18px] h-[18px] shrink-0" />}
+            {!(isCollapsed && !mobileOpen) && (
+              <span className="whitespace-nowrap">{theme === 'dark' ? 'Light Mode' : 'Dark Mode'}</span>
+            )}
+          </Button>
+
           {!(isCollapsed && !mobileOpen) && user && (
-            <div className="mt-auto pt-6 border-t border-border">
+            <div className="pt-2 border-t border-border">
               <div className="bg-card rounded-2xl p-4 border border-white/5 relative overflow-hidden group">
                 <div className="absolute top-0 right-0 w-24 h-24 bg-primary/10 rounded-full blur-2xl -mr-10 -mt-10 group-hover:bg-primary/20 transition-all duration-500 pointer-events-none" />
                 <div className="flex items-center gap-2 mb-3 relative z-10">
