@@ -161,7 +161,7 @@ export function Sidebar({ mobileOpen, setMobileOpen }) {
                 </Button>
               </div>
             </div>
-          )} */}
+          )}
 
           {user ? (
             <div
