@@ -16,7 +16,7 @@ import { MeetingHeader } from "../component/meeting/MeetingHeader";
 import { MeetingDock } from "../component/meeting/MeetingDock";
 import { MeetingSidePanel } from "../component/meeting/MeetingSidePanel";
 import { VideoTile } from "../component/meeting/VideoTile";
-import { Users, MicOff } from "lucide-react";
+import { Users, MicOff, Loader2 } from "lucide-react";
 import api from "../utils/api";
 import { PreJoinScreen } from "../component/meeting/PreJoinScreen";
 import { useUser } from "../context/UserContext";
@@ -136,8 +136,10 @@ export default function Meeting() {
 
   if (!token) {
     return (
-      <div className="flex h-screen items-center justify-center bg-[#0B0C10] text-white">
-        Getting token...
+      <div className="flex h-screen w-full flex-col items-center justify-center bg-[#0B0C10] text-gray-200">
+        <Loader2 className="w-10 h-10 animate-spin text-primary mb-4" />
+        <h2 className="text-xl font-bold text-white mb-2">Preparing Meeting</h2>
+        <p className="text-sm text-gray-400">Securing your connection...</p>
       </div>
     );
   }
@@ -354,8 +356,8 @@ function MeetingUI({ id, name }) {
       <MeetingHeader id={id} onLeave={handleLeaveClick} />
 
       <main className="flex-1 w-full h-full pt-20 pb-28 px-4 md:px-8 overflow-hidden relative z-0 flex items-center justify-center">
-        <div className="flex flex-col lg:flex-row gap-4 w-full h-full max-w-7xl mx-auto">
-          <div className="flex-1 min-h-0 min-w-0 rounded-3xl overflow-hidden flex items-center justify-center relative">
+        <motion.div layout className="flex flex-col lg:flex-row gap-4 w-full h-full max-w-7xl mx-auto">
+          <motion.div layout className="flex-1 min-h-0 min-w-0 rounded-3xl overflow-hidden flex items-center justify-center relative">
             {mainIsLocal ? (
               <VideoTile
                 isMain={true}
@@ -376,9 +378,9 @@ function MeetingUI({ id, name }) {
                 }
               />
             )}
-          </div>
+          </motion.div>
 
-          <div className="w-full lg:w-72 flex lg:flex-col gap-4 overflow-x-auto lg:overflow-y-auto shrink-0 snap-x lg:snap-y pb-2 lg:pb-0 hide-scrollbar">
+          <motion.div layout className="w-full lg:w-72 flex lg:flex-col gap-4 overflow-x-auto lg:overflow-y-auto shrink-0 snap-x lg:snap-y pb-2 lg:pb-0 hide-scrollbar">
             {hasRemotes && (
               <VideoTile
                 isMain={false}
@@ -403,8 +405,8 @@ function MeetingUI({ id, name }) {
                   }
                 />
               ))}
-          </div>
-        </div>
+          </motion.div>
+        </motion.div>
       </main>
 
       <MeetingDock
