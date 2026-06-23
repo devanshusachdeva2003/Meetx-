@@ -36,13 +36,13 @@ const menu = [
     path: "/notes",
     public: true,
   },
-  { icon: Users, label: "Contacts", key: "contacts", path: "/contacts" },
-  {
-    icon: PlayCircle,
-    label: "Recordings",
-    key: "recordings",
-    path: "/recordings",
-  },
+  // { icon: Users, label: "Contacts", key: "contacts", path: "/contacts" },
+  // {
+  //   icon: PlayCircle,
+  //   label: "Recordings",
+  //   key: "recordings",
+  //   path: "/recordings",
+  // },
   { icon: Settings, label: "Settings", key: "settings", path: "/settings" },
 ];
 
@@ -139,7 +139,7 @@ export function Sidebar({ mobileOpen, setMobileOpen }) {
         </nav>
 
         <div className="mt-auto flex flex-col gap-4">
-          {!(isCollapsed && !mobileOpen) && user && (
+          {/* {!(isCollapsed && !mobileOpen) && user && (
             <div className="mt-auto pt-6 border-t border-border">
               <div className="bg-card rounded-2xl p-4 border border-white/5 relative overflow-hidden group">
                 <div className="absolute top-0 right-0 w-24 h-24 bg-primary/10 rounded-full blur-2xl -mr-10 -mt-10 group-hover:bg-primary/20 transition-all duration-500 pointer-events-none" />
@@ -157,7 +157,7 @@ export function Sidebar({ mobileOpen, setMobileOpen }) {
                 </Button>
               </div>
             </div>
-          )}
+          )} */}
 
           {user ? (
             <div
