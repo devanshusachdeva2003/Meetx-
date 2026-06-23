@@ -12,8 +12,8 @@ const menu = [
   { icon: Video, label: "Meetings", key: "meetings", path: '/meetings', public: true },
   { icon: Calendar, label: "Calendar", key: "calendar", path: '/calendar' },
   { icon: FileText, label: "Notes", key: "notes", path: '/notes', public: true },
-  { icon: Users, label: "Contacts", key: "contacts", path: '/contacts' },
-  { icon: PlayCircle, label: "Recordings", key: "recordings", path: '/recordings' },
+  // { icon: Users, label: "Contacts", key: "contacts", path: '/contacts' },
+  // { icon: PlayCircle, label: "Recordings", key: "recordings", path: '/recordings' },
   { icon: Settings, label: "Settings", key: "settings", path: '/settings' },
 ];
 
