@@ -1,0 +1,104 @@
+[2026-06-24T19:06:01.483Z] MongoAPIError: URI must include hostname, domain name, and tld
+MongoAPIError: URI must include hostname, domain name, and tld
+    at resolveSRVRecord (C:\Users\sunil\OneDrive\Desktop\Meetx-\backend\node_modules\mongodb\lib\connection_string.js:37:15)
+    at MongoClient._connect (C:\Users\sunil\OneDrive\Desktop\Meetx-\backend\node_modules\mongodb\lib\mongo_client.js:143:74)
+    at MongoClient.connect (C:\Users\sunil\OneDrive\Desktop\Meetx-\backend\node_modules\mongodb\lib\mongo_client.js:122:40)
+    at NativeConnection.createClient (C:\Users\sunil\OneDrive\Desktop\Meetx-\backend\node_modules\mongoose\lib\drivers\node-mongodb-native\connection.js:296:16)
+    at NativeConnection.openUri (C:\Users\sunil\OneDrive\Desktop\Meetx-\backend\node_modules\mongoose\lib\connection.js:766:34)
+    at Mongoose.connect (C:\Users\sunil\OneDrive\Desktop\Meetx-\backend\node_modules\mongoose\lib\index.js:416:15)
+    at connectDB (C:\Users\sunil\OneDrive\Desktop\Meetx-\backend\src\config\db.js:18:34)
+    at ensureDBConnection (C:\Users\sunil\OneDrive\Desktop\Meetx-\backend\src\config\db.js:40:13)
+    at Layer.handle [as handle_request] (C:\Users\sunil\OneDrive\Desktop\Meetx-\backend\node_modules\express\lib\router\layer.js:95:5)
+    at trim_prefix (C:\Users\sunil\OneDrive\Desktop\Meetx-\backend\node_modules\express\lib\router\index.js:328:13)
+
+[2026-06-24T19:06:01.500Z] MongoAPIError: URI must include hostname, domain name, and tld
+MongoAPIError: URI must include hostname, domain name, and tld
+    at resolveSRVRecord (C:\Users\sunil\OneDrive\Desktop\Meetx-\backend\node_modules\mongodb\lib\connection_string.js:37:15)
+    at MongoClient._connect (C:\Users\sunil\OneDrive\Desktop\Meetx-\backend\node_modules\mongodb\lib\mongo_client.js:143:74)
+    at MongoClient.connect (C:\Users\sunil\OneDrive\Desktop\Meetx-\backend\node_modules\mongodb\lib\mongo_client.js:122:40)
+    at NativeConnection.createClient (C:\Users\sunil\OneDrive\Desktop\Meetx-\backend\node_modules\mongoose\lib\drivers\node-mongodb-native\connection.js:296:16)
+    at NativeConnection.openUri (C:\Users\sunil\OneDrive\Desktop\Meetx-\backend\node_modules\mongoose\lib\connection.js:766:34)
+    at Mongoose.connect (C:\Users\sunil\OneDrive\Desktop\Meetx-\backend\node_modules\mongoose\lib\index.js:416:15)
+    at connectDB (C:\Users\sunil\OneDrive\Desktop\Meetx-\backend\src\config\db.js:18:34)
+    at ensureDBConnection (C:\Users\sunil\OneDrive\Desktop\Meetx-\backend\src\config\db.js:40:13)
+    at Layer.handle [as handle_request] (C:\Users\sunil\OneDrive\Desktop\Meetx-\backend\node_modules\express\lib\router\layer.js:95:5)
+    at trim_prefix (C:\Users\sunil\OneDrive\Desktop\Meetx-\backend\node_modules\express\lib\router\index.js:328:13)
+
+[2026-06-24T19:06:01.514Z] MongoAPIError: URI must include hostname, domain name, and tld
+MongoAPIError: URI must include hostname, domain name, and tld
+    at resolveSRVRecord (C:\Users\sunil\OneDrive\Desktop\Meetx-\backend\node_modules\mongodb\lib\connection_string.js:37:15)
+    at MongoClient._connect (C:\Users\sunil\OneDrive\Desktop\Meetx-\backend\node_modules\mongodb\lib\mongo_client.js:143:74)
+    at MongoClient.connect (C:\Users\sunil\OneDrive\Desktop\Meetx-\backend\node_modules\mongodb\lib\mongo_client.js:122:40)
+    at NativeConnection.createClient (C:\Users\sunil\OneDrive\Desktop\Meetx-\backend\node_modules\mongoose\lib\drivers\node-mongodb-native\connection.js:296:16)
+    at NativeConnection.openUri (C:\Users\sunil\OneDrive\Desktop\Meetx-\backend\node_modules\mongoose\lib\connection.js:766:34)
+    at Mongoose.connect (C:\Users\sunil\OneDrive\Desktop\Meetx-\backend\node_modules\mongoose\lib\index.js:416:15)
+    at connectDB (C:\Users\sunil\OneDrive\Desktop\Meetx-\backend\src\config\db.js:18:34)
+    at ensureDBConnection (C:\Users\sunil\OneDrive\Desktop\Meetx-\backend\src\config\db.js:40:13)
+    at Layer.handle [as handle_request] (C:\Users\sunil\OneDrive\Desktop\Meetx-\backend\node_modules\express\lib\router\layer.js:95:5)
+    at trim_prefix (C:\Users\sunil\OneDrive\Desktop\Meetx-\backend\node_modules\express\lib\router\index.js:328:13)
+
+[2026-06-24T19:06:01.526Z] MongoAPIError: URI must include hostname, domain name, and tld
+MongoAPIError: URI must include hostname, domain name, and tld
+    at resolveSRVRecord (C:\Users\sunil\OneDrive\Desktop\Meetx-\backend\node_modules\mongodb\lib\connection_string.js:37:15)
+    at MongoClient._connect (C:\Users\sunil\OneDrive\Desktop\Meetx-\backend\node_modules\mongodb\lib\mongo_client.js:143:74)
+    at MongoClient.connect (C:\Users\sunil\OneDrive\Desktop\Meetx-\backend\node_modules\mongodb\lib\mongo_client.js:122:40)
+    at NativeConnection.createClient (C:\Users\sunil\OneDrive\Desktop\Meetx-\backend\node_modules\mongoose\lib\drivers\node-mongodb-native\connection.js:296:16)
+    at NativeConnection.openUri (C:\Users\sunil\OneDrive\Desktop\Meetx-\backend\node_modules\mongoose\lib\connection.js:766:34)
+    at Mongoose.connect (C:\Users\sunil\OneDrive\Desktop\Meetx-\backend\node_modules\mongoose\lib\index.js:416:15)
+    at connectDB (C:\Users\sunil\OneDrive\Desktop\Meetx-\backend\src\config\db.js:18:34)
+    at ensureDBConnection (C:\Users\sunil\OneDrive\Desktop\Meetx-\backend\src\config\db.js:40:13)
+    at Layer.handle [as handle_request] (C:\Users\sunil\OneDrive\Desktop\Meetx-\backend\node_modules\express\lib\router\layer.js:95:5)
+    at trim_prefix (C:\Users\sunil\OneDrive\Desktop\Meetx-\backend\node_modules\express\lib\router\index.js:328:13)
+
+[2026-06-24T19:06:01.532Z] MongoAPIError: URI must include hostname, domain name, and tld
+MongoAPIError: URI must include hostname, domain name, and tld
+    at resolveSRVRecord (C:\Users\sunil\OneDrive\Desktop\Meetx-\backend\node_modules\mongodb\lib\connection_string.js:37:15)
+    at MongoClient._connect (C:\Users\sunil\OneDrive\Desktop\Meetx-\backend\node_modules\mongodb\lib\mongo_client.js:143:74)
+    at MongoClient.connect (C:\Users\sunil\OneDrive\Desktop\Meetx-\backend\node_modules\mongodb\lib\mongo_client.js:122:40)
+    at NativeConnection.createClient (C:\Users\sunil\OneDrive\Desktop\Meetx-\backend\node_modules\mongoose\lib\drivers\node-mongodb-native\connection.js:296:16)
+    at NativeConnection.openUri (C:\Users\sunil\OneDrive\Desktop\Meetx-\backend\node_modules\mongoose\lib\connection.js:766:34)
+    at Mongoose.connect (C:\Users\sunil\OneDrive\Desktop\Meetx-\backend\node_modules\mongoose\lib\index.js:416:15)
+    at connectDB (C:\Users\sunil\OneDrive\Desktop\Meetx-\backend\src\config\db.js:18:34)
+    at ensureDBConnection (C:\Users\sunil\OneDrive\Desktop\Meetx-\backend\src\config\db.js:40:13)
+    at Layer.handle [as handle_request] (C:\Users\sunil\OneDrive\Desktop\Meetx-\backend\node_modules\express\lib\router\layer.js:95:5)
+    at trim_prefix (C:\Users\sunil\OneDrive\Desktop\Meetx-\backend\node_modules\express\lib\router\index.js:328:13)
+
+[2026-06-24T19:06:01.555Z] MongoAPIError: URI must include hostname, domain name, and tld
+MongoAPIError: URI must include hostname, domain name, and tld
+    at resolveSRVRecord (C:\Users\sunil\OneDrive\Desktop\Meetx-\backend\node_modules\mongodb\lib\connection_string.js:37:15)
+    at MongoClient._connect (C:\Users\sunil\OneDrive\Desktop\Meetx-\backend\node_modules\mongodb\lib\mongo_client.js:143:74)
+    at MongoClient.connect (C:\Users\sunil\OneDrive\Desktop\Meetx-\backend\node_modules\mongodb\lib\mongo_client.js:122:40)
+    at NativeConnection.createClient (C:\Users\sunil\OneDrive\Desktop\Meetx-\backend\node_modules\mongoose\lib\drivers\node-mongodb-native\connection.js:296:16)
+    at NativeConnection.openUri (C:\Users\sunil\OneDrive\Desktop\Meetx-\backend\node_modules\mongoose\lib\connection.js:766:34)
+    at Mongoose.connect (C:\Users\sunil\OneDrive\Desktop\Meetx-\backend\node_modules\mongoose\lib\index.js:416:15)
+    at connectDB (C:\Users\sunil\OneDrive\Desktop\Meetx-\backend\src\config\db.js:18:34)
+    at ensureDBConnection (C:\Users\sunil\OneDrive\Desktop\Meetx-\backend\src\config\db.js:40:13)
+    at Layer.handle [as handle_request] (C:\Users\sunil\OneDrive\Desktop\Meetx-\backend\node_modules\express\lib\router\layer.js:95:5)
+    at trim_prefix (C:\Users\sunil\OneDrive\Desktop\Meetx-\backend\node_modules\express\lib\router\index.js:328:13)
+
+[2026-06-24T19:06:06.388Z] MongoAPIError: URI must include hostname, domain name, and tld
+MongoAPIError: URI must include hostname, domain name, and tld
+    at resolveSRVRecord (C:\Users\sunil\OneDrive\Desktop\Meetx-\backend\node_modules\mongodb\lib\connection_string.js:37:15)
+    at MongoClient._connect (C:\Users\sunil\OneDrive\Desktop\Meetx-\backend\node_modules\mongodb\lib\mongo_client.js:143:74)
+    at MongoClient.connect (C:\Users\sunil\OneDrive\Desktop\Meetx-\backend\node_modules\mongodb\lib\mongo_client.js:122:40)
+    at NativeConnection.createClient (C:\Users\sunil\OneDrive\Desktop\Meetx-\backend\node_modules\mongoose\lib\drivers\node-mongodb-native\connection.js:296:16)
+    at NativeConnection.openUri (C:\Users\sunil\OneDrive\Desktop\Meetx-\backend\node_modules\mongoose\lib\connection.js:766:34)
+    at Mongoose.connect (C:\Users\sunil\OneDrive\Desktop\Meetx-\backend\node_modules\mongoose\lib\index.js:416:15)
+    at connectDB (C:\Users\sunil\OneDrive\Desktop\Meetx-\backend\src\config\db.js:18:34)
+    at ensureDBConnection (C:\Users\sunil\OneDrive\Desktop\Meetx-\backend\src\config\db.js:40:13)
+    at Layer.handle [as handle_request] (C:\Users\sunil\OneDrive\Desktop\Meetx-\backend\node_modules\express\lib\router\layer.js:95:5)
+    at trim_prefix (C:\Users\sunil\OneDrive\Desktop\Meetx-\backend\node_modules\express\lib\router\index.js:328:13)
+
+[2026-06-24T19:06:07.957Z] MongoAPIError: URI must include hostname, domain name, and tld
+MongoAPIError: URI must include hostname, domain name, and tld
+    at resolveSRVRecord (C:\Users\sunil\OneDrive\Desktop\Meetx-\backend\node_modules\mongodb\lib\connection_string.js:37:15)
+    at MongoClient._connect (C:\Users\sunil\OneDrive\Desktop\Meetx-\backend\node_modules\mongodb\lib\mongo_client.js:143:74)
+    at MongoClient.connect (C:\Users\sunil\OneDrive\Desktop\Meetx-\backend\node_modules\mongodb\lib\mongo_client.js:122:40)
+    at NativeConnection.createClient (C:\Users\sunil\OneDrive\Desktop\Meetx-\backend\node_modules\mongoose\lib\drivers\node-mongodb-native\connection.js:296:16)
+    at NativeConnection.openUri (C:\Users\sunil\OneDrive\Desktop\Meetx-\backend\node_modules\mongoose\lib\connection.js:766:34)
+    at Mongoose.connect (C:\Users\sunil\OneDrive\Desktop\Meetx-\backend\node_modules\mongoose\lib\index.js:416:15)
+    at connectDB (C:\Users\sunil\OneDrive\Desktop\Meetx-\backend\src\config\db.js:18:34)
+    at ensureDBConnection (C:\Users\sunil\OneDrive\Desktop\Meetx-\backend\src\config\db.js:40:13)
+    at Layer.handle [as handle_request] (C:\Users\sunil\OneDrive\Desktop\Meetx-\backend\node_modules\express\lib\router\layer.js:95:5)
+    at trim_prefix (C:\Users\sunil\OneDrive\Desktop\Meetx-\backend\node_modules\express\lib\router\index.js:328:13)
+
