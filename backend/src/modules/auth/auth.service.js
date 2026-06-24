@@ -201,6 +201,14 @@ const updateUserById = async (id, data) => {
   return user;
 };
 
+const updateUserAvatar = async (id, avatarUrl) => {
+  const user = await User.findByIdAndUpdate(id, { avatar: avatarUrl }, { new: true }).select('-passwordHash');
+  if (!user) {
+    throw new Error('User not found');
+  }
+  return user;
+};
+
 const generateGoogleAuthUrl = () => {
   const client = getGoogleClient();
   const url = client.generateAuthUrl({
@@ -261,6 +269,7 @@ module.exports = {
   loginUser,
   getUserById,
   updateUserById,
+  updateUserAvatar,
   createAndSendOTP,
   forgotPassword,
   resetPassword,

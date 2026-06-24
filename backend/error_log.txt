@@ -102,3 +102,33 @@ MongoAPIError: URI must include hostname, domain name, and tld
     at Layer.handle [as handle_request] (C:\Users\sunil\OneDrive\Desktop\Meetx-\backend\node_modules\express\lib\router\layer.js:95:5)
     at trim_prefix (C:\Users\sunil\OneDrive\Desktop\Meetx-\backend\node_modules\express\lib\router\index.js:328:13)
 
+[2026-06-24T19:44:42.980Z] Error: Meeting not found
+Error: Meeting not found
+    at C:\Users\sunil\OneDrive\Desktop\Meetx-\backend\src\modules\meeting\meeting.controller.js:37:11
+    at process.processTicksAndRejections (node:internal/process/task_queues:105:5)
+
+[2026-06-24T19:44:42.985Z] Error: Meeting not found
+Error: Meeting not found
+    at C:\Users\sunil\OneDrive\Desktop\Meetx-\backend\src\modules\meeting\meeting.controller.js:37:11
+    at process.processTicksAndRejections (node:internal/process/task_queues:105:5)
+
+[2026-06-24T19:48:28.522Z] Error: Meeting not found
+Error: Meeting not found
+    at C:\Users\sunil\OneDrive\Desktop\Meetx-\backend\src\modules\meeting\meeting.controller.js:37:11
+    at process.processTicksAndRejections (node:internal/process/task_queues:105:5)
+
+[2026-06-24T19:48:28.529Z] Error: Meeting not found
+Error: Meeting not found
+    at C:\Users\sunil\OneDrive\Desktop\Meetx-\backend\src\modules\meeting\meeting.controller.js:37:11
+    at process.processTicksAndRejections (node:internal/process/task_queues:105:5)
+
+[2026-06-24T19:51:54.203Z] Error: Cloudinary upload failed: Invalid cloud_name your_cloud_name_here
+Error: Cloudinary upload failed: Invalid cloud_name your_cloud_name_here
+    at C:\Users\sunil\OneDrive\Desktop\Meetx-\backend\src\modules\meeting\meeting.controller.js:190:11
+    at process.processTicksAndRejections (node:internal/process/task_queues:105:5)
+
+[2026-06-24T19:52:08.290Z] Error: Cloudinary upload failed: Invalid cloud_name your_cloud_name_here
+Error: Cloudinary upload failed: Invalid cloud_name your_cloud_name_here
+    at C:\Users\sunil\OneDrive\Desktop\Meetx-\backend\src\modules\meeting\meeting.controller.js:190:11
+    at process.processTicksAndRejections (node:internal/process/task_queues:105:5)
+

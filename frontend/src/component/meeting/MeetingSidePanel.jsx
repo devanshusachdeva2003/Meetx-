@@ -1,6 +1,7 @@
-import React from 'react';
-import { X, Mic, MicOff, Camera, CameraOff, Send } from 'lucide-react';
+import React, { useState, useRef } from 'react';
+import { X, Mic, MicOff, Camera, CameraOff, Send, Paperclip, Loader2, FileText, Image as ImageIcon } from 'lucide-react';
 import Button from '../ui/Button';
+import api from '../../utils/api';
 
 export function MeetingSidePanel({
   showChat,
@@ -17,8 +18,51 @@ export function MeetingSidePanel({
   socketId,
   isHost,
   onMute,
-  onRemove
+  onRemove,
+  roomId
 }) {
+  const [isUploading, setIsUploading] = useState(false);
+  const fileInputRef = useRef(null);
+
+  const handleFileUpload = async (e) => {
+    const file = e.target.files[0];
+    if (!file) return;
+
+    // 100 MB size limit
+    if (file.size > 100 * 1024 * 1024) {
+      alert("File size exceeds the 100MB limit.");
+      e.target.value = '';
+      return;
+    }
+
+    setIsUploading(true);
+    const formData = new FormData();
+    formData.append('file', file);
+
+    try {
+      const res = await api.post(`/meetings/${roomId}/share`, formData, {
+        headers: {
+          'Content-Type': 'multipart/form-data'
+        }
+      });
+      if (res.data.success) {
+        // Construct a special chat message
+        const msgObj = { 
+          text: `Shared a file: ${res.data.file.name}`, 
+          file: res.data.file,
+          user: localUser 
+        };
+        onSendMessage(msgObj);
+      }
+    } catch (err) {
+      console.error(err);
+      alert('Upload failed');
+    } finally {
+      setIsUploading(false);
+      e.target.value = '';
+    }
+  };
+
   if (!showChat && !showParticipants) return null;
 
   return (
@@ -91,7 +135,20 @@ export function MeetingSidePanel({
                 <div key={idx} className={`flex flex-col ${msg.user?.name === localUser?.name ? 'items-end' : 'items-start'}`}>
                   <span className="text-[10px] text-white/50 mb-1">{msg.user?.name || 'Guest'}</span>
                   <div className={`px-4 py-2 rounded-2xl max-w-[80%] text-sm ${msg.user?.name === localUser?.name ? 'bg-primary text-white rounded-tr-sm' : 'bg-white/10 rounded-tl-sm'}`}>
-                    {msg.text}
+                    {msg.file ? (
+                      <div className="flex flex-col gap-2">
+                        {msg.file.type === 'image' && msg.file.format !== 'pdf' ? (
+                          <img src={msg.file.url} alt={msg.file.name} className="max-w-full rounded-lg" />
+                        ) : (
+                          <a href={msg.file.url} target="_blank" rel="noreferrer" className="flex items-center gap-2 text-white hover:underline bg-white/10 px-3 py-2 rounded-lg">
+                            <FileText size={16} />
+                            <span className="truncate">Download {msg.file.name}</span>
+                          </a>
+                        )}
+                      </div>
+                    ) : (
+                      msg.text
+                    )}
                   </div>
                 </div>
               ))
@@ -113,12 +170,20 @@ export function MeetingSidePanel({
               className="bg-transparent flex-1 text-sm outline-none py-2"
               value={chatMessage}
               onChange={(e) => setChatMessage(e.target.value)}
-              onKeyDown={(e) => e.key === 'Enter' && onSendMessage()}
+              onKeyDown={(e) => e.key === 'Enter' && onSendMessage(null)}
             />
+            {isHost && (
+              <>
+                <input type="file" className="hidden" ref={fileInputRef} onChange={handleFileUpload} />
+                <Button variant="none" size="icon" className="hover:bg-white/5" disabled={isUploading} onClick={() => fileInputRef.current?.click()}>
+                  {isUploading ? <Loader2 className="w-4 h-4 animate-spin" /> : <Paperclip className="w-4 h-4" />}
+                </Button>
+              </>
+            )}
             <Button 
               variant="soft"
               size="icon"
-              onClick={onSendMessage}
+              onClick={() => onSendMessage(null)}
             >
               <Send />
             </Button>

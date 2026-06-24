@@ -180,7 +180,7 @@ export function Sidebar({ mobileOpen, setMobileOpen }) {
               className={`flex items-center ${isCollapsed && !mobileOpen ? "justify-center" : "gap-3 p-2"} rounded-xl hover:bg-muted transition-colors cursor-pointer mt-2`}
             >
               <img
-                src={avatarJohn}
+                src={user?.avatar || avatarJohn}
                 alt={user.name}
                 className="w-10 h-10 rounded-full object-cover ring-2 ring-primary/40 shrink-0"
               />

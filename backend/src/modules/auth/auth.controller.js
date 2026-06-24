@@ -1,6 +1,8 @@
 const authService = require('./auth.service');
 const { sendSuccess, sendError } = require('../../utils/responseHandler');
 const asyncHandler = require('../../utils/asyncHandler');
+const cloudinary = require('../../utils/cloudinary');
+const fs = require('fs');
 
 const register = async (req, res) => {
   try {
@@ -74,6 +76,7 @@ const getMe = async (req, res) => {
         name: user.name, 
         email: user.email, 
         phone: user.phone,
+        avatar: user.avatar,
         requiresTwoFactorAuth: user.requiresTwoFactorAuth
       }
     });
@@ -91,6 +94,7 @@ const updateMe = asyncHandler(async (req, res) => {
       name: user.name, 
       email: user.email, 
       phone: user.phone,
+      avatar: user.avatar,
       requiresTwoFactorAuth: user.requiresTwoFactorAuth
     }
   });
@@ -168,6 +172,61 @@ const googleLogin = async (req, res) => {
   }
 };
 
+const uploadAvatar = async (req, res) => {
+  if (!req.file) {
+    return sendError(res, 400, 'No file uploaded');
+  }
+
+  try {
+    const result = await cloudinary.uploader.upload(req.file.path, {
+      folder: 'meetx_avatars',
+      resource_type: 'image',
+      transformation: [
+        { width: 500, height: 500, crop: 'fill', gravity: 'face' }
+      ]
+    });
+
+    fs.unlinkSync(req.file.path);
+
+    const user = await authService.updateUserAvatar(req.user.id, result.secure_url);
+
+    return sendSuccess(res, 200, 'Avatar updated successfully', {
+      user: {
+        id: user._id, 
+        name: user.name, 
+        email: user.email, 
+        phone: user.phone,
+        avatar: user.avatar,
+        requiresTwoFactorAuth: user.requiresTwoFactorAuth
+      }
+    });
+  } catch (error) {
+    if (req.file && fs.existsSync(req.file.path)) {
+      fs.unlinkSync(req.file.path);
+    }
+    return sendError(res, 400, 'Failed to upload avatar: ' + error.message);
+  }
+};
+
+const removeAvatar = async (req, res) => {
+  try {
+    const user = await authService.updateUserAvatar(req.user.id, null);
+    
+    return sendSuccess(res, 200, 'Avatar removed successfully', {
+      user: {
+        id: user._id, 
+        name: user.name, 
+        email: user.email, 
+        phone: user.phone,
+        avatar: user.avatar,
+        requiresTwoFactorAuth: user.requiresTwoFactorAuth
+      }
+    });
+  } catch (error) {
+    return sendError(res, 400, 'Failed to remove avatar: ' + error.message);
+  }
+};
+
 module.exports = {
   register,
   verifyOtp,
@@ -178,5 +237,7 @@ module.exports = {
   forgotPassword,
   resetPassword,
   getGoogleAuthUrl,
-  googleLogin
+  googleLogin,
+  uploadAvatar,
+  removeAvatar
 };

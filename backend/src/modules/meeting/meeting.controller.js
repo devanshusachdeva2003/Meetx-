@@ -1,6 +1,8 @@
 const Meeting = require('./meeting.model');
 const { AccessToken, RoomServiceClient } = require('livekit-server-sdk');
 const asyncHandler = require('../../utils/asyncHandler');
+const cloudinary = require('../../utils/cloudinary');
+const fs = require('fs');
 
 const getRoomService = () => {
   if (!process.env.LIVEKIT_URL || !process.env.LIVEKIT_API_KEY || !process.env.LIVEKIT_API_SECRET) {
@@ -139,4 +141,66 @@ const muteParticipant = asyncHandler(async (req, res) => {
   res.json({ success: true, message: `Participant ${trackType} ${muted ? 'muted' : 'unmuted'}` });
 });
 
-module.exports = { createMeeting, getMeeting, getMeetings, getLiveKitToken, removeParticipant, muteParticipant };
+const shareFile = asyncHandler(async (req, res) => {
+  const { id } = req.params; // room id
+
+  if (!req.user || !req.user.id) {
+    res.status(401);
+    throw new Error('Unauthorized');
+  }
+
+  const meeting = await Meeting.findOne({ roomId: id });
+  if (!meeting) {
+    res.status(404);
+    throw new Error('Meeting not found');
+  }
+
+  if (meeting.host.toString() !== req.user.id) {
+    res.status(403);
+    throw new Error('Forbidden. Only host can share files.');
+  }
+
+  if (!req.file) {
+    res.status(400);
+    throw new Error('No file uploaded');
+  }
+
+  try {
+    const originalNameWithoutExt = req.file.originalname.includes('.') 
+      ? req.file.originalname.split('.').slice(0, -1).join('.') 
+      : req.file.originalname;
+
+    const result = await cloudinary.uploader.upload(req.file.path, {
+      resource_type: 'auto',
+      folder: 'meetx_shared_files',
+      public_id: `${originalNameWithoutExt}_${Date.now()}`
+    });
+    
+    // Clean up local temp file
+    fs.unlinkSync(req.file.path);
+
+    let finalUrl = result.secure_url;
+    // If it's a PDF, force download to bypass inline viewing restrictions
+    // (We use resource_type 'auto' so it uploads as 'image' and avoids the 401 Raw restriction)
+    if (result.format === 'pdf' || req.file.originalname.toLowerCase().endsWith('.pdf')) {
+      finalUrl = finalUrl.replace('/upload/', '/upload/fl_attachment/');
+    }
+
+    res.json({ 
+      success: true, 
+      file: {
+        url: finalUrl,
+        name: req.file.originalname,
+        type: result.resource_type,
+        format: result.format
+      }
+    });
+  } catch (error) {
+    // Attempt to clean up
+    if (fs.existsSync(req.file.path)) fs.unlinkSync(req.file.path);
+    res.status(500);
+    throw new Error('Cloudinary upload failed: ' + error.message);
+  }
+});
+
+module.exports = { createMeeting, getMeeting, getMeetings, getLiveKitToken, removeParticipant, muteParticipant, shareFile };

@@ -295,7 +295,14 @@ function MeetingUI({ id, name }) {
     }
   });
 
-  const handleSendMessage = () => {
+  const handleSendMessage = (customMsgObj = null) => {
+    if (customMsgObj) {
+      const encoder = new TextEncoder();
+      send(encoder.encode(JSON.stringify(customMsgObj)), { reliable: true });
+      setChatMessages((prev) => [...prev, customMsgObj]);
+      return;
+    }
+    
     if (chatMessage.trim()) {
       const msgObj = { text: chatMessage, user: { name } };
       const encoder = new TextEncoder();
@@ -429,6 +436,7 @@ function MeetingUI({ id, name }) {
       />
 
       <MeetingSidePanel
+        roomId={id}
         showChat={showChat}
         showParticipants={showParticipants}
         onClose={() => {
