@@ -95,11 +95,11 @@ export function PreJoinScreen({ name, onJoin }) {
   };
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-[#0B0C10] text-white p-4 py-8 md:p-8">
-      <div className="bg-card w-full max-w-5xl rounded-3xl border border-white/10 shadow-2xl overflow-hidden flex flex-col lg:flex-row">
+    <div className="min-h-screen flex items-center justify-center bg-background text-foreground p-4 py-8 md:p-8">
+      <div className="bg-card w-full max-w-5xl rounded-3xl border border-border shadow-2xl overflow-hidden flex flex-col lg:flex-row">
         
         {/* Left Side: Preview */}
-        <div className="lg:w-3/5 bg-black/40 relative aspect-video lg:aspect-auto flex items-center justify-center border-b lg:border-b-0 lg:border-r border-white/10 min-h-[300px]">
+        <div className="lg:w-3/5 bg-black/40 relative aspect-video lg:aspect-auto flex items-center justify-center border-b lg:border-b-0 lg:border-r border-border min-h-[300px]">
           {videoEnabled ? (
             <video 
               ref={videoRef} 
@@ -110,8 +110,8 @@ export function PreJoinScreen({ name, onJoin }) {
               style={{ transform: "scaleX(-1)" }} // Mirror effect
             />
           ) : (
-            <div className="flex flex-col items-center justify-center text-white/40">
-              <div className="w-24 h-24 rounded-full bg-white/5 flex items-center justify-center mb-4 border border-white/10 shadow-inner">
+            <div className="flex flex-col items-center justify-center text-muted-foreground">
+              <div className="w-24 h-24 rounded-full bg-muted flex items-center justify-center mb-4 border border-border shadow-inner">
                 <VideoOff className="w-10 h-10" />
               </div>
               <p className="font-medium">Camera is off</p>
@@ -122,14 +122,14 @@ export function PreJoinScreen({ name, onJoin }) {
              <button 
                 type="button"
                 onClick={() => methods.setValue('audioEnabled', !audioEnabled)}
-                className={`p-3 rounded-2xl backdrop-blur-md border border-white/10 shadow-lg transition-all ${audioEnabled ? 'bg-black/50 hover:bg-black/70 text-white' : 'bg-red-500/80 hover:bg-red-500 text-white'}`}
+                className={`p-3 rounded-2xl backdrop-blur-md border border-border shadow-lg transition-all ${audioEnabled ? 'bg-background/50 hover:bg-background/80 text-foreground' : 'bg-red-500/80 hover:bg-red-500 text-white'}`}
              >
                {audioEnabled ? <Mic className="w-5 h-5" /> : <MicOff className="w-5 h-5" />}
              </button>
              <button 
                 type="button"
                 onClick={() => methods.setValue('videoEnabled', !videoEnabled)}
-                className={`p-3 rounded-2xl backdrop-blur-md border border-white/10 shadow-lg transition-all ${videoEnabled ? 'bg-black/50 hover:bg-black/70 text-white' : 'bg-red-500/80 hover:bg-red-500 text-white'}`}
+                className={`p-3 rounded-2xl backdrop-blur-md border border-border shadow-lg transition-all ${videoEnabled ? 'bg-background/50 hover:bg-background/80 text-foreground' : 'bg-red-500/80 hover:bg-red-500 text-white'}`}
              >
                {videoEnabled ? <Video className="w-5 h-5" /> : <VideoOff className="w-5 h-5" />}
              </button>
@@ -139,7 +139,7 @@ export function PreJoinScreen({ name, onJoin }) {
         {/* Right Side: Controls */}
         <div className="lg:w-2/5 p-6 md:p-8 flex flex-col justify-center bg-card max-h-[85vh] lg:max-h-[90vh] overflow-y-auto hide-scrollbar">
           <h2 className="text-2xl md:text-3xl font-bold mb-2">Ready to join?</h2>
-          <p className="text-white/60 mb-6 text-sm">Configure your settings before entering.</p>
+          <p className="text-muted-foreground mb-6 text-sm">Configure your settings before entering.</p>
           
           <FormProvider {...methods}>
             <form onSubmit={methods.handleSubmit(onSubmit)} className="flex flex-col gap-4 text-left">
@@ -187,7 +187,7 @@ export function PreJoinScreen({ name, onJoin }) {
                 />
               </div>
               
-              <div className="pt-4 mt-2 border-t border-white/10">
+              <div className="pt-4 mt-2 border-t border-border">
                 <Button
                   type="submit"
                   disabled={!methods.watch("username")?.trim()}
