@@ -19,8 +19,8 @@ export function MeetingCard({ title, meta, avatars, extra, action = "join", icon
         <Icon className="w-5 h-5 text-primary" />
       </div>
       <div className="flex-1 min-w-0">
-        <p className="font-semibold text-sm text-white truncate">{title}</p>
-        <p className="text-xs text-gray-400 truncate mt-0.5">{meta}</p>
+        <p className="font-semibold text-sm text-foreground truncate">{title}</p>
+        <p className="text-xs text-muted-foreground truncate mt-0.5">{meta}</p>
       </div>
       <div className="flex -space-x-2 shrink-0 mr-2">
         {Array.from({ length: avatars }).map((_, i) => (

@@ -128,7 +128,7 @@ export function Sidebar({ mobileOpen, setMobileOpen }) {
                     className={`relative flex items-center ${isCollapsed && !mobileOpen ? "justify-center" : "gap-3 px-4"} py-3 rounded-2xl text-sm font-medium transition-all cursor-pointer ${
                       isActive
                         ? "gradient-primary shadow-[0_0_20px_rgba(168,85,247,0.3)] text-white"
-                        : "text-gray-400 hover:text-white hover:bg-white/5"
+                        : "text-muted-foreground hover:text-foreground hover:bg-muted"
                     }`}
                   >
                     <Icon className="w-[18px] h-[18px] shrink-0" />
@@ -147,7 +147,7 @@ export function Sidebar({ mobileOpen, setMobileOpen }) {
             variant="none"
             size="none"
             onClick={toggleTheme}
-            className={`flex items-center ${isCollapsed && !mobileOpen ? "justify-center" : "gap-3 px-4"} py-3 rounded-2xl text-sm font-medium transition-all cursor-pointer text-gray-400 hover:text-white hover:bg-white/5 border border-border mt-auto`}
+            className={`flex items-center ${isCollapsed && !mobileOpen ? "justify-center" : "gap-3 px-4"} py-3 rounded-2xl text-sm font-medium transition-all cursor-pointer text-muted-foreground hover:text-foreground hover:bg-muted border border-border mt-auto`}
           >
             {theme === 'dark' ? <Sun className="w-[18px] h-[18px] shrink-0" /> : <Moon className="w-[18px] h-[18px] shrink-0" />}
             {!(isCollapsed && !mobileOpen) && (
@@ -177,7 +177,7 @@ export function Sidebar({ mobileOpen, setMobileOpen }) {
 
           {user ? (
             <div
-              className={`flex items-center ${isCollapsed && !mobileOpen ? "justify-center" : "gap-3 p-2"} rounded-xl hover:bg-white/5 transition-colors cursor-pointer mt-2`}
+              className={`flex items-center ${isCollapsed && !mobileOpen ? "justify-center" : "gap-3 p-2"} rounded-xl hover:bg-muted transition-colors cursor-pointer mt-2`}
             >
               <img
                 src={avatarJohn}
@@ -187,15 +187,15 @@ export function Sidebar({ mobileOpen, setMobileOpen }) {
               {!(isCollapsed && !mobileOpen) && (
                 <>
                   <div className="flex-1 min-w-0">
-                    <p className="text-sm font-semibold text-white truncate">
+                    <p className="text-sm font-semibold text-foreground truncate">
                       {user.name}
                     </p>
-                    <p className="text-xs text-gray-400 truncate">
+                    <p className="text-xs text-muted-foreground truncate">
                       {user.email}
                     </p>
                   </div>
                   <div className="flex flex-col items-end">
-                    <ChevronDown className="w-4 h-4 text-gray-400" />
+                    <ChevronDown className="w-4 h-4 text-muted-foreground" />
                     <Button
                       variant="none"
                       size="none"
@@ -241,15 +241,15 @@ export function Sidebar({ mobileOpen, setMobileOpen }) {
               onClick={(e) => e.stopPropagation()}
               className="bg-card border border-white/10 rounded-2xl p-6 w-full max-w-sm shadow-2xl"
             >
-              <h3 className="text-xl font-bold text-white mb-2">Sign Out</h3>
-              <p className="text-gray-400 mb-6 text-sm">
+              <h3 className="text-xl font-bold text-foreground mb-2">Sign Out</h3>
+              <p className="text-muted-foreground mb-6 text-sm">
                 Are you sure you want to sign out of your account?
               </p>
 
               <div className="flex gap-3 justify-end">
                 <Button
                   variant="none"
-                  className="px-4 py-2 text-sm font-medium text-white hover:bg-white/5 rounded-xl transition-colors"
+                  className="px-4 py-2 text-sm font-medium text-foreground hover:bg-muted rounded-xl transition-colors"
                   onClick={() => setShowLogoutConfirm(false)}
                 >
                   Cancel

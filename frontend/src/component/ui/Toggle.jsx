@@ -41,7 +41,7 @@ export const Toggle = React.forwardRef(({
       className={cn(
         "relative inline-flex items-center rounded-full transition-colors duration-300 outline-none focus:ring-2 focus:ring-primary/50 focus:ring-offset-2 focus:ring-offset-[#0B0C10]",
         currentSize.container,
-        checked ? "bg-primary" : "bg-white/10 border border-white/5",
+        checked ? "bg-primary" : "bg-muted border border-border",
         disabled && "opacity-50 cursor-not-allowed",
         className
       )}

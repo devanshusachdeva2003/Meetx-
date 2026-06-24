@@ -19,8 +19,8 @@ export function StartMeetingCard() {
     >
       <div className="absolute -top-20 -left-20 w-72 h-72 rounded-full bg-primary/10 blur-3xl pointer-events-none" />
       <div className="relative z-10">
-        <h2 className="text-3xl font-bold mb-3 text-white">Start a new meeting</h2>
-        <p className="text-gray-400 mb-8 max-w-sm text-sm">
+        <h2 className="text-3xl font-bold mb-3 text-foreground">Start a new meeting</h2>
+        <p className="text-muted-foreground mb-8 max-w-sm text-sm">
           Create a new meeting room and invite others to join instantly.
         </p>
         <div className="flex flex-wrap gap-4">
@@ -38,7 +38,7 @@ export function StartMeetingCard() {
             variant="outline"
             size="lg"
             onClick={() => navigate('/calendar')}
-            className="border-gray-600 text-white hover:bg-white/5"
+            className="border-border text-foreground hover:bg-muted"
           >
             Schedule Meeting
           </MotionButton>
@@ -47,12 +47,12 @@ export function StartMeetingCard() {
       
       {/* Neon SVG Illustration */}
       <div className="relative h-full min-h-[240px] flex items-center justify-center">
-        <div className="absolute inset-0 bg-[#07070a] rounded-3xl flex items-center justify-center border border-border overflow-hidden">
-           <div className="absolute w-64 h-64 border border-white/5 rounded-full" />
-           <div className="absolute w-40 h-40 border border-white/5 rounded-full" />
+        <div className="absolute inset-0 bg-background rounded-3xl flex items-center justify-center border border-border overflow-hidden">
+           <div className="absolute w-64 h-64 border border-border rounded-full" />
+           <div className="absolute w-40 h-40 border border-border rounded-full" />
            
            {/* Center Video Icon */}
-           <div className="relative z-10 w-20 h-20 rounded-2xl border-2 border-secondary flex items-center justify-center shadow-[0_0_30px_rgba(var(--color-secondary),0.5)] bg-black/50">
+           <div className="relative z-10 w-20 h-20 rounded-2xl border-2 border-secondary flex items-center justify-center shadow-[0_0_30px_rgba(var(--color-secondary),0.5)] bg-background">
              <Video className="w-10 h-10 text-secondary" />
            </div>
 

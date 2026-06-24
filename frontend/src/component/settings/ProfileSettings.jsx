@@ -59,15 +59,15 @@ export default function ProfileSettings() {
     <>
       {/* left column: profile card */}
       <aside className="lg:col-span-4">
-        <div className="bg-card rounded-2xl p-6 border border-white/5">
-          <h2 className="text-lg font-semibold mb-4 text-center sm:text-left">Profile Information</h2>
+        <div className="bg-card rounded-2xl p-6 border border-border">
+          <h2 className="text-lg font-semibold mb-4 text-center sm:text-left text-foreground">Profile Information</h2>
           <div className="flex flex-col sm:flex-row items-center sm:items-start gap-6">
             <div className="w-24 h-24 sm:w-32 sm:h-32 rounded-full border-4 border-gradient-primary overflow-hidden shrink-0">
               <img src="/download.jpg" alt="profile" className="w-full h-full object-cover" />
             </div>
             <div className="flex-1 text-center sm:text-left">
-              <p className="font-semibold text-xl">{user?.name || 'Guest'}</p>
-              <p className="text-sm text-white/60">{user?.email || 'Not logged in'}</p>
+              <p className="font-semibold text-xl text-foreground">{user?.name || 'Guest'}</p>
+              <p className="text-sm text-muted-foreground">{user?.email || 'Not logged in'}</p>
               <div className="mt-4">
                 <Button size="sm">Change Photo</Button>
               </div>
@@ -79,7 +79,7 @@ export default function ProfileSettings() {
       {/* right column: form */}
       <section className="lg:col-span-8">
         <FormProvider {...methods}>
-          <form onSubmit={methods.handleSubmit(onSubmit)} className="bg-card rounded-2xl p-6 border border-white/5">
+          <form onSubmit={methods.handleSubmit(onSubmit)} className="bg-card rounded-2xl p-6 border border-border">
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
               <ControlledTextField
                 field={{ name: "name" }}

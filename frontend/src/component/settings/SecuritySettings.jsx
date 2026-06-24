@@ -64,8 +64,8 @@ export default function SecuritySettings() {
           <Shield className="w-5 h-5 text-green-400" />
         </div>
         <div>
-          <h4 className="font-bold text-lg text-white">Security</h4>
-          <p className="text-sm text-white/50">Manage your account protection</p>
+          <h4 className="font-bold text-lg text-foreground">Security</h4>
+          <p className="text-sm text-muted-foreground">Manage your account protection</p>
         </div>
       </div>
 
@@ -75,7 +75,7 @@ export default function SecuritySettings() {
             <ControlledToggle
               field={{ name: "requiresTwoFactorAuth" }}
               label="Require OTP Verification on Login"
-              wrapperClassName="bg-background border-border hover:bg-white/5 transition-colors"
+              wrapperClassName="bg-background border-border hover:bg-muted transition-colors"
             />
           </form>
         </FormProvider>

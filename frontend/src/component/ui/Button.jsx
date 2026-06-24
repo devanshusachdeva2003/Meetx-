@@ -3,12 +3,12 @@ import cn from "../../lib/cn";
 
 const variants = {
   default: "gradient-primary shadow-[0_4px_14px_rgba(168,85,247,0.4)] hover:-translate-y-px hover:shadow-[0_6px_20px_rgba(168,85,247,0.5)]",
-  outline: "bg-transparent border-[1.5px] border-gray-300 dark:border-gray-600 text-gray-900 dark:text-gray-100 hover:bg-primary/10 hover:border-primary hover:text-primary",
-  ghost:   "bg-transparent text-gray-900 dark:text-gray-100 hover:bg-primary/10",
+  outline: "bg-transparent border-[1.5px] border-border text-foreground hover:bg-muted hover:border-primary hover:text-primary",
+  ghost:   "bg-transparent text-foreground hover:bg-muted",
   none:    "bg-transparent shadow-none hover:shadow-none hover:-translate-y-0",
   danger:  "bg-red-500 hover:bg-red-600 text-white shadow-lg shadow-red-500/20",
   "outline-danger": "bg-red-500/10 border border-red-500/20 hover:bg-red-500 hover:text-white text-red-500 shadow-[0_0_20px_rgba(239,68,68,0.2)]",
-  glass:   "bg-white/5 hover:bg-white/10 text-white border border-white/5",
+  glass:   "bg-card hover:bg-muted text-foreground border border-border",
   soft:    "bg-primary/10 text-primary hover:bg-primary hover:text-white border border-primary/20",
 };
 

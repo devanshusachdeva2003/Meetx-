@@ -22,10 +22,10 @@ export function RecentMeetings() {
   return (
     <div className="bg-card border border-border rounded-3xl p-6 flex flex-col">
       <div className="flex justify-between items-center mb-6">
-        <h2 className="text-xl font-semibold text-white">Recent Meetings</h2>
+        <h2 className="text-xl font-semibold text-foreground">Recent Meetings</h2>
         <button onClick={() => navigate('/meetings')} className="text-xs text-primary hover:text-primary-glow transition">View all</button>
       </div>
-      <div className="divide-y divide-border/50">
+      <div className="flex flex-col gap-3">
         {meetings.length > 0 ? (
           meetings.map(m => (
             <div key={m.roomId} onClick={() => navigate(`/meeting/${m.roomId}`)} className="cursor-pointer">
@@ -40,7 +40,7 @@ export function RecentMeetings() {
             </div>
           ))
         ) : (
-          <p className="text-gray-400 text-sm">No recent meetings found.</p>
+          <p className="text-muted-foreground text-sm">No recent meetings found.</p>
         )}
       </div>
     </div>
