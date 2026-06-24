@@ -6,7 +6,11 @@ const { ensureDBConnection } = require("./config/db");
 const { errorHandler } = require("./middleware/errorMiddleware");
 
 const app = express();
-app.use(cors());
+app.use(cors({
+  origin: '*',
+  methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
+  allowedHeaders: ['Content-Type', 'Authorization']
+}));
 app.use(express.json());
 
 // HTTP Request Logging
