@@ -19,7 +19,9 @@ export function MeetingSidePanel({
   isHost,
   onMute,
   onRemove,
-  roomId
+  roomId,
+  onAdmit,
+  onDeny
 }) {
   const [isUploading, setIsUploading] = useState(false);
   const fileInputRef = useRef(null);
@@ -76,58 +78,85 @@ export function MeetingSidePanel({
       
       <div className="flex-1 p-4 overflow-y-auto overscroll-contain">
         {showParticipants ? (
-          <ul className="space-y-3">
-
-            {participants.map((p) => {
-              const isMe = p.socketId === socketId;
-              const displayName = p.user?.name || p.user || 'Guest';
-              const initial = (displayName || 'G').charAt(0).toUpperCase();
-              const hasStream = remoteStreams.some(r => r.socketId === p.socketId);
-              return (
-                <li key={p.socketId} className="flex items-center justify-between p-3 bg-white/5 rounded-xl">
-                  <div className="flex items-center gap-3">
-                    <div className="relative w-10 h-10">
-                      {p.user?.avatar ? (
-                        <img
-                          src={p.user.avatar}
-                          alt={displayName}
-                          onError={(e) => { e.currentTarget.style.display = 'none'; }}
-                          className="w-10 h-10 rounded-full object-cover"
-                        />
-                      ) : null}
-                      <div className="absolute inset-0 rounded-full bg-gradient-to-br from-primary to-[#4ea1ff] flex items-center justify-center font-bold text-sm text-white uppercase">
-                        {initial}
+          <div className="space-y-6">
+            {/* Lobby Section */}
+            {isHost && participants.filter(p => p.isLobby).length > 0 && (
+              <div>
+                <h3 className="text-xs font-bold text-yellow-500 uppercase tracking-wider mb-3 px-2">Waiting in Lobby ({participants.filter(p => p.isLobby).length})</h3>
+                <ul className="space-y-2">
+                  {participants.filter(p => p.isLobby).map((p) => (
+                    <li key={p.socketId} className="flex items-center justify-between p-3 bg-yellow-500/10 border border-yellow-500/20 rounded-xl">
+                      <div className="flex items-center gap-3">
+                         <div className="w-8 h-8 rounded-full bg-yellow-500/20 flex items-center justify-center font-bold text-sm text-yellow-500 uppercase">
+                           {(p.user?.name || 'G').charAt(0)}
+                         </div>
+                         <span className="text-sm font-medium">{p.user?.name || 'Guest'}</span>
                       </div>
-                    </div>
-                    <div className="flex flex-col">
-                      <span className="text-sm truncate max-w-[180px]">{displayName}{isMe ? ' (You)' : ''}</span>
-                      <div className="text-[11px] text-white/60 flex items-center gap-2">
-                        {isMe && <span className="text-primary bg-primary/10 px-2 py-0.5 rounded-full font-bold">Host</span>}
-                        <span>{hasStream ? 'Video' : 'No video'}</span>
+                      <div className="flex gap-2">
+                         <Button variant="danger" size="sm" className="px-3 h-8 text-xs" onClick={() => onDeny(p.socketId)}>Deny</Button>
+                         <Button size="sm" className="px-3 h-8 text-xs bg-yellow-500 hover:bg-yellow-600 text-black shadow-yellow-500/30" onClick={() => onAdmit(p.socketId)}>Admit</Button>
                       </div>
-                    </div>
-                  </div>
+                    </li>
+                  ))}
+                </ul>
+              </div>
+            )}
 
-                  <div className="flex items-center gap-3">
-                    <div className="p-1 rounded-md bg-white/5">
-                      {isMe ? (isLocalMuted ? <MicOff className="text-red-400" /> : <Mic className="text-green-400" />) : <Mic className="text-white/40" />}
-                    </div>
-                    <div className="p-1 rounded-md bg-white/5">
-                      {hasStream ? <Camera className="text-white/40" /> : <CameraOff className="text-white/30" />}
-                    </div>
-                    {isHost && !isMe && (
-                      <div className="flex gap-1 ml-2">
-                        <Button variant="danger" size="sm" className="px-2 py-1 text-[10px] h-auto" onClick={() => onMute(p.socketId, 'audio', !p.isMuted)}>{p.isMuted ? 'Unmute' : 'Mute'}</Button>
-                        <Button variant="danger" size="sm" className="px-2 py-1 text-[10px] h-auto" onClick={() => onMute(p.socketId, 'video', p.hasVideo)}>{p.hasVideo ? 'No Video' : 'On Video'}</Button>
-                        <Button variant="danger" size="sm" className="px-2 py-1 text-[10px] h-auto" onClick={() => onRemove(p.socketId)}>Kick</Button>
+            {/* Active Participants */}
+            <div>
+              <h3 className="text-xs font-bold text-gray-500 uppercase tracking-wider mb-3 px-2">In Meeting ({participants.filter(p => !p.isLobby).length})</h3>
+              <ul className="space-y-2">
+                {participants.filter(p => !p.isLobby).map((p) => {
+                  const isMe = p.socketId === socketId;
+                  const displayName = p.user?.name || p.user || 'Guest';
+                  const initial = (displayName || 'G').charAt(0).toUpperCase();
+                  const hasStream = remoteStreams.some(r => r.socketId === p.socketId);
+                  return (
+                    <li key={p.socketId} className="flex items-center justify-between p-3 bg-white/5 rounded-xl hover:bg-white/10 transition-colors">
+                      <div className="flex items-center gap-3">
+                        <div className="relative w-8 h-8">
+                          {p.user?.avatar ? (
+                            <img
+                              src={p.user.avatar}
+                              alt={displayName}
+                              onError={(e) => { e.currentTarget.style.display = 'none'; }}
+                              className="w-8 h-8 rounded-full object-cover"
+                            />
+                          ) : null}
+                          <div className="absolute inset-0 rounded-full bg-gradient-to-br from-primary to-[#4ea1ff] flex items-center justify-center font-bold text-xs text-white uppercase">
+                            {initial}
+                          </div>
+                        </div>
+                        <div className="flex flex-col">
+                          <span className="text-sm font-medium truncate max-w-[150px]">{displayName}{isMe ? ' (You)' : ''}</span>
+                          <div className="text-[10px] text-white/60 flex items-center gap-2">
+                            {isMe && <span className="text-primary bg-primary/10 px-1.5 py-0.5 rounded-sm font-semibold">Host</span>}
+                            <span>{hasStream ? 'Video' : 'No video'}</span>
+                          </div>
+                        </div>
                       </div>
-                    )}
-                  </div>
-                </li>
-              );
-            })}
 
-          </ul>
+                      <div className="flex items-center gap-2">
+                        <div className="p-1.5 rounded-md bg-white/5">
+                          {isMe ? (isLocalMuted ? <MicOff className="w-4 h-4 text-red-400" /> : <Mic className="w-4 h-4 text-green-400" />) : <Mic className="w-4 h-4 text-white/40" />}
+                        </div>
+                        <div className="p-1.5 rounded-md bg-white/5">
+                          {hasStream ? <Camera className="w-4 h-4 text-white/40" /> : <CameraOff className="w-4 h-4 text-white/30" />}
+                        </div>
+                        {isHost && !isMe && (
+                          <div className="flex gap-1 ml-1">
+                            <Button variant="danger" size="sm" className="px-2 py-1 text-[10px] h-7" onClick={() => onMute(p.socketId, 'audio', !p.isMuted)}>{p.isMuted ? 'Unmute' : 'Mute'}</Button>
+                            <Button variant="danger" size="sm" className="px-2 py-1 text-[10px] h-7" onClick={() => onMute(p.socketId, 'video', p.hasVideo)}>{p.hasVideo ? 'No Video' : 'On Video'}</Button>
+                            <Button variant="danger" size="sm" className="px-2 py-1 text-[10px] h-7" onClick={() => onRemove(p.socketId)}>Kick</Button>
+                          </div>
+                        )}
+                      </div>
+                    </li>
+                  );
+                })}
+              </ul>
+            </div>
+          </div>
         ) : (
           <div className="space-y-4">
             {chatMessages && chatMessages.length > 0 ? (

@@ -6,7 +6,7 @@ import ControlledToggle from "../ui/ControlledToggle";
 import ControlledSelect from "../ui/ControlledSelect";
 import { Mic, MicOff, Video, VideoOff } from "lucide-react";
 
-export function PreJoinScreen({ name, onJoin }) {
+export function PreJoinScreen({ name, onJoin, isLoggedIn = false }) {
   const methods = useForm({
     defaultValues: {
       username: name || "",
@@ -53,6 +53,7 @@ export function PreJoinScreen({ name, onJoin }) {
   // Handle Video Preview
   useEffect(() => {
     let activeStream = null;
+    let isMounted = true;
     
     async function startPreview() {
       if (!videoEnabled) {
@@ -64,6 +65,12 @@ export function PreJoinScreen({ name, onJoin }) {
         const stream = await navigator.mediaDevices.getUserMedia({
           video: selectedVideo ? { deviceId: { exact: selectedVideo } } : true
         });
+        
+        if (!isMounted) {
+          stream.getTracks().forEach(t => t.stop());
+          return;
+        }
+
         activeStream = stream;
         if (videoRef.current) {
           videoRef.current.srcObject = stream;
@@ -76,6 +83,7 @@ export function PreJoinScreen({ name, onJoin }) {
     startPreview();
     
     return () => {
+      isMounted = false;
       if (activeStream) {
         activeStream.getTracks().forEach(t => t.stop());
       }
@@ -83,9 +91,10 @@ export function PreJoinScreen({ name, onJoin }) {
   }, [videoEnabled, selectedVideo]);
 
   const onSubmit = (data) => {
-    if (data.username.trim()) {
+    const finalName = isLoggedIn ? name : data.username.trim();
+    if (finalName) {
       onJoin({
-        name: data.username.trim(),
+        name: finalName,
         videoEnabled: data.videoEnabled,
         audioEnabled: data.audioEnabled,
         videoDeviceId: data.videoDeviceId,
@@ -144,15 +153,29 @@ export function PreJoinScreen({ name, onJoin }) {
           <FormProvider {...methods}>
             <form onSubmit={methods.handleSubmit(onSubmit)} className="flex flex-col gap-4 text-left">
               
-              <ControlledTextField
-                field={{
-                  name: "username",
-                  label: "Your Name",
-                  placeholder: "John Doe",
-                  validation: { required: "Name is required" }
-                }}
-                autoFocus
-              />
+              {!isLoggedIn && (
+                <ControlledTextField
+                  field={{
+                    name: "username",
+                    label: "Your Name",
+                    placeholder: "John Doe",
+                    validation: { required: "Name is required" }
+                  }}
+                  autoFocus
+                />
+              )}
+              
+              {isLoggedIn && (
+                <div className="mb-2 p-3 bg-primary/10 border border-primary/30 rounded-xl flex items-center gap-3">
+                  <div className="w-8 h-8 rounded-full bg-primary/20 flex items-center justify-center text-primary font-bold">
+                    {name?.charAt(0)?.toUpperCase() || 'U'}
+                  </div>
+                  <div className="text-sm">
+                    <p className="text-gray-400 text-xs">Joining as</p>
+                    <p className="text-white font-medium">{name}</p>
+                  </div>
+                </div>
+              )}
 
               <ControlledToggle
                 field={{ name: "audioEnabled" }}
@@ -190,7 +213,7 @@ export function PreJoinScreen({ name, onJoin }) {
               <div className="pt-4 mt-2 border-t border-border">
                 <Button
                   type="submit"
-                  disabled={!methods.watch("username")?.trim()}
+                  disabled={!isLoggedIn && !methods.watch("username")?.trim()}
                   className="w-full h-12 text-base shadow-primary/25"
                   size="lg"
                 >

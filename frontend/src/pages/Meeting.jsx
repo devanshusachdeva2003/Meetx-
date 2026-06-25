@@ -20,6 +20,8 @@ import { Users, MicOff, Loader2 } from "lucide-react";
 import api from "../utils/api";
 import { PreJoinScreen } from "../component/meeting/PreJoinScreen";
 import { useUser } from "../context/UserContext";
+import { LobbyUI } from "../component/meeting/LobbyUI";
+import { LeaveMeetingDialog } from "../component/meeting/LeaveMeetingDialog";
 
 function randomName() {
   return `Guest-${Math.random().toString(36).slice(2, 8)}`;
@@ -41,6 +43,8 @@ export default function Meeting() {
     audioDeviceId: "",
   });
   const serverUrl = import.meta.env.VITE_LIVEKIT_URL;
+
+  const [isKicked, setKicked] = useState(false);
 
   useEffect(() => {
     // If we were redirected here with pre-join settings, apply them immediately
@@ -69,8 +73,9 @@ export default function Meeting() {
 
     (async () => {
       try {
+        const userId = user?.id || user?._id || "";
         const resp = await api.get(
-          `/meetings/livekit/token?room=${id}&username=${name.trim()}`,
+          `/meetings/livekit/token?room=${id}&username=${name.trim()}&userId=${userId}`,
         );
         setToken(resp.data.token);
       } catch (e) {
@@ -91,6 +96,25 @@ export default function Meeting() {
     );
   }
 
+  if (isKicked) {
+    return (
+      <div className="flex h-screen w-full flex-col items-center justify-center bg-[#0B0C10] text-gray-200">
+        <div className="bg-card/50 border border-white/10 rounded-3xl p-8 max-w-md w-full text-center shadow-2xl backdrop-blur-md">
+          <div className="w-20 h-20 bg-red-500/20 rounded-full flex items-center justify-center mx-auto mb-6 ring-4 ring-red-500/30">
+            <Users className="w-10 h-10 text-red-500" />
+          </div>
+          <h2 className="text-2xl font-bold text-white mb-3">You left the meeting</h2>
+          <p className="text-gray-400 mb-8">
+            You were disconnected or removed by the host.
+          </p>
+          <Button onClick={() => navigate("/")} className="w-full">
+            Return to Home
+          </Button>
+        </div>
+      </div>
+    );
+  }
+
   if (!hasJoined) {
     if (!id && loading)
       return (
@@ -101,34 +125,18 @@ export default function Meeting() {
 
     return (
       <PreJoinScreen
-        name={name}
+        name={name || user?.name || ""}
+        isLoggedIn={!!user}
         onJoin={async (settings) => {
-          if (!id) {
-            try {
-              // This is a "Create Meeting" flow, request ID from backend
-              const response = await api.post("/meetings", {
-                title: `${user?.name || "User"}'s Meeting`,
-              });
-              const newId = response.data.meeting.roomId;
-              navigate(`/meeting/${newId}`, {
-                state: { settings },
-                replace: true,
-              });
-            } catch (err) {
-              console.error("Failed to create meeting", err);
-              alert("Failed to create meeting. Are you logged in?");
-            }
-          } else {
-            // Regular join flow for existing room
-            setName(settings.name);
-            setJoinOptions({
-              videoEnabled: settings.videoEnabled,
-              audioEnabled: settings.audioEnabled,
-              videoDeviceId: settings.videoDeviceId,
-              audioDeviceId: settings.audioDeviceId,
-            });
-            setHasJoined(true);
-          }
+          // Regular join flow for existing room
+          setName(settings.name);
+          setJoinOptions({
+            videoEnabled: settings.videoEnabled,
+            audioEnabled: settings.audioEnabled,
+            videoDeviceId: settings.videoDeviceId,
+            audioDeviceId: settings.audioDeviceId,
+          });
+          setHasJoined(true);
         }}
       />
     );
@@ -151,6 +159,11 @@ export default function Meeting() {
       token={token}
       serverUrl={serverUrl}
       connect={true}
+      onDisconnected={(reason) => {
+        if (window.location.pathname.includes('/meeting/')) {
+          setKicked(true);
+        }
+      }}
       options={{
         videoCaptureDefaults: joinOptions.videoDeviceId
           ? { deviceId: joinOptions.videoDeviceId }
@@ -195,6 +208,23 @@ function MeetingUI({ id, name }) {
     (meetingData.host === user.id || meetingData.host === user._id),
   );
 
+  const hostInRoom = allParticipants.some((p) => {
+    try {
+      const meta = JSON.parse(p.metadata || "{}");
+      return meta.isHost === true;
+    } catch {
+      return false;
+    }
+  });
+
+  let isLocalLobby = false;
+  try {
+    const meta = JSON.parse(localParticipant.metadata || "{}");
+    isLocalLobby = meta.isLobby === true;
+  } catch (e) {}
+
+  const waitingForHost = !isHost && (!hostInRoom || isLocalLobby);
+
   const handleMute = async (identity, trackType, muted) => {
     try {
       await api.post(`/meetings/${id}/mute`, { identity, trackType, muted });
@@ -211,20 +241,53 @@ function MeetingUI({ id, name }) {
     }
   };
 
+  const handleAdmit = async (identity) => {
+    try {
+      await api.post(`/meetings/${id}/admit`, { identity });
+    } catch (e) {
+      console.error("Failed to admit", e);
+    }
+  };
+
+  const handleDeny = async (identity) => {
+    try {
+      await api.post(`/meetings/${id}/deny`, { identity });
+    } catch (e) {
+      console.error("Failed to deny", e);
+    }
+  };
+
+  const handleEndMeeting = async () => {
+    try {
+      await api.post(`/meetings/${id}/end`);
+      doLeave();
+    } catch (e) {
+      console.error("Failed to end meeting", e);
+    }
+  };
+
   // We want to display all video tracks and screen shares
   const tracks = useTracks([
     { source: Track.Source.Camera, withPlaceholder: true },
     { source: Track.Source.ScreenShare, withPlaceholder: false },
   ]);
 
-  // Map LiveKit participants to UI participants array
   const uiParticipants = useMemo(() => {
-    return allParticipants.map((p) => ({
-      socketId: p.identity,
-      user: { name: p.name || p.identity },
-      isMuted: !p.isMicrophoneEnabled,
-      hasVideo: p.isCameraEnabled,
-    }));
+    return allParticipants.map((p) => {
+      let isLobby = false;
+      try {
+        const meta = JSON.parse(p.metadata || "{}");
+        isLobby = meta.isLobby === true;
+      } catch (e) {}
+
+      return {
+        socketId: p.identity,
+        user: { name: p.name || p.identity },
+        isMuted: !p.isMicrophoneEnabled,
+        hasVideo: p.isCameraEnabled,
+        isLobby,
+      };
+    });
   }, [allParticipants]);
 
   // Map LiveKit remote tracks to UI remoteStreams array
@@ -362,137 +425,122 @@ function MeetingUI({ id, name }) {
     <div className="relative flex flex-col h-screen bg-[#0B0C10] text-white font-manrope overflow-hidden">
       <MeetingHeader id={id} onLeave={handleLeaveClick} />
 
-      <main className="flex-1 w-full h-full pt-20 pb-28 px-4 md:px-8 overflow-hidden relative z-0 flex items-center justify-center">
-        <motion.div layout className="flex flex-col lg:flex-row gap-4 w-full h-full max-w-7xl mx-auto">
-          <motion.div layout className="flex-1 min-h-0 min-w-0 rounded-3xl overflow-hidden flex items-center justify-center relative">
-            {mainIsLocal ? (
-              <VideoTile
-                isMain={true}
-                isLocal={true}
-                stream={localStream}
-                label={`${name} (You)`}
-                isMuted={isMuted}
-              />
-            ) : (
-              <VideoTile
-                isMain={true}
-                isLocal={false}
-                stream={mainStream.stream}
-                label={mainStream.label}
-                isMuted={
-                  uiParticipants.find((p) => p.socketId === mainStream.socketId)
-                    ?.isMuted
-                }
-              />
-            )}
-          </motion.div>
+      {waitingForHost ? (
+        <LobbyUI localStream={localStream} handleLeaveClick={handleLeaveClick} />
+      ) : (
+        <>
+          <main className="flex-1 w-full h-full pt-20 pb-28 px-4 md:px-8 overflow-hidden relative z-0 flex items-center justify-center">
+            <motion.div layout className="flex flex-col lg:flex-row gap-4 w-full h-full max-w-7xl mx-auto">
+              <motion.div layout className="flex-1 min-h-0 min-w-0 rounded-3xl overflow-hidden flex items-center justify-center relative">
+                {mainIsLocal ? (
+                  <VideoTile
+                    isMain={true}
+                    isLocal={true}
+                    stream={localStream}
+                    label={`${name} (You)`}
+                    isMuted={isMuted}
+                  />
+                ) : (
+                  <VideoTile
+                    isMain={true}
+                    isLocal={false}
+                    stream={mainStream.stream}
+                    label={mainStream.label}
+                    isMuted={
+                      uiParticipants.find((p) => p.socketId === mainStream.socketId)
+                        ?.isMuted
+                    }
+                  />
+                )}
+              </motion.div>
 
-          <motion.div layout className="w-full lg:w-72 flex lg:flex-col gap-4 overflow-x-auto lg:overflow-y-auto shrink-0 snap-x lg:snap-y pb-2 lg:pb-0 hide-scrollbar">
-            {hasRemotes && (
-              <VideoTile
-                isMain={false}
-                isLocal={true}
-                stream={localStream}
-                label={`${name} (You)`}
-                isMuted={isMuted}
-              />
-            )}
+              <motion.div layout className="w-full lg:w-72 flex lg:flex-col gap-4 overflow-x-auto lg:overflow-y-auto shrink-0 snap-x lg:snap-y pb-2 lg:pb-0 hide-scrollbar">
+                {hasRemotes && (
+                  <VideoTile
+                    isMain={false}
+                    isLocal={true}
+                    stream={localStream}
+                    label={`${name} (You)`}
+                    isMuted={isMuted}
+                  />
+                )}
 
-            {hasRemotes &&
-              remoteStreams.map((r) => (
-                <VideoTile
-                  key={r.id}
-                  isMain={false}
-                  isLocal={false}
-                  stream={r.stream}
-                  label={r.label}
-                  isMuted={
-                    uiParticipants.find((p) => p.socketId === r.socketId)
-                      ?.isMuted
-                  }
-                />
-              ))}
-          </motion.div>
-        </motion.div>
-      </main>
-
-      <MeetingDock
-        isMuted={isMuted}
-        isVideoOff={isVideoOff}
-        isScreenSharing={isScreenSharing}
-        showParticipants={showParticipants}
-        showChat={showChat}
-        onToggleMute={toggleMute}
-        onToggleVideo={toggleVideo}
-        onToggleScreenShare={toggleScreenShare}
-        onToggleParticipants={() => {
-          setShowParticipants(!showParticipants);
-          setShowChat(false);
-        }}
-        onToggleChat={() => {
-          setShowChat(!showChat);
-          setShowParticipants(false);
-        }}
-      />
-
-      <MeetingSidePanel
-        roomId={id}
-        showChat={showChat}
-        showParticipants={showParticipants}
-        onClose={() => {
-          setShowChat(false);
-          setShowParticipants(false);
-        }}
-        participants={uiParticipants}
-        remoteStreams={remoteStreams}
-        localUser={{ name }}
-        isLocalMuted={isMuted}
-        chatMessages={chatMessages}
-        chatMessage={chatMessage}
-        setChatMessage={setChatMessage}
-        onSendMessage={handleSendMessage}
-        socketId={localParticipant.identity}
-        isHost={isHost}
-        onMute={handleMute}
-        onRemove={handleRemove}
-      />
-
-      <AnimatePresence>
-        {showLeaveConfirm && (
-          <div className="fixed inset-0 z-[200] flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm" onClick={() => setShowLeaveConfirm(false)}>
-            <motion.div
-              initial={{ opacity: 0, scale: 0.95, y: 10 }}
-              animate={{ opacity: 1, scale: 1, y: 0 }}
-              exit={{ opacity: 0, scale: 0.95, y: 10 }}
-              onClick={(e) => e.stopPropagation()}
-              className="bg-card border border-white/10 rounded-2xl p-6 w-full max-w-sm shadow-2xl"
-            >
-              <h3 className="text-xl font-bold text-white mb-2">Leave Meeting</h3>
-              <p className="text-gray-400 mb-6 text-sm">Are you sure you want to leave this meeting?</p>
-              
-              <div className="flex gap-3 justify-end">
-                <Button 
-                  variant="none" 
-                  className="px-4 py-2 text-sm font-medium text-white hover:bg-white/5 rounded-xl transition-colors"
-                  onClick={() => setShowLeaveConfirm(false)}
-                >
-                  Cancel
-                </Button>
-                <Button 
-                  variant="none"
-                  className="px-4 py-2 text-sm font-medium bg-red-500/10 text-red-500 hover:bg-red-500/20 rounded-xl transition-colors"
-                  onClick={() => {
-                    setShowLeaveConfirm(false);
-                    doLeave();
-                  }}
-                >
-                  Leave
-                </Button>
-              </div>
+                {hasRemotes &&
+                  remoteStreams.map((r) => (
+                    <VideoTile
+                      key={r.id}
+                      isMain={false}
+                      isLocal={false}
+                      stream={r.stream}
+                      label={r.label}
+                      isMuted={
+                        uiParticipants.find((p) => p.socketId === r.socketId)
+                          ?.isMuted
+                      }
+                    />
+                  ))}
+              </motion.div>
             </motion.div>
-          </div>
-        )}
-      </AnimatePresence>
+          </main>
+
+          <MeetingDock
+            isMuted={isMuted}
+            isVideoOff={isVideoOff}
+            isScreenSharing={isScreenSharing}
+            showParticipants={showParticipants}
+            showChat={showChat}
+            onToggleMute={toggleMute}
+            onToggleVideo={toggleVideo}
+            onToggleScreenShare={toggleScreenShare}
+            onToggleParticipants={() => {
+              setShowParticipants(!showParticipants);
+              setShowChat(false);
+            }}
+            onToggleChat={() => {
+              setShowChat(!showChat);
+              setShowParticipants(false);
+            }}
+          />
+
+          <MeetingSidePanel
+            roomId={id}
+            showChat={showChat}
+            showParticipants={showParticipants}
+            onClose={() => {
+              setShowChat(false);
+              setShowParticipants(false);
+            }}
+            participants={uiParticipants}
+            remoteStreams={remoteStreams}
+            localUser={{ name }}
+            isLocalMuted={isMuted}
+            chatMessages={chatMessages}
+            chatMessage={chatMessage}
+            setChatMessage={setChatMessage}
+            onSendMessage={handleSendMessage}
+            socketId={localParticipant.identity}
+            isHost={isHost}
+            onMute={handleMute}
+            onRemove={handleRemove}
+            onAdmit={handleAdmit}
+            onDeny={handleDeny}
+          />
+        </>
+      )}
+
+      <LeaveMeetingDialog 
+        showLeaveDialog={showLeaveConfirm}
+        isHost={isHost}
+        setShowLeaveDialog={setShowLeaveConfirm}
+        confirmLeave={() => {
+          setShowLeaveConfirm(false);
+          doLeave();
+        }}
+        confirmEndMeeting={() => {
+          setShowLeaveConfirm(false);
+          handleEndMeeting();
+        }}
+      />
     </div>
   );
 }

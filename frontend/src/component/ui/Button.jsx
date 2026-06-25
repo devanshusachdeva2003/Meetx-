@@ -1,4 +1,5 @@
 import React from "react";
+import { motion } from "framer-motion";
 import cn from "../../lib/cn";
 
 const variants = {
@@ -29,21 +30,21 @@ export const Button = React.forwardRef(({
   disabled,
   ...props
 }, ref) => (
-  <button
+  <motion.button
     ref={ref}
     disabled={disabled}
     className={cn(
       "inline-flex items-center justify-center gap-2 font-semibold tracking-wide",
       "border-0 outline-none cursor-pointer transition-all duration-200",
-      "disabled:opacity-55 disabled:cursor-not-allowed disabled:translate-y-0 disabled:shadow-none",
       variants[variant],
       sizes[size],
+      disabled && "bg-gray-800 from-gray-800 to-gray-800 text-gray-500 border-gray-700 shadow-none hover:shadow-none hover:translate-y-0 cursor-not-allowed opacity-100",
       className
     )}
     {...props}
   >
     {children}
-  </button>
+  </motion.button>
 ));
 
 Button.displayName = "Button";

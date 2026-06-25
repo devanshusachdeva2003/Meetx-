@@ -12,6 +12,7 @@ const ControlledPasswordField = ({
 }) => {
   const { control } = useFormContext();
   const [showPassword, setShowPassword] = useState(false);
+  const displayLabel = label || field.label;
 
   return (
     <Controller
@@ -21,9 +22,9 @@ const ControlledPasswordField = ({
       rules={field.validation}
       render={({ field: { onChange, onBlur, value, ref }, fieldState: { error } }) => (
         <div className={cn("flex flex-col gap-1.5 w-full", wrapperClassName)}>
-          {label && (
+          {displayLabel && (
             <label htmlFor={field.name} className="text-sm font-semibold text-foreground">
-              {label}
+              {displayLabel}
             </label>
           )}
           <div className="relative flex items-center w-full">

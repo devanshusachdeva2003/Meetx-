@@ -4,6 +4,7 @@ import { useNavigate } from 'react-router-dom';
 import api from '../utils/api';
 import Button from '../component/ui/Button';
 import { useUser } from '../context/UserContext';
+import { useCreateMeeting } from '../context/CreateMeetingContext';
 
 export default function Meetings() {
   const [activeTab, setActiveTab] = useState('Past');
@@ -11,13 +12,9 @@ export default function Meetings() {
   const [loading, setLoading] = useState(true);
   const [searchQuery, setSearchQuery] = useState('');
   
-  // Modal state
-  const [isModalOpen, setIsModalOpen] = useState(false);
-  const [newMeetingTitle, setNewMeetingTitle] = useState('');
-  const [creating, setCreating] = useState(false);
-
   const navigate = useNavigate();
   const { user } = useUser();
+  const { openCreateMeeting } = useCreateMeeting();
 
   useEffect(() => {
     fetchMeetings();
@@ -32,25 +29,6 @@ export default function Meetings() {
       console.error(e);
     } finally {
       setLoading(false);
-    }
-  };
-
-  const createNewMeeting = async (e) => {
-    e.preventDefault();
-    if (!newMeetingTitle.trim()) return;
-
-    try {
-      setCreating(true);
-      const response = await api.post('/meetings', { title: newMeetingTitle.trim() });
-      const newId = response.data.meeting.roomId;
-      setIsModalOpen(false);
-      setNewMeetingTitle('');
-      navigate(`/meeting/${newId}`);
-    } catch (err) {
-      console.error("Failed to create meeting", err);
-      alert("Failed to create meeting.");
-    } finally {
-      setCreating(false);
     }
   };
 
@@ -84,7 +62,7 @@ export default function Meetings() {
               className="bg-card/50 border border-border rounded-full pl-10 pr-4 py-2 text-sm text-white w-64 focus:outline-none focus:border-primary/50 transition-colors"
             />
           </div>
-          <Button onClick={() => setIsModalOpen(true)} className="rounded-full shadow-[0_0_15px_rgba(168,85,247,0.4)]">
+          <Button onClick={openCreateMeeting} className="rounded-full shadow-[0_0_15px_rgba(168,85,247,0.4)]">
             <Plus className="w-4 h-4 mr-1" />
             New Meeting
           </Button>
@@ -151,7 +129,7 @@ export default function Meetings() {
               {searchQuery ? "No meetings match your search." : "Create your first meeting to start collaborating with your team."}
             </p>
             {!searchQuery && (
-              <Button onClick={() => setIsModalOpen(true)}>
+              <Button onClick={openCreateMeeting}>
                 <Plus className="w-4 h-4 mr-1" />
                 Create Meeting
               </Button>
@@ -222,42 +200,6 @@ export default function Meetings() {
           </>
         )}
       </div>
-
-      {/* Create Meeting Modal */}
-      {isModalOpen && (
-        <div className="fixed inset-0 z-[200] flex items-center justify-center bg-black/60 backdrop-blur-sm p-4">
-          <div className="bg-card border border-border rounded-3xl p-6 w-full max-w-md shadow-2xl relative">
-            <button 
-              onClick={() => setIsModalOpen(false)}
-              className="absolute top-4 right-4 text-gray-400 hover:text-white transition-colors"
-            >
-              <X className="w-5 h-5" />
-            </button>
-            <h2 className="text-2xl font-bold text-white mb-6">Create New Meeting</h2>
-            <form onSubmit={createNewMeeting} className="space-y-4">
-              <div>
-                <label className="block text-sm font-medium text-gray-400 mb-1">Meeting Title</label>
-                <input 
-                  type="text" 
-                  value={newMeetingTitle}
-                  onChange={(e) => setNewMeetingTitle(e.target.value)}
-                  placeholder="e.g. Weekly Sync"
-                  className="w-full bg-input border border-border rounded-xl px-4 py-3 text-white focus:outline-none focus:border-primary/50 transition-colors"
-                  autoFocus
-                />
-              </div>
-              <div className="flex gap-3 justify-end pt-4">
-                <Button type="button" variant="outline" onClick={() => setIsModalOpen(false)}>
-                  Cancel
-                </Button>
-                <Button type="submit" disabled={!newMeetingTitle.trim() || creating}>
-                  {creating ? 'Creating...' : 'Create & Join'}
-                </Button>
-              </div>
-            </form>
-          </div>
-        </div>
-      )}
     </div>
   );
 }

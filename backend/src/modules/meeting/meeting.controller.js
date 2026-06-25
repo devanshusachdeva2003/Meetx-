@@ -16,7 +16,7 @@ const getRoomService = () => {
 };
 
 const createMeeting = asyncHandler(async (req, res) => {
-  const { title } = req.body;
+  const { title, description } = req.body;
   const roomId = (Date.now().toString(36) + Math.random().toString(36).slice(2,8));
   
   if (!req.user || !req.user.id) {
@@ -24,7 +24,7 @@ const createMeeting = asyncHandler(async (req, res) => {
     throw new Error('Unauthorized. Must be logged in to create a meeting.');
   }
 
-  const meeting = await Meeting.create({ roomId, title, host: req.user.id });
+  const meeting = await Meeting.create({ roomId, title, description, host: req.user.id });
   res.json({ meeting });
 });
 
@@ -41,7 +41,7 @@ const getMeeting = asyncHandler(async (req, res) => {
 });
 
 const getLiveKitToken = asyncHandler(async (req, res) => {
-  const { room, username } = req.query;
+  const { room, username, userId } = req.query;
   if (!room || !username) {
     res.status(400);
     throw new Error('Room and username are required');
@@ -52,14 +52,30 @@ const getLiveKitToken = asyncHandler(async (req, res) => {
     throw new Error('LiveKit API key or secret is not configured');
   }
 
+  let isHost = false;
+  if (userId) {
+    const meeting = await Meeting.findOne({ roomId: room });
+    if (meeting && meeting.host.toString() === userId) {
+      isHost = true;
+    }
+  }
+
   const identity = `${username.trim().replace(/\s+/g, '_')}-${Math.random().toString(36).substring(2, 9)}`;
+  const metadata = JSON.stringify({ isHost, isLobby: !isHost });
+
   const at = new AccessToken(
     process.env.LIVEKIT_API_KEY,
     process.env.LIVEKIT_API_SECRET,
-    { identity: identity, name: username },
+    { identity: identity, name: username, metadata },
   );
 
-  at.addGrant({ roomJoin: true, room: room });
+  if (isHost) {
+    at.addGrant({ roomJoin: true, room: room, canPublish: true, canSubscribe: true, canPublishData: true });
+  } else {
+    // Non-hosts start in lobby with restricted permissions
+    at.addGrant({ roomJoin: true, room: room, canPublish: false, canSubscribe: false, canPublishData: false });
+  }
+  
   res.json({ token: await at.toJwt() });
 });
 
@@ -203,4 +219,72 @@ const shareFile = asyncHandler(async (req, res) => {
   }
 });
 
-module.exports = { createMeeting, getMeeting, getMeetings, getLiveKitToken, removeParticipant, muteParticipant, shareFile };
+const admitParticipant = asyncHandler(async (req, res) => {
+  const { id } = req.params; // room id
+  const { identity } = req.body;
+
+  if (!req.user || !req.user.id) {
+    res.status(401);
+    throw new Error('Unauthorized');
+  }
+
+  const meeting = await Meeting.findOne({ roomId: id });
+  if (!meeting) {
+    res.status(404);
+    throw new Error('Meeting not found');
+  }
+
+  if (meeting.host.toString() !== req.user.id) {
+    res.status(403);
+    throw new Error('Forbidden. Only host can admit participants.');
+  }
+
+  const roomService = getRoomService();
+  const participant = await roomService.getParticipant(id, identity);
+  if (!participant) {
+    res.status(404);
+    throw new Error('Participant not found in room');
+  }
+
+  let metadataObj = {};
+  try {
+    metadataObj = JSON.parse(participant.metadata || '{}');
+  } catch (e) {}
+  
+  metadataObj.isLobby = false;
+
+  await roomService.updateParticipant(id, identity, JSON.stringify(metadataObj), {
+    canPublish: true,
+    canSubscribe: true,
+    canPublishData: true,
+  });
+
+  res.json({ success: true, message: 'Participant admitted' });
+});
+
+const endMeeting = asyncHandler(async (req, res) => {
+  const { id } = req.params; // room id
+
+  if (!req.user || !req.user.id) {
+    res.status(401);
+    throw new Error('Unauthorized');
+  }
+
+  const meeting = await Meeting.findOne({ roomId: id });
+  if (!meeting) {
+    res.status(404);
+    throw new Error('Meeting not found');
+  }
+
+  if (meeting.host.toString() !== req.user.id) {
+    res.status(403);
+    throw new Error('Forbidden. Only host can end meeting.');
+  }
+
+  const roomService = getRoomService();
+  await roomService.deleteRoom(id);
+
+  res.json({ success: true, message: 'Meeting ended' });
+});
+
+module.exports = { createMeeting, getMeeting, getMeetings, getLiveKitToken, removeParticipant, muteParticipant, shareFile, admitParticipant, endMeeting, denyParticipant: removeParticipant };
