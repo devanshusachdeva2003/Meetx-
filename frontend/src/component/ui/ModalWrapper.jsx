@@ -44,7 +44,10 @@ const ModalWrapper = ({
 
     const handleEsc = (e) => {
       if (e.key === "Escape") {
-        const currentCount = parseInt(document.body.getAttribute("data-modal-count") || "0", 10);
+        const currentCount = parseInt(
+          document.body.getAttribute("data-modal-count") || "0",
+          10,
+        );
         // Only close if this is the top-most modal
         if (modalIndex === currentCount) {
           onClose?.();
@@ -57,7 +60,10 @@ const ModalWrapper = ({
 
   useEffect(() => {
     if (open) {
-      const currentCount = parseInt(document.body.getAttribute("data-modal-count") || "0", 10);
+      const currentCount = parseInt(
+        document.body.getAttribute("data-modal-count") || "0",
+        10,
+      );
       const newCount = currentCount + 1;
       setModalIndex(newCount);
       document.body.setAttribute("data-modal-count", newCount.toString());
@@ -80,7 +86,10 @@ const ModalWrapper = ({
       }
 
       return () => {
-        const count = parseInt(document.body.getAttribute("data-modal-count") || "1", 10);
+        const count = parseInt(
+          document.body.getAttribute("data-modal-count") || "1",
+          10,
+        );
         const nextCount = Math.max(0, count - 1);
 
         if (nextCount === 0) {
@@ -107,10 +116,14 @@ const ModalWrapper = ({
         className={cn(
           "absolute inset-0",
           !disableBackdropClick ? "cursor-pointer" : "cursor-default",
-          showBackdrop ? (modalIndex > 1 ? "bg-black/5" : "bg-black/25") : "bg-transparent",
+          showBackdrop
+            ? modalIndex > 1
+              ? "bg-black/5"
+              : "bg-black/25"
+            : "bg-transparent",
           showAnimation && "transition-opacity duration-300",
           showAnimation && (isAnimating ? "opacity-100" : "opacity-0"),
-          blurBackground && "backdrop-blur-xl bg-black/60"
+          blurBackground && "backdrop-blur-xl bg-black/60",
         )}
         onClick={() => {
           if (!disableBackdropClick) onClose?.();
@@ -120,10 +133,13 @@ const ModalWrapper = ({
       {/* Modal Content */}
       <div
         className={cn(
-          "relative z-10 w-full overflow-hidden max-w-lg rounded-3xl bg-card border border-white/10 shadow-2xl max-h-full",
+          "relative z-10 w-full overflow-hidden max-w-lg rounded-3xl bg-card border border-border shadow-2xl max-h-full",
           showAnimation && "transition-all duration-300 transform",
-          showAnimation && (isAnimating ? "opacity-100 scale-100 translate-y-0" : "opacity-0 scale-95 translate-y-4"),
-          className
+          showAnimation &&
+            (isAnimating
+              ? "opacity-100 scale-100 translate-y-0"
+              : "opacity-0 scale-95 translate-y-4"),
+          className,
         )}
       >
         {children}

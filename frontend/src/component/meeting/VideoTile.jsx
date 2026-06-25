@@ -1,6 +1,7 @@
 import React, { useRef, useEffect, useState } from "react";
 import { Mic, MicOff, User } from "lucide-react";
 import { motion } from "framer-motion";
+import { useTheme } from "../../context/ThemeContext";
 
 export const VideoTile = React.memo(
   ({
@@ -13,6 +14,7 @@ export const VideoTile = React.memo(
     publication,
   }) => {
     const [isPlaying, setIsPlaying] = useState(false);
+    const { theme } = useTheme();
 
     const containerClass = isMain
       ? "relative w-full h-full min-h-0 rounded-3xl overflow-hidden bg-card border border-border shadow-2xl ring-2 ring-primary/50 group"
@@ -53,7 +55,7 @@ export const VideoTile = React.memo(
             }
           });
         },
-        { threshold: 0.1 }
+        { threshold: 0.1 },
       );
 
       observer.observe(node);
@@ -66,6 +68,8 @@ export const VideoTile = React.memo(
 
     const noVideo = !stream || stream.getVideoTracks().length === 0;
 
+    const labelBgClass = theme === 'dark' ? 'bg-black/40 border-white/10 text-white' : 'bg-white/60 border-black/10 text-black';
+
     return (
       <motion.div layout className={containerClass}>
         <video
@@ -74,35 +78,38 @@ export const VideoTile = React.memo(
           muted={isLocal}
           playsInline
           onPlaying={() => setIsPlaying(true)}
-          className={`w-full h-full object-contain transition-transform duration-500 group-hover:scale-105 ${!isPlaying && !noVideo ? 'opacity-0' : 'opacity-100'}`}
+          className={`w-full h-full object-contain transition-transform duration-500 group-hover:scale-105 ${!isPlaying && !noVideo ? "opacity-0" : "opacity-100"}`}
         />
-        
+
         {/* Skeleton Loader */}
         {!isPlaying && !noVideo && (
           <div className="absolute inset-0 flex items-center justify-center bg-muted animate-pulse z-10">
-             <div className="w-16 h-16 rounded-full bg-border flex items-center justify-center">
-               <User className="w-8 h-8 text-muted-foreground" />
-             </div>
+            <div className="w-16 h-16 rounded-full bg-border flex items-center justify-center">
+              <User className="w-8 h-8 text-muted-foreground" />
+            </div>
           </div>
         )}
 
         {/* Fallback if no video stream */}
         {noVideo && (
           <div className="absolute inset-0 flex items-center justify-center bg-muted z-10">
-             <div className="w-20 h-20 rounded-full bg-primary/20 flex items-center justify-center border border-primary/30">
-               <User className="w-10 h-10 text-primary/60" />
-             </div>
+            <div className="w-20 h-20 rounded-full bg-primary/20 flex items-center justify-center border border-primary/30">
+              <User className="w-10 h-10 text-primary/60" />
+            </div>
           </div>
         )}
 
-        <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-transparent pointer-events-none z-20" />
-        <div className="absolute bottom-4 left-4 bg-black/40 backdrop-blur-xl border border-white/10 px-3 py-1.5 rounded-xl text-xs font-medium flex items-center gap-2 shadow-lg z-30 text-white">
+        {theme === 'dark' && (
+          <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-transparent pointer-events-none z-20" />
+        )}
+        
+        <div className={`absolute bottom-4 left-4 backdrop-blur-xl border px-3 py-1.5 rounded-xl text-xs font-medium flex items-center gap-2 shadow-lg z-30 ${labelBgClass}`}>
           {label}
           {isMuted !== undefined &&
             (isMuted ? (
-              <MicOff className="text-red-400 w-3.5 h-3.5" />
+              <MicOff className="text-red-500 w-3.5 h-3.5" />
             ) : (
-              <Mic className="text-green-400 w-3.5 h-3.5" />
+              <Mic className="text-green-500 w-3.5 h-3.5" />
             ))}
         </div>
       </motion.div>

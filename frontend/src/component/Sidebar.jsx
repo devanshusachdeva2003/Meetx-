@@ -83,13 +83,12 @@ export function Sidebar({ mobileOpen, setMobileOpen }) {
           )}
         </Button>
 
-        {/* Mobile Close Button */}
         {mobileOpen && (
           <Button
             variant="none"
             size="none"
             onClick={() => setMobileOpen(false)}
-            className="md:hidden absolute top-4 -right-12 p-2 bg-card rounded-xl border border-white/10 text-white shadow-lg"
+            className="md:hidden absolute top-4 -right-12 p-2 bg-card rounded-xl border border-border text-foreground shadow-lg"
           >
             <ChevronLeft className="w-5 h-5" />
           </Button>
@@ -107,7 +106,7 @@ export function Sidebar({ mobileOpen, setMobileOpen }) {
             className="w-10 h-10 object-contain shrink-0"
           />
           {!isCollapsed || mobileOpen ? (
-            <span className="font-bold text-2xl tracking-tight text-white whitespace-nowrap">
+            <span className="font-bold text-2xl tracking-tight text-foreground whitespace-nowrap">
               Meet<span className="text-primary">X</span>
             </span>
           ) : null}
@@ -159,18 +158,18 @@ export function Sidebar({ mobileOpen, setMobileOpen }) {
 
           {!(isCollapsed && !mobileOpen) && user && (
             <div className="pt-2 border-t border-border">
-              <div className="bg-card rounded-2xl p-4 border border-white/5 relative overflow-hidden group">
+              <div className="bg-card rounded-2xl p-4 border border-border relative overflow-hidden group">
                 <div className="absolute top-0 right-0 w-24 h-24 bg-primary/10 rounded-full blur-2xl -mr-10 -mt-10 group-hover:bg-primary/20 transition-all duration-500 pointer-events-none" />
                 <div className="flex items-center gap-2 mb-3 relative z-10">
                   <Sparkles className="w-4 h-4 text-primary" />
-                  <span className="font-bold text-sm text-white">
+                  <span className="font-bold text-sm text-foreground">
                     Upgrade to Pro
                   </span>
                 </div>
-                <p className="text-xs text-white/50 mb-4 relative z-10">
+                <p className="text-xs text-muted-foreground mb-4 relative z-10">
                   Get unlimited meetings & 4K video quality.
                 </p>
-                <Button className="w-full bg-primary text-white hover:opacity-90 relative z-10">
+                <Button className="w-full bg-primary !text-white hover:opacity-90 relative z-10">
                   Upgrade Now
                 </Button>
               </div>
@@ -242,7 +241,7 @@ export function Sidebar({ mobileOpen, setMobileOpen }) {
               animate={{ opacity: 1, scale: 1, y: 0 }}
               exit={{ opacity: 0, scale: 0.95, y: 10 }}
               onClick={(e) => e.stopPropagation()}
-              className="bg-card border border-white/10 rounded-2xl p-6 w-full max-w-sm shadow-2xl"
+              className="bg-card border border-border rounded-2xl p-6 w-full max-w-sm shadow-2xl"
             >
               <h3 className="text-xl font-bold text-foreground mb-2">Sign Out</h3>
               <p className="text-muted-foreground mb-6 text-sm">
