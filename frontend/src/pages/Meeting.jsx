@@ -187,6 +187,7 @@ function MeetingUI({ id, name }) {
   const [chatMessage, setChatMessage] = useState("");
   const [chatMessages, setChatMessages] = useState([]);
   const [showLeaveConfirm, setShowLeaveConfirm] = useState(false);
+  const [hasLeft, setHasLeft] = useState(false);
 
   const room = useRoomContext();
   const { localParticipant } = useLocalParticipant();
@@ -388,7 +389,7 @@ function MeetingUI({ id, name }) {
 
   const doLeave = () => {
     room.disconnect();
-    navigate("/");
+    setHasLeft(true);
   };
 
   const handleLeaveClick = () => {
@@ -431,6 +432,30 @@ function MeetingUI({ id, name }) {
   const hasRemotes = remoteStreams && remoteStreams.length > 0;
   const mainIsLocal = !hasRemotes;
   const mainStream = hasRemotes ? remoteStreams[0] : null;
+
+  if (hasLeft) {
+    return (
+      <div className="flex h-screen w-full flex-col items-center justify-center bg-[#0B0C10] text-gray-200">
+        <div className="bg-card/50 border border-white/10 rounded-3xl p-8 max-w-md w-full text-center shadow-2xl backdrop-blur-md">
+          <div className="w-20 h-20 bg-primary/20 rounded-full flex items-center justify-center mx-auto mb-6 ring-4 ring-primary/30">
+            <Users className="w-10 h-10 text-primary" />
+          </div>
+          <h2 className="text-2xl font-bold text-white mb-3">You left the meeting</h2>
+          <p className="text-gray-400 mb-8">
+            Thank you for joining. Have a great day!
+          </p>
+          <div className="flex gap-4 w-full">
+            <Button onClick={() => window.location.reload()} variant="outline" className="flex-1">
+              Rejoin
+            </Button>
+            <Button onClick={() => navigate("/")} className="flex-1">
+              Go Home
+            </Button>
+          </div>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="relative flex flex-col h-screen bg-[#0B0C10] text-white font-manrope overflow-hidden">
