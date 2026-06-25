@@ -46,7 +46,7 @@ export const Button = React.forwardRef(
         variants[variant],
         sizes[size],
         disabled &&
-          "bg-muted from-muted to-muted text-muted-foreground border-border shadow-none hover:shadow-none hover:translate-y-0 cursor-not-allowed opacity-100",
+          "opacity-50 cursor-not-allowed pointer-events-none hover:shadow-none hover:translate-y-0",
         className,
       )}
       {...props}

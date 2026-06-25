@@ -132,3 +132,66 @@ Error: Cloudinary upload failed: Invalid cloud_name your_cloud_name_here
     at C:\Users\sunil\OneDrive\Desktop\Meetx-\backend\src\modules\meeting\meeting.controller.js:190:11
     at process.processTicksAndRejections (node:internal/process/task_queues:105:5)
 
+[2026-06-25T18:23:06.273Z] Precondition Failed: remote unmute not enabled
+Precondition Failed: remote unmute not enabled
+    at TwirpRpc.request (D:\Language\React\Meetx-\backend\node_modules\livekit-server-sdk\dist\TwirpRPC.cjs:96:13)
+    at process.processTicksAndRejections (node:internal/process/task_queues:105:5)
+    at async RoomServiceClient.mutePublishedTrack (D:\Language\React\Meetx-\backend\node_modules\livekit-server-sdk\dist\RoomServiceClient.cjs:194:18)
+    at async D:\Language\React\Meetx-\backend\src\modules\meeting\meeting.controller.js:168:7
+
+[2026-06-25T18:23:12.701Z] Precondition Failed: remote unmute not enabled
+Precondition Failed: remote unmute not enabled
+    at TwirpRpc.request (D:\Language\React\Meetx-\backend\node_modules\livekit-server-sdk\dist\TwirpRPC.cjs:96:13)
+    at process.processTicksAndRejections (node:internal/process/task_queues:105:5)
+    at async RoomServiceClient.mutePublishedTrack (D:\Language\React\Meetx-\backend\node_modules\livekit-server-sdk\dist\RoomServiceClient.cjs:194:18)
+    at async D:\Language\React\Meetx-\backend\src\modules\meeting\meeting.controller.js:168:7
+
+[2026-06-25T18:23:22.493Z] Precondition Failed: remote unmute not enabled
+Precondition Failed: remote unmute not enabled
+    at TwirpRpc.request (D:\Language\React\Meetx-\backend\node_modules\livekit-server-sdk\dist\TwirpRPC.cjs:96:13)
+    at process.processTicksAndRejections (node:internal/process/task_queues:105:5)
+    at async RoomServiceClient.mutePublishedTrack (D:\Language\React\Meetx-\backend\node_modules\livekit-server-sdk\dist\RoomServiceClient.cjs:194:18)
+    at async D:\Language\React\Meetx-\backend\src\modules\meeting\meeting.controller.js:168:7
+
+[2026-06-25T18:23:24.192Z] Precondition Failed: remote unmute not enabled
+Precondition Failed: remote unmute not enabled
+    at TwirpRpc.request (D:\Language\React\Meetx-\backend\node_modules\livekit-server-sdk\dist\TwirpRPC.cjs:96:13)
+    at process.processTicksAndRejections (node:internal/process/task_queues:105:5)
+    at async RoomServiceClient.mutePublishedTrack (D:\Language\React\Meetx-\backend\node_modules\livekit-server-sdk\dist\RoomServiceClient.cjs:194:18)
+    at async D:\Language\React\Meetx-\backend\src\modules\meeting\meeting.controller.js:168:7
+
+[2026-06-25T18:23:25.489Z] Precondition Failed: remote unmute not enabled
+Precondition Failed: remote unmute not enabled
+    at TwirpRpc.request (D:\Language\React\Meetx-\backend\node_modules\livekit-server-sdk\dist\TwirpRPC.cjs:96:13)
+    at process.processTicksAndRejections (node:internal/process/task_queues:105:5)
+    at async RoomServiceClient.mutePublishedTrack (D:\Language\React\Meetx-\backend\node_modules\livekit-server-sdk\dist\RoomServiceClient.cjs:194:18)
+    at async D:\Language\React\Meetx-\backend\src\modules\meeting\meeting.controller.js:168:7
+
+[2026-06-25T18:23:26.492Z] Precondition Failed: remote unmute not enabled
+Precondition Failed: remote unmute not enabled
+    at TwirpRpc.request (D:\Language\React\Meetx-\backend\node_modules\livekit-server-sdk\dist\TwirpRPC.cjs:96:13)
+    at process.processTicksAndRejections (node:internal/process/task_queues:105:5)
+    at async RoomServiceClient.mutePublishedTrack (D:\Language\React\Meetx-\backend\node_modules\livekit-server-sdk\dist\RoomServiceClient.cjs:194:18)
+    at async D:\Language\React\Meetx-\backend\src\modules\meeting\meeting.controller.js:168:7
+
+[2026-06-25T18:24:20.194Z] Precondition Failed: remote unmute not enabled
+Precondition Failed: remote unmute not enabled
+    at TwirpRpc.request (D:\Language\React\Meetx-\backend\node_modules\livekit-server-sdk\dist\TwirpRPC.cjs:96:13)
+    at process.processTicksAndRejections (node:internal/process/task_queues:105:5)
+    at async RoomServiceClient.mutePublishedTrack (D:\Language\React\Meetx-\backend\node_modules\livekit-server-sdk\dist\RoomServiceClient.cjs:194:18)
+    at async D:\Language\React\Meetx-\backend\src\modules\meeting\meeting.controller.js:168:7
+
+[2026-06-25T18:27:44.008Z] Precondition Failed: remote unmute not enabled
+Precondition Failed: remote unmute not enabled
+    at TwirpRpc.request (D:\Language\React\Meetx-\backend\node_modules\livekit-server-sdk\dist\TwirpRPC.cjs:96:13)
+    at process.processTicksAndRejections (node:internal/process/task_queues:105:5)
+    at async RoomServiceClient.mutePublishedTrack (D:\Language\React\Meetx-\backend\node_modules\livekit-server-sdk\dist\RoomServiceClient.cjs:194:18)
+    at async D:\Language\React\Meetx-\backend\src\modules\meeting\meeting.controller.js:168:7
+
+[2026-06-25T18:28:21.433Z] Precondition Failed: remote unmute not enabled
+Precondition Failed: remote unmute not enabled
+    at TwirpRpc.request (D:\Language\React\Meetx-\backend\node_modules\livekit-server-sdk\dist\TwirpRPC.cjs:96:13)
+    at process.processTicksAndRejections (node:internal/process/task_queues:105:5)
+    at async RoomServiceClient.mutePublishedTrack (D:\Language\React\Meetx-\backend\node_modules\livekit-server-sdk\dist\RoomServiceClient.cjs:194:18)
+    at async D:\Language\React\Meetx-\backend\src\modules\meeting\meeting.controller.js:168:7
+

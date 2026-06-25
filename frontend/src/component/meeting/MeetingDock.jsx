@@ -1,5 +1,5 @@
 import React from 'react';
-import { Mic, MicOff, Camera, CameraOff, Users, MessageSquare, MoreVertical, MonitorUp, MonitorOff } from 'lucide-react';
+import { Mic, MicOff, Camera, CameraOff, Users, MessageSquare, MoreVertical, MonitorUp, MonitorOff, Loader2 } from 'lucide-react';
 import Button from '../ui/Button';
 
 export function MeetingDock({
@@ -12,7 +12,9 @@ export function MeetingDock({
   onToggleVideo,
   onToggleScreenShare,
   onToggleParticipants,
-  onToggleChat
+  onToggleChat,
+  isAudioLoading,
+  isVideoLoading
 }) {
   const [time, setTime] = React.useState(new Date());
 
@@ -34,8 +36,15 @@ export function MeetingDock({
           size="icon-lg"
           variant={isMuted ? 'danger' : 'glass'}
           className="group"
+          disabled={isAudioLoading}
         >
-          {isMuted ? <MicOff className="w-5 h-5 group-hover:scale-110 transition-transform" /> : <Mic className="w-5 h-5 group-hover:scale-110 transition-transform" />}
+          {isAudioLoading ? (
+            <Loader2 className="w-5 h-5 animate-spin" />
+          ) : isMuted ? (
+            <MicOff className="w-5 h-5 group-hover:scale-110 transition-transform" />
+          ) : (
+            <Mic className="w-5 h-5 group-hover:scale-110 transition-transform" />
+          )}
         </Button>
 
         <Button 
@@ -43,8 +52,15 @@ export function MeetingDock({
           size="icon-lg"
           variant={isVideoOff ? 'danger' : 'glass'}
           className="group"
+          disabled={isVideoLoading}
         >
-          {isVideoOff ? <CameraOff className="w-5 h-5 group-hover:scale-110 transition-transform" /> : <Camera className="w-5 h-5 group-hover:scale-110 transition-transform" />}
+          {isVideoLoading ? (
+            <Loader2 className="w-5 h-5 animate-spin" />
+          ) : isVideoOff ? (
+            <CameraOff className="w-5 h-5 group-hover:scale-110 transition-transform" />
+          ) : (
+            <Camera className="w-5 h-5 group-hover:scale-110 transition-transform" />
+          )}
         </Button>
 
         <Button 

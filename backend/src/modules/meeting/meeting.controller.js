@@ -142,6 +142,13 @@ const muteParticipant = asyncHandler(async (req, res) => {
     throw new Error('Unauthorized');
   }
 
+  // LiveKit does NOT support remote unmute (security restriction).
+  // Participants must unmute themselves. Only muting is allowed from the server.
+  if (muted === false || muted === 'false') {
+    res.status(400);
+    throw new Error('Remote unmute is not permitted. Participants must unmute themselves.');
+  }
+
   const meeting = await Meeting.findOne({ roomId: id });
   if (!meeting) {
     res.status(404);
@@ -160,19 +167,43 @@ const muteParticipant = asyncHandler(async (req, res) => {
     throw new Error('Participant not found in room');
   }
 
+  let mutedCount = 0;
+  console.log(`[MuteParticipant] identity=${identity} trackType=${trackType} tracks:`, 
+    participant.tracks.map(t => ({ sid: t.sid, type: t.type, source: t.source, muted: t.muted }))
+  );
   for (const track of participant.tracks) {
-    const isAudio = track.type === 1 || track.type === 'AUDIO';
-    const isVideo = track.type === 2 || track.type === 'VIDEO';
-    
-    if (trackType === 'audio' && isAudio) {
-      await roomService.mutePublishedTrack(id, identity, track.sid, muted);
+    // LiveKit protobuf enums:
+    //   TrackType  => AUDIO=0, VIDEO=1, DATA=2
+    //   TrackSource => UNKNOWN=0, CAMERA=1, MICROPHONE=2, SCREEN_SHARE=3, SCREEN_SHARE_AUDIO=4
+    const isAudioTrack =
+      track.type === 0 ||                                  // TrackType.AUDIO
+      track.source === 2 ||                               // TrackSource.MICROPHONE
+      String(track.type).toUpperCase() === 'AUDIO' ||
+      String(track.source).toUpperCase() === 'MICROPHONE';
+
+    const isVideoTrack =
+      (track.type === 1 && track.source !== 3 && track.source !== 4) || // TrackType.VIDEO (not screen share)
+      track.source === 1 ||                               // TrackSource.CAMERA
+      (String(track.type).toUpperCase() === 'VIDEO' && !String(track.source).toUpperCase().includes('SCREEN')) ||
+      String(track.source).toUpperCase() === 'CAMERA';
+
+    if (trackType === 'audio' && isAudioTrack) {
+      await roomService.mutePublishedTrack(id, identity, track.sid, true);
+      mutedCount++;
     }
-    if (trackType === 'video' && isVideo) {
-      await roomService.mutePublishedTrack(id, identity, track.sid, muted);
+    if (trackType === 'video' && isVideoTrack) {
+      await roomService.mutePublishedTrack(id, identity, track.sid, true);
+      mutedCount++;
     }
   }
 
-  res.json({ success: true, message: `Participant ${trackType} ${muted ? 'muted' : 'unmuted'}` });
+  if (mutedCount === 0) {
+    // No matching track found — participant may not have their mic/camera on
+    res.json({ success: true, message: `No active ${trackType} track found for participant` });
+    return;
+  }
+
+  res.json({ success: true, message: `Participant ${trackType} muted` });
 });
 
 const shareFile = asyncHandler(async (req, res) => {

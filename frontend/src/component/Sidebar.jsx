@@ -156,25 +156,7 @@ export function Sidebar({ mobileOpen, setMobileOpen }) {
             )}
           </Button>
 
-          {!(isCollapsed && !mobileOpen) && user && (
-            <div className="pt-2 border-t border-border">
-              <div className="bg-card rounded-2xl p-4 border border-border relative overflow-hidden group">
-                <div className="absolute top-0 right-0 w-24 h-24 bg-primary/10 rounded-full blur-2xl -mr-10 -mt-10 group-hover:bg-primary/20 transition-all duration-500 pointer-events-none" />
-                <div className="flex items-center gap-2 mb-3 relative z-10">
-                  <Sparkles className="w-4 h-4 text-primary" />
-                  <span className="font-bold text-sm text-foreground">
-                    Upgrade to Pro
-                  </span>
-                </div>
-                <p className="text-xs text-muted-foreground mb-4 relative z-10">
-                  Get unlimited meetings & 4K video quality.
-                </p>
-                <Button className="w-full bg-primary !text-white hover:opacity-90 relative z-10">
-                  Upgrade Now
-                </Button>
-              </div>
-            </div>
-          )}
+
 
           {user ? (
             <div

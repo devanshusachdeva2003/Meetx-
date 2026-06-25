@@ -23,19 +23,24 @@ export function MeetingUI({ id, name, onLeaveIntentional }) {
   const [chatMessage, setChatMessage] = useState("");
   const [chatMessages, setChatMessages] = useState([]);
   const [showLeaveConfirm, setShowLeaveConfirm] = useState(false);
+  const [isAudioLoading, setIsAudioLoading] = useState(false);
+  const [isVideoLoading, setIsVideoLoading] = useState(false);
+  const [loadingActions, setLoadingActions] = useState({});
 
   const room = useRoomContext();
-  const { localParticipant } = useLocalParticipant();
+  const { localParticipant, isMicrophoneEnabled, isCameraEnabled, isScreenShareEnabled } = useLocalParticipant();
   const allParticipants = useParticipants();
   const { user } = useUser();
   const [meetingData, setMeetingData] = useState(null);
+  const [meetingDataLoaded, setMeetingDataLoaded] = useState(false);
 
   useEffect(() => {
     if (id) {
       api
         .get(`/meetings/${id}`)
         .then((res) => setMeetingData(res.data.meeting))
-        .catch(console.error);
+        .catch(console.error)
+        .finally(() => setMeetingDataLoaded(true));
     }
   }, [id]);
 
@@ -60,45 +65,77 @@ export function MeetingUI({ id, name, onLeaveIntentional }) {
     isLocalLobby = meta.isLobby === true;
   } catch (e) {}
 
-  const waitingForHost = !isHost && (!hostInRoom || isLocalLobby);
+  // Only evaluate lobby state AFTER meeting data has loaded.
+  // Without this guard, isHost is always false during the API fetch,
+  // which causes a race condition that briefly shows the LobbyUI.
+  const waitingForHost = meetingDataLoaded && !isHost && (!hostInRoom || isLocalLobby);
 
   const handleMute = async (identity, trackType, muted) => {
+    const actionKey = trackType === 'audio' ? 'audio-muting' : 'video-muting';
+    setLoadingActions((prev) => ({ ...prev, [`${identity}-${actionKey}`]: true }));
     try {
       await api.post(`/meetings/${id}/mute`, { identity, trackType, muted });
-      toast.success(`Participant ${muted ? "muted" : "unmuted"} successfully`);
+      toast.success(`Participant ${trackType === 'audio' ? (muted ? 'muted' : 'unmuted') : (muted ? 'video off' : 'video on')}`);
     } catch (e) {
       console.error(`Failed to ${muted ? "mute" : "unmute"}`, e);
-      toast.error(`Failed to ${muted ? "mute" : "unmute"} participant`);
+      toast.error(`Failed to update participant`);
+    } finally {
+      setLoadingActions((prev) => {
+        const next = { ...prev };
+        delete next[`${identity}-${actionKey}`];
+        return next;
+      });
     }
   };
 
   const handleRemove = async (identity) => {
+    setLoadingActions((prev) => ({ ...prev, [`${identity}-removing`]: true }));
     try {
       await api.post(`/meetings/${id}/remove`, { identity });
       toast.success("Participant removed from meeting");
     } catch (e) {
       console.error("Failed to remove", e);
       toast.error("Failed to remove participant");
+    } finally {
+      setLoadingActions((prev) => {
+        const next = { ...prev };
+        delete next[`${identity}-removing`];
+        return next;
+      });
     }
   };
 
   const handleAdmit = async (identity) => {
+    setLoadingActions((prev) => ({ ...prev, [`${identity}-admitting`]: true }));
     try {
       await api.post(`/meetings/${id}/admit`, { identity });
       toast.success("Participant admitted to meeting");
     } catch (e) {
       console.error("Failed to admit", e);
       toast.error("Failed to admit participant");
+    } finally {
+      setLoadingActions((prev) => {
+        const next = { ...prev };
+        delete next[`${identity}-admitting`];
+        return next;
+      });
     }
   };
 
   const handleDeny = async (identity) => {
+    setLoadingActions((prev) => ({ ...prev, [`${identity}-denying`]: true }));
     try {
       await api.post(`/meetings/${id}/deny`, { identity });
       toast.success("Participant denied entry");
     } catch (e) {
       console.error("Failed to deny", e);
       toast.error("Failed to deny participant");
+    } finally {
+      setLoadingActions((prev) => {
+        const next = { ...prev };
+        delete next[`${identity}-denying`];
+        return next;
+      });
     }
   };
 
@@ -230,26 +267,38 @@ export function MeetingUI({ id, name, onLeaveIntentional }) {
     setShowLeaveConfirm(true);
   };
 
-  const isMuted = !localParticipant.isMicrophoneEnabled;
-  const isVideoOff = !localParticipant.isCameraEnabled;
+  // Use reactive properties from useLocalParticipant() — reading directly from
+  // localParticipant.isMicrophoneEnabled is NOT reactive and won't trigger re-renders.
+  const isMuted = !isMicrophoneEnabled;
+  const isVideoOff = !isCameraEnabled;
 
-  const toggleMute = () => {
-    if (isMuted) {
-      localParticipant.setMicrophoneEnabled(true);
-    } else {
-      localParticipant.setMicrophoneEnabled(false);
+  const toggleMute = async () => {
+    setIsAudioLoading(true);
+    try {
+      if (isMuted) {
+        await localParticipant.setMicrophoneEnabled(true);
+      } else {
+        await localParticipant.setMicrophoneEnabled(false);
+      }
+    } finally {
+      setIsAudioLoading(false);
     }
   };
 
-  const toggleVideo = () => {
-    if (isVideoOff) {
-      localParticipant.setCameraEnabled(true);
-    } else {
-      localParticipant.setCameraEnabled(false);
+  const toggleVideo = async () => {
+    setIsVideoLoading(true);
+    try {
+      if (isVideoOff) {
+        await localParticipant.setCameraEnabled(true);
+      } else {
+        await localParticipant.setCameraEnabled(false);
+      }
+    } finally {
+      setIsVideoLoading(false);
     }
   };
 
-  const isScreenSharing = localParticipant.isScreenShareEnabled;
+  const isScreenSharing = isScreenShareEnabled ?? localParticipant.isScreenShareEnabled;
 
   const toggleScreenShare = async () => {
     try {
@@ -348,6 +397,8 @@ export function MeetingUI({ id, name, onLeaveIntentional }) {
               setShowChat(!showChat);
               setShowParticipants(false);
             }}
+            isAudioLoading={isAudioLoading}
+            isVideoLoading={isVideoLoading}
           />
 
           <MeetingSidePanel
@@ -372,6 +423,7 @@ export function MeetingUI({ id, name, onLeaveIntentional }) {
             onRemove={handleRemove}
             onAdmit={handleAdmit}
             onDeny={handleDeny}
+            loadingActions={loadingActions}
           />
         </>
       )}

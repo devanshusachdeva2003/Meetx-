@@ -21,7 +21,8 @@ export function MeetingSidePanel({
   onRemove,
   roomId,
   onAdmit,
-  onDeny
+  onDeny,
+  loadingActions
 }) {
   const [isUploading, setIsUploading] = useState(false);
   const fileInputRef = useRef(null);
@@ -93,8 +94,23 @@ export function MeetingSidePanel({
                          <span className="text-sm font-medium">{p.user?.name || 'Guest'}</span>
                       </div>
                       <div className="flex gap-2">
-                         <Button variant="danger" size="sm" className="px-3 h-8 text-xs" onClick={() => onDeny(p.socketId)}>Deny</Button>
-                         <Button size="sm" className="px-3 h-8 text-xs bg-yellow-500 hover:bg-yellow-600 text-black shadow-yellow-500/30" onClick={() => onAdmit(p.socketId)}>Admit</Button>
+                         <Button
+                           disabled={!!loadingActions?.[`${p.socketId}-denying`]}
+                           variant="danger"
+                           size="sm"
+                           className="px-3 h-8 text-xs min-w-[48px]"
+                           onClick={() => onDeny(p.socketId)}
+                         >
+                           {loadingActions?.[`${p.socketId}-denying`] ? <Loader2 className="w-3 h-3 animate-spin" /> : "Deny"}
+                         </Button>
+                         <Button
+                           disabled={!!loadingActions?.[`${p.socketId}-admitting`]}
+                           size="sm"
+                           className="px-3 h-8 text-xs bg-yellow-500 hover:bg-yellow-600 !text-black shadow-yellow-500/30 min-w-[52px]"
+                           onClick={() => onAdmit(p.socketId)}
+                         >
+                           {loadingActions?.[`${p.socketId}-admitting`] ? <Loader2 className="w-3 h-3 animate-spin" /> : "Admit"}
+                         </Button>
                       </div>
                     </li>
                   ))}
@@ -138,16 +154,70 @@ export function MeetingSidePanel({
 
                       <div className="flex items-center gap-2">
                         <div className="p-1.5 rounded-md bg-white/5">
-                          {isMe ? (isLocalMuted ? <MicOff className="w-4 h-4 text-red-400" /> : <Mic className="w-4 h-4 text-green-400" />) : <Mic className="w-4 h-4 text-white/40" />}
+                          {isMe ? (
+                            isLocalMuted ? <MicOff className="w-4 h-4 text-red-500" /> : <Mic className="w-4 h-4 text-green-500" />
+                          ) : (
+                            p.isMuted ? <MicOff className="w-4 h-4 text-red-500" /> : <Mic className="w-4 h-4 text-green-500" />
+                          )}
                         </div>
                         <div className="p-1.5 rounded-md bg-white/5">
-                          {hasStream ? <Camera className="w-4 h-4 text-white/40" /> : <CameraOff className="w-4 h-4 text-white/30" />}
+                          {hasStream ? <Camera className="w-4 h-4 text-green-500" /> : <CameraOff className="w-4 h-4 text-red-500" />}
                         </div>
                         {isHost && !isMe && (
                           <div className="flex gap-1 ml-1">
-                            <Button variant="danger" size="sm" className="px-2 py-1 text-[10px] h-7" onClick={() => onMute(p.socketId, 'audio', !p.isMuted)}>{p.isMuted ? 'Unmute' : 'Mute'}</Button>
-                            <Button variant="danger" size="sm" className="px-2 py-1 text-[10px] h-7" onClick={() => onMute(p.socketId, 'video', p.hasVideo)}>{p.hasVideo ? 'No Video' : 'On Video'}</Button>
-                            <Button variant="danger" size="sm" className="px-2 py-1 text-[10px] h-7" onClick={() => onRemove(p.socketId)}>Kick</Button>
+                            {/* Mute Audio — only allowed if not already muted (LiveKit restriction: no remote unmute) */}
+                            {!p.isMuted ? (
+                              <Button
+                                disabled={!!loadingActions?.[`${p.socketId}-audio-muting`]}
+                                variant="outline-danger"
+                                size="sm"
+                                className="px-2 py-1 text-[10px] h-7 min-w-[44px]"
+                                onClick={() => onMute(p.socketId, 'audio', true)}
+                              >
+                                {loadingActions?.[`${p.socketId}-audio-muting`]
+                                  ? <Loader2 className="w-3 h-3 animate-spin" />
+                                  : 'Mute'
+                                }
+                              </Button>
+                            ) : (
+                              <span className="px-2 py-1 text-[10px] h-7 min-w-[44px] flex items-center justify-center rounded-lg bg-red-500/10 text-red-500 font-semibold border border-red-500/20" title="Participant must unmute themselves">
+                                Muted
+                              </span>
+                            )}
+
+                            {/* No Video — only show if camera is on (LiveKit restriction: no remote unmute) */}
+                            {p.hasVideo ? (
+                              <Button
+                                disabled={!!loadingActions?.[`${p.socketId}-video-muting`]}
+                                variant="outline-danger"
+                                size="sm"
+                                className="px-2 py-1 text-[10px] h-7 min-w-[58px]"
+                                onClick={() => onMute(p.socketId, 'video', true)}
+                              >
+                                {loadingActions?.[`${p.socketId}-video-muting`]
+                                  ? <Loader2 className="w-3 h-3 animate-spin" />
+                                  : 'No Video'
+                                }
+                              </Button>
+                            ) : (
+                              <span className="px-2 py-1 text-[10px] h-7 min-w-[58px] flex items-center justify-center rounded-lg bg-red-500/10 text-red-500 font-semibold border border-red-500/20" title="Participant must turn camera on themselves">
+                                No Video
+                              </span>
+                            )}
+
+                            {/* Kick */}
+                            <Button
+                              disabled={!!loadingActions?.[`${p.socketId}-removing`]}
+                              variant="danger"
+                              size="sm"
+                              className="px-2 py-1 text-[10px] h-7 min-w-[36px]"
+                              onClick={() => onRemove(p.socketId)}
+                            >
+                              {loadingActions?.[`${p.socketId}-removing`]
+                                ? <Loader2 className="w-3 h-3 animate-spin" />
+                                : 'Kick'
+                              }
+                            </Button>
                           </div>
                         )}
                       </div>
