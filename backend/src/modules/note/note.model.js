@@ -4,8 +4,8 @@ const NoteSchema = new mongoose.Schema({
   title: { type: String, required: true },
   content: { type: String, default: '' },
   isPinned: { type: Boolean, default: false },
-  owner: { type: mongoose.Schema.Types.ObjectId, ref: 'User', required: true },
-  meetingId: { type: String }, // Optional, to link to a meeting
+  owner: { type: mongoose.Schema.Types.ObjectId, ref: 'User', required: true, index: true },
+  meetingId: { type: String, index: true }, // Optional, to link to a meeting
   participants: [{ type: String }], // Array of names or IDs for display
   actionItems: [{
     text: { type: String },
