@@ -1,5 +1,6 @@
 import React, { createContext, useContext, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
+import { toast } from 'sonner';
 import api from '../utils/api';
 import { CreateMeetingModal } from '../component/meeting/CreateMeetingModal';
 
@@ -13,11 +14,12 @@ export function CreateMeetingProvider({ children }) {
     try {
       const response = await api.post('/meetings', { title, description });
       const newId = response.data.meeting.roomId;
-      setIsModalOpen(false);
+      closeCreateMeeting();
       navigate(`/meeting/${newId}`);
+      toast.success("Meeting created successfully!");
     } catch (err) {
       console.error("Failed to create meeting", err);
-      alert("Failed to create meeting.");
+      toast.error("Failed to create meeting.");
     }
   };
 

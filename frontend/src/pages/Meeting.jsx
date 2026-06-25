@@ -22,6 +22,7 @@ import { PreJoinScreen } from "../component/meeting/PreJoinScreen";
 import { useUser } from "../context/UserContext";
 import { LobbyUI } from "../component/meeting/LobbyUI";
 import { LeaveMeetingDialog } from "../component/meeting/LeaveMeetingDialog";
+import { toast } from "sonner";
 
 function randomName() {
   return `Guest-${Math.random().toString(36).slice(2, 8)}`;
@@ -228,32 +229,40 @@ function MeetingUI({ id, name }) {
   const handleMute = async (identity, trackType, muted) => {
     try {
       await api.post(`/meetings/${id}/mute`, { identity, trackType, muted });
+      toast.success(`Participant ${muted ? "muted" : "unmuted"} successfully`);
     } catch (e) {
       console.error(`Failed to ${muted ? "mute" : "unmute"}`, e);
+      toast.error(`Failed to ${muted ? "mute" : "unmute"} participant`);
     }
   };
 
   const handleRemove = async (identity) => {
     try {
       await api.post(`/meetings/${id}/remove`, { identity });
+      toast.success("Participant removed from meeting");
     } catch (e) {
       console.error("Failed to remove", e);
+      toast.error("Failed to remove participant");
     }
   };
 
   const handleAdmit = async (identity) => {
     try {
       await api.post(`/meetings/${id}/admit`, { identity });
+      toast.success("Participant admitted to meeting");
     } catch (e) {
       console.error("Failed to admit", e);
+      toast.error("Failed to admit participant");
     }
   };
 
   const handleDeny = async (identity) => {
     try {
       await api.post(`/meetings/${id}/deny`, { identity });
+      toast.success("Participant denied entry");
     } catch (e) {
       console.error("Failed to deny", e);
+      toast.error("Failed to deny participant");
     }
   };
 
@@ -261,8 +270,10 @@ function MeetingUI({ id, name }) {
     try {
       await api.post(`/meetings/${id}/end`);
       doLeave();
+      toast.success("Meeting ended");
     } catch (e) {
       console.error("Failed to end meeting", e);
+      toast.error("Failed to end meeting");
     }
   };
 
