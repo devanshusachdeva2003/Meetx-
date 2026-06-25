@@ -5,7 +5,7 @@ const { createMeeting, getMeeting, getMeetings, getLiveKitToken, removeParticipa
 const { protect } = require('../../middleware/authMiddleware');
 
 const upload = multer({ 
-  dest: 'uploads/',
+  dest: '/tmp',
   limits: { fileSize: 100 * 1024 * 1024 } // 100 MB limit
 });
 

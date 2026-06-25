@@ -8,7 +8,7 @@ const multer = require('multer');
 
 // Configure multer for profile photo upload (5MB limit)
 const upload = multer({ 
-  dest: 'uploads/',
+  dest: '/tmp',
   limits: { fileSize: 5 * 1024 * 1024 } 
 });
 
