@@ -53,10 +53,28 @@ const getLiveKitToken = asyncHandler(async (req, res) => {
   }
 
   let isHost = false;
-  if (userId) {
-    const meeting = await Meeting.findOne({ roomId: room });
-    if (meeting && meeting.host.toString() === userId) {
+  const meeting = await Meeting.findOne({ roomId: room });
+  
+  if (meeting) {
+    if (userId && meeting.host.toString() === userId) {
       isHost = true;
+    }
+
+    // Track attendee
+    const attendee = {
+      name: username.trim(),
+      userId: userId || null,
+      joinedAt: new Date()
+    };
+
+    // Prevent duplicate entries for the same user (by userId or name)
+    const alreadyJoined = meeting.participants.some(p => 
+      (userId && p.userId === userId) || (!userId && p.name === attendee.name)
+    );
+
+    if (!alreadyJoined) {
+      meeting.participants.push(attendee);
+      await meeting.save();
     }
   }
 

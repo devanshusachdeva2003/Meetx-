@@ -159,10 +159,20 @@ export default function Meetings() {
               <div className="flex items-center justify-between">
                 <div className="flex items-center">
                   <div className="flex -space-x-3">
-                    <img src="/download.jpg" alt="Host" className="w-8 h-8 rounded-full border-2 border-card object-cover" />
+                    <img src="/download.jpg" alt="Host" className="w-8 h-8 rounded-full border-2 border-card object-cover" title="Host" />
+                    {filteredMeetings[0].participants?.slice(0, 3).map((p, i) => (
+                      <div key={i} className="w-8 h-8 rounded-full border-2 border-card bg-gray-700 flex items-center justify-center text-xs font-bold" title={p.name}>
+                        {p.name.charAt(0).toUpperCase()}
+                      </div>
+                    ))}
+                    {filteredMeetings[0].participants?.length > 3 && (
+                      <div className="w-8 h-8 rounded-full border-2 border-card bg-gray-800 flex items-center justify-center text-xs font-bold">
+                        +{filteredMeetings[0].participants.length - 3}
+                      </div>
+                    )}
                   </div>
                   <div className="ml-4 text-sm text-gray-400">
-                    Host
+                    Host {filteredMeetings[0].participants?.length > 0 ? `+ ${filteredMeetings[0].participants.length} Attendees` : ''}
                   </div>
                 </div>
 
@@ -188,9 +198,19 @@ export default function Meetings() {
                     </div>
                     <div>
                       <h4 className="text-white font-medium mb-1 truncate" title={m.title || 'Untitled Meeting'}>{m.title || 'Untitled Meeting'}</h4>
-                      <p className="text-xs text-gray-400">{new Date(m.createdAt).toLocaleString([], { dateStyle: 'short', timeStyle: 'short' })}</p>
+                      <p className="text-xs text-gray-400 mb-2">{new Date(m.createdAt).toLocaleString([], { dateStyle: 'short', timeStyle: 'short' })}</p>
+                      
+                      {/* Attendees List */}
+                      {m.participants && m.participants.length > 0 ? (
+                        <div className="text-xs text-gray-500 line-clamp-2" title={m.participants.map(p => p.name).join(', ')}>
+                          <span className="font-semibold text-gray-400">Attendees ({m.participants.length}):</span>{' '}
+                          {m.participants.map(p => p.name).join(', ')}
+                        </div>
+                      ) : (
+                        <div className="text-xs text-gray-500">No attendees</div>
+                      )}
                     </div>
-                    <div className="flex items-center justify-between mt-2">
+                    <div className="flex items-center justify-between mt-auto pt-2">
                       <button onClick={() => joinMeeting(m.roomId)} className="text-sm font-semibold text-white hover:text-primary transition-colors">Rejoin</button>
                     </div>
                   </div>

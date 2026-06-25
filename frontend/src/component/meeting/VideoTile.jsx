@@ -10,6 +10,7 @@ export const VideoTile = React.memo(
     isMuted,
     isLocal,
     localVideoRef, // Only passed if this is the local tile, to store the ref for future access
+    publication,
   }) => {
     const [isPlaying, setIsPlaying] = useState(false);
 
@@ -36,6 +37,32 @@ export const VideoTile = React.memo(
         localVideoRef.current = videoNode;
       }
     }, [stream, isLocal, localVideoRef]);
+
+    // Intersection Observer to mute/unmute track subscription when off-screen
+    useEffect(() => {
+      const node = internalRef.current;
+      if (!node || !publication) return;
+
+      const observer = new IntersectionObserver(
+        (entries) => {
+          entries.forEach((entry) => {
+            if (entry.isIntersecting) {
+              publication.setSubscribed(true);
+            } else {
+              publication.setSubscribed(false);
+            }
+          });
+        },
+        { threshold: 0.1 }
+      );
+
+      observer.observe(node);
+
+      return () => {
+        observer.disconnect();
+        publication.setSubscribed(true); // Re-subscribe when unmounting just in case
+      };
+    }, [publication]);
 
     const noVideo = !stream || stream.getVideoTracks().length === 0;
 
