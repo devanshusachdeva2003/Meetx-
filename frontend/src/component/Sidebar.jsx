@@ -68,7 +68,7 @@ export function Sidebar({ mobileOpen, setMobileOpen }) {
     <>
       <motion.aside
         animate={{ width: isCollapsed && !mobileOpen ? 80 : 260 }}
-        className={`sidebar shrink-0 h-screen bg-background border-r border-border flex flex-col p-4 gap-6 z-[100] transition-transform duration-300 md:sticky md:top-0 fixed top-0 left-0 ${mobileOpen ? "translate-x-0" : "-translate-x-full md:translate-x-0"}`}
+        className={`sidebar shrink-0 h-screen bg-background border-r border-border z-[100] transition-transform duration-300 md:sticky md:top-0 fixed top-0 left-0 ${mobileOpen ? "translate-x-0" : "-translate-x-full md:translate-x-0"}`}
       >
         <Button
           variant="none"
@@ -94,6 +94,8 @@ export function Sidebar({ mobileOpen, setMobileOpen }) {
             <ChevronLeft className="w-5 h-5" />
           </Button>
         )}
+
+        <div className="flex flex-col h-full w-full overflow-y-auto overflow-x-hidden p-4 gap-6">
 
         <div
           className={`flex items-center ${isCollapsed && !mobileOpen ? "justify-center" : "gap-3 px-2"} pt-2 mb-2 cursor-pointer`}
@@ -225,6 +227,7 @@ export function Sidebar({ mobileOpen, setMobileOpen }) {
               </Button>
             </div>
           )}
+        </div>
         </div>
       </motion.aside>
 

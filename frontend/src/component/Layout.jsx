@@ -34,7 +34,7 @@ export function Layout() {
 
       <Sidebar mobileOpen={mobileMenuOpen} setMobileOpen={setMobileMenuOpen} />
       
-      <div className="flex-1 overflow-y-auto min-w-0 w-full relative">
+      <div className="flex-1 overflow-y-auto min-w-0 w-full relative pt-16 md:pt-0">
         <Outlet />
       </div>
     </div>

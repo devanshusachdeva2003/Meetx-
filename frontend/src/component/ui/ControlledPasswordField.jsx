@@ -22,7 +22,7 @@ const ControlledPasswordField = ({
       render={({ field: { onChange, onBlur, value, ref }, fieldState: { error } }) => (
         <div className={cn("flex flex-col gap-1.5 w-full", wrapperClassName)}>
           {label && (
-            <label htmlFor={field.name} className="text-sm font-semibold text-gray-200">
+            <label htmlFor={field.name} className="text-sm font-semibold text-foreground">
               {label}
             </label>
           )}
@@ -38,11 +38,11 @@ const ControlledPasswordField = ({
               className={cn(
                 "w-full pl-3 pr-10 py-2.5 text-sm font-[inherit] box-border",
                 "border-[1.5px] rounded-xl outline-none transition-all duration-200",
-                "bg-[#16171d] text-gray-100",
-                "placeholder:text-gray-500",
+                "bg-input !text-foreground",
+                "placeholder:!text-muted-foreground",
                 error
                   ? "border-red-400 focus:border-red-400 focus:ring-3 focus:ring-red-400/20"
-                  : "border-gray-600 focus:border-indigo-500 focus:ring-3 focus:ring-indigo-500/20",
+                  : "border-border focus:border-primary focus:ring-3 focus:ring-primary/20",
                 inputClassName
               )}
               {...rest}
@@ -50,7 +50,7 @@ const ControlledPasswordField = ({
             <button
               type="button"
               onClick={() => setShowPassword(!showPassword)}
-              className="absolute right-3 text-gray-400 hover:text-gray-200"
+              className="absolute right-3 text-muted-foreground hover:text-foreground"
             >
               {showPassword ? <EyeOff size={18} /> : <Eye size={18} />}
             </button>
