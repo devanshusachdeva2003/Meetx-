@@ -159,7 +159,7 @@ export function MeetingUI({ id, name, onLeaveIntentional }) {
           }
 
           streams.push({
-            id: trackRef.publication.trackSid || Math.random().toString(),
+            id: trackRef.publication?.trackSid || `${trackRef.participant.identity}-${trackRef.source}`,
             socketId: trackRef.participant.identity,
             label: displayLabel,
             stream: mediaStream,
@@ -191,7 +191,7 @@ export function MeetingUI({ id, name, onLeaveIntentional }) {
     return null;
   }, [tracks, localParticipant]);
 
-  const { send } = useDataChannel("chat", (msg) => {
+  const handleDataMessage = React.useCallback((msg) => {
     try {
       const decoder = new TextDecoder();
       const text = decoder.decode(msg.payload);
@@ -200,7 +200,9 @@ export function MeetingUI({ id, name, onLeaveIntentional }) {
     } catch (e) {
       console.error("Error decoding message:", e);
     }
-  });
+  }, []);
+
+  const { send } = useDataChannel("chat", handleDataMessage);
 
   const handleSendMessage = (customMsgObj = null) => {
     if (customMsgObj) {

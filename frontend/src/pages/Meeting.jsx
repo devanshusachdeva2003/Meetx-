@@ -11,7 +11,7 @@ import {
   useRoomContext,
   RoomAudioRenderer,
 } from "@livekit/components-react";
-import { Track } from "livekit-client";
+import { Track, VideoPresets, ScreenSharePresets } from "livekit-client";
 import api from "../utils/api";
 import { PreJoinScreen } from "../component/meeting/PreJoinScreen";
 import { useUser } from "../context/UserContext";
@@ -184,12 +184,27 @@ export default function Meeting() {
         }
       }}
       options={{
-        videoCaptureDefaults: joinOptions.videoDeviceId
-          ? { deviceId: joinOptions.videoDeviceId }
-          : undefined,
-        audioCaptureDefaults: joinOptions.audioDeviceId
-          ? { deviceId: joinOptions.audioDeviceId }
-          : undefined,
+        adaptiveStream: true,
+        dynacast: true,
+        publishDefaults: {
+          simulcast: true,
+          videoSimulcastLayers: [
+            VideoPresets.h180,
+            VideoPresets.h360,
+            VideoPresets.h720,
+          ],
+          screenShareEncoding: ScreenSharePresets.h1080fps15.encoding,
+        },
+        videoCaptureDefaults: {
+          deviceId: joinOptions.videoDeviceId || undefined,
+          resolution: VideoPresets.h720.resolution,
+        },
+        audioCaptureDefaults: {
+          deviceId: joinOptions.audioDeviceId || undefined,
+          autoGainControl: true,
+          echoCancellation: true,
+          noiseSuppression: true,
+        },
       }}
     >
       <MeetingUI id={id} name={name} onLeaveIntentional={() => { isIntentionalLeaveRef.current = true; }} />
