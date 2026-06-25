@@ -1,6 +1,7 @@
 import React, { useState } from "react";
 import { useForm, FormProvider } from "react-hook-form";
 import { Link, useNavigate } from "react-router-dom";
+import { Loader2 } from "lucide-react";
 import ControlledTextField from "../component/ui/ControlledTextField";
 import ControlledPasswordField from "../component/ui/ControlledPasswordField";
 import Button from "../component/ui/Button";
@@ -8,7 +9,9 @@ import api from "../utils/api";
 
 const Register = () => {
   const methods = useForm();
-  const { formState: { errors, isSubmitting } } = methods;
+  const {
+    formState: { errors, isSubmitting },
+  } = methods;
   const navigate = useNavigate();
   const [errorMsg, setErrorMsg] = useState("");
   const [isGoogleLoading, setIsGoogleLoading] = useState(false);
@@ -16,19 +19,19 @@ const Register = () => {
   const onSubmit = async (data) => {
     setErrorMsg("");
     try {
-      const response = await api.post('/auth/register', {
+      const response = await api.post("/auth/register", {
         name: data.name,
         email: data.email,
-        password: data.password
+        password: data.password,
       });
 
       const result = response.data;
 
       if (result.requireOtp) {
-        localStorage.setItem('authEmail', data.email);
-        navigate('/verify-otp');
+        localStorage.setItem("authEmail", data.email);
+        navigate("/verify-otp");
       } else {
-        navigate('/login');
+        navigate("/login");
       }
     } catch (err) {
       setErrorMsg(err.response?.data?.error || "Registration failed");
@@ -51,15 +54,18 @@ const Register = () => {
         )}
 
         <FormProvider {...methods}>
-          <form onSubmit={methods.handleSubmit(onSubmit)} className="space-y-5 relative z-10">
+          <form
+            onSubmit={methods.handleSubmit(onSubmit)}
+            className="space-y-5 relative z-10"
+          >
             <ControlledTextField
               field={{
                 name: "name",
                 placeholder: "Enter your full name",
-                validation: { required: "Name is required" }
+                validation: { required: "Name is required" },
               }}
               label="Full Name"
-              inputClassName={`!bg-input ${!errors.name ? '!border-border focus:!border-primary focus:!ring-primary/20' : ''}`}
+              inputClassName={`!bg-input ${!errors.name ? "!border-border focus:!border-primary focus:!ring-primary/20" : ""}`}
             />
 
             <ControlledTextField
@@ -71,12 +77,12 @@ const Register = () => {
                   required: "Email is required",
                   pattern: {
                     value: /^[A-Z0-9._%+-]+@[A-Z0-9.-]+\.[A-Z]{2,}$/i,
-                    message: "Invalid email address"
-                  }
-                }
+                    message: "Invalid email address",
+                  },
+                },
               }}
               label="Email Address"
-              inputClassName={`!bg-input ${!errors.email ? '!border-border focus:!border-primary focus:!ring-primary/20' : ''}`}
+              inputClassName={`!bg-input ${!errors.email ? "!border-border focus:!border-primary focus:!ring-primary/20" : ""}`}
             />
 
             <ControlledPasswordField
@@ -85,14 +91,22 @@ const Register = () => {
                 placeholder: "Create a password",
                 validation: {
                   required: "Password is required",
-                  minLength: { value: 6, message: "Must be at least 6 characters" }
-                }
+                  minLength: {
+                    value: 6,
+                    message: "Must be at least 6 characters",
+                  },
+                },
               }}
               label="Password"
-              inputClassName={`!bg-input ${!errors.password ? '!border-border focus:!border-primary focus:!ring-primary/20' : ''}`}
+              inputClassName={`!bg-input ${!errors.password ? "!border-border focus:!border-primary focus:!ring-primary/20" : ""}`}
             />
 
-            <Button disabled={isSubmitting} type="submit" size="lg" className="w-full mt-6">
+            <Button
+              disabled={isSubmitting}
+              type="submit"
+              size="lg"
+              className="w-full mt-6"
+            >
               {isSubmitting ? "Creating..." : "Sign Up"}
             </Button>
           </form>
@@ -125,18 +139,24 @@ const Register = () => {
             }
           }}
         >
-          <svg className="w-5 h-5" viewBox="0 0 24 24">
-            <path d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z" fill="#4285F4"/>
-            <path d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z" fill="#34A853"/>
-            <path d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l2.85-2.22.81-.62z" fill="#FBBC05"/>
-            <path d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z" fill="#EA4335"/>
-          </svg>
-          Google
+          {isGoogleLoading ? (
+            <Loader2 className="w-5 h-5 animate-spin text-white" />
+          ) : (
+            <img
+              src="https://www.gstatic.com/firebasejs/ui/2.0.0/images/auth/google.svg"
+              alt="Google"
+              className="w-5 h-5"
+            />
+          )}
+          {isGoogleLoading ? "Connecting to Google..." : "Google"}
         </Button>
 
         <p className="mt-8 text-center text-sm text-gray-400 relative z-10">
           Already have an account?{" "}
-          <Link to="/login" className="font-semibold text-primary hover:text-primary-glow transition-colors">
+          <Link
+            to="/login"
+            className="font-semibold text-primary hover:text-primary-glow transition-colors"
+          >
             Sign in
           </Link>
         </p>
