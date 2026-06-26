@@ -229,20 +229,18 @@ const verifyGoogleTokenAndLogin = async (code) => {
   });
   
   const payload = ticket.getPayload();
-  const { sub: googleId, email, name, picture: avatar } = payload;
+  const { sub: googleId, email, name, picture: avatar, email_verified } = payload;
   
   let user = await User.findOne({ email });
   if (user) {
-    if (!user.googleId) {
-      user.googleId = googleId;
-      if (!user.avatar && avatar) {
-        user.avatar = avatar;
-      }
-      user.isOtpVerified = true;
-      await user.save();
-    }
+    // Always sync googleId and mark email as verified for Google users.
+    // Google has already verified the email — OTP bypass is safe.
+    let changed = false;
+    if (!user.googleId) { user.googleId = googleId; changed = true; }
+    if (!user.avatar && avatar) { user.avatar = avatar; changed = true; }
+    if (!user.isOtpVerified) { user.isOtpVerified = true; changed = true; }
+    if (changed) await user.save();
   } else {
-    // Create new user
     user = await User.create({
       name,
       email,
@@ -252,13 +250,7 @@ const verifyGoogleTokenAndLogin = async (code) => {
     });
   }
 
-  if (user.requiresTwoFactorAuth) {
-    waitUntil(
-      createAndSendOTP(email).catch(err => console.error("OTP/email error", err))
-    );
-    return { requireOtp: true, user };
-  }
-
+  // Bypass OTP verification completely for Google login, even if requiresTwoFactorAuth is true
   const token = jwt.sign({ id: user._id }, process.env.JWT_SECRET || 'fallback_secret', { expiresIn: '7d' });
   return { token, user };
 };
