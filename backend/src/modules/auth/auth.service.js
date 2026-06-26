@@ -123,6 +123,13 @@ const loginUser = async (email, password) => {
     throw new Error('Invalid email or password');
   }
 
+  if (!user.passwordHash) {
+    if (user.googleId) {
+      throw new Error('This account was created with Google. Please log in with Google.');
+    }
+    throw new Error('Invalid email or password');
+  }
+
   const isMatch = await bcrypt.compare(password, user.passwordHash);
   if (!isMatch) {
     throw new Error('Invalid email or password');
