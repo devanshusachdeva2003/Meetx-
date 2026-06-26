@@ -70,7 +70,7 @@ export const VideoTile = React.memo(
     // Intersection Observer to mute/unmute track subscription when off-screen
     useEffect(() => {
       const node = internalRef.current;
-      if (!node || !publication) return;
+      if (!node || !publication || typeof publication.setSubscribed !== 'function') return;
 
       const observer = new IntersectionObserver(
         (entries) => {
@@ -89,7 +89,9 @@ export const VideoTile = React.memo(
 
       return () => {
         observer.disconnect();
-        publication.setSubscribed(true); // Re-subscribe when unmounting just in case
+        if (typeof publication.setSubscribed === 'function') {
+          publication.setSubscribed(true); // Re-subscribe when unmounting just in case
+        }
       };
     }, [publication]);
 
