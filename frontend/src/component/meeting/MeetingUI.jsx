@@ -141,8 +141,8 @@ export function MeetingUI({ id, name, onLeaveIntentional }) {
 
   const handleEndMeeting = async () => {
     try {
+      doLeave(); // Disconnect immediately so the user sees the intentional leave screen
       await api.post(`/meetings/${id}/end`);
-      doLeave();
       toast.success("Meeting ended");
     } catch (e) {
       console.error("Failed to end meeting", e);
@@ -315,6 +315,15 @@ export function MeetingUI({ id, name, onLeaveIntentional }) {
   const hasRemotes = remoteStreams && remoteStreams.length > 0;
   const mainIsLocal = !hasRemotes;
   const mainStream = hasRemotes ? remoteStreams[0] : null;
+
+  if (!meetingDataLoaded) {
+    return (
+      <div className="flex h-screen items-center justify-center bg-background flex-col gap-4">
+        <Loader2 className="w-10 h-10 animate-spin text-primary" />
+        <p className="text-gray-400 font-medium tracking-wide">Joining meeting...</p>
+      </div>
+    );
+  }
 
   return (
     <div className="relative flex flex-col h-screen bg-background text-foreground font-manrope overflow-hidden">

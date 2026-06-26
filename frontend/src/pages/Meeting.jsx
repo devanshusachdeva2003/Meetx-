@@ -40,6 +40,7 @@ export default function Meeting() {
   const serverUrl = import.meta.env.VITE_LIVEKIT_URL;
 
   const [isKicked, setKicked] = useState(false);
+  const [disconnectReason, setDisconnectReason] = useState(null);
   const isIntentionalLeaveRef = React.useRef(false);
 
   useEffect(() => {
@@ -117,15 +118,17 @@ export default function Meeting() {
       );
     }
 
+    const isRemoved = String(disconnectReason).includes('remove') || disconnectReason === 5 || disconnectReason === 'participant_removed';
+
     return (
       <div className="flex h-screen w-full flex-col items-center justify-center bg-background text-foreground">
         <div className="bg-card/50 border border-white/10 rounded-3xl p-8 max-w-md w-full text-center shadow-2xl backdrop-blur-md">
           <div className="w-20 h-20 bg-red-500/20 rounded-full flex items-center justify-center mx-auto mb-6 ring-4 ring-red-500/30">
             <Users className="w-10 h-10 text-red-500" />
           </div>
-          <h2 className="text-2xl font-bold mb-3">You left the meeting</h2>
+          <h2 className="text-2xl font-bold mb-3">{isRemoved ? "Removed from Meeting" : "Meeting Disconnected"}</h2>
           <p className="text-muted-foreground mb-8">
-            You were disconnected or removed by the host.
+            {isRemoved ? "You have been removed by the admin." : "The meeting has ended."}
           </p>
           <Button onClick={() => navigate("/")} className="w-full">
             Return to Home
@@ -181,6 +184,7 @@ export default function Meeting() {
       connect={true}
       onDisconnected={(reason) => {
         if (window.location.pathname.includes('/meeting/')) {
+          setDisconnectReason(reason);
           setKicked(true);
         }
       }}

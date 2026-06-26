@@ -86,14 +86,14 @@ export function MeetingSidePanel({
                 <h3 className="text-xs font-bold text-yellow-500 uppercase tracking-wider mb-3 px-2">Waiting in Lobby ({participants.filter(p => p.isLobby).length})</h3>
                 <ul className="space-y-2">
                   {participants.filter(p => p.isLobby).map((p) => (
-                    <li key={p.socketId} className="flex items-center justify-between p-3 bg-yellow-500/10 border border-yellow-500/20 rounded-xl">
-                      <div className="flex items-center gap-3">
-                         <div className="w-8 h-8 rounded-full bg-yellow-500/20 flex items-center justify-center font-bold text-sm text-yellow-500 uppercase">
+                    <li key={p.socketId} className="flex items-center justify-between p-3 bg-white/5 rounded-xl border border-yellow-500/20 gap-2 min-w-0">
+                      <div className="flex items-center gap-3 flex-1 min-w-0">
+                         <div className="w-8 h-8 shrink-0 rounded-full bg-yellow-500/20 flex items-center justify-center font-bold text-sm text-yellow-500 uppercase">
                            {(p.user?.name || 'G').charAt(0)}
                          </div>
-                         <span className="text-sm font-medium">{p.user?.name || 'Guest'}</span>
+                         <span className="text-sm font-medium truncate w-full">{p.user?.name || 'Guest'}</span>
                       </div>
-                      <div className="flex gap-2">
+                      <div className="flex gap-1.5 shrink-0">
                          <Button
                            disabled={!!loadingActions?.[`${p.socketId}-denying`]}
                            variant="danger"
@@ -128,50 +128,50 @@ export function MeetingSidePanel({
                   const initial = (displayName || 'G').charAt(0).toUpperCase();
                   const hasStream = remoteStreams.some(r => r.socketId === p.socketId);
                   return (
-                    <li key={p.socketId} className="flex items-center justify-between p-3 bg-white/5 rounded-xl hover:bg-white/10 transition-colors">
-                      <div className="flex items-center gap-3">
-                        <div className="relative w-8 h-8">
+                    <li key={p.socketId} className="flex items-center justify-between p-3 bg-white/5 rounded-xl hover:bg-white/10 transition-colors gap-2 min-w-0">
+                      <div className="flex items-center gap-3 flex-1 min-w-0">
+                        <div className="relative w-8 h-8 shrink-0">
                           {p.user?.avatar ? (
                             <img
                               src={p.user.avatar}
                               alt={displayName}
                               onError={(e) => { e.currentTarget.style.display = 'none'; }}
-                              className="w-8 h-8 rounded-full object-cover"
+                              className="w-8 h-8 rounded-full object-cover z-10 relative"
                             />
                           ) : null}
                           <div className="absolute inset-0 rounded-full bg-gradient-to-br from-primary to-[#4ea1ff] flex items-center justify-center font-bold text-xs text-white uppercase">
                             {initial}
                           </div>
                         </div>
-                        <div className="flex flex-col">
-                          <span className="text-sm font-medium truncate max-w-[150px]">{displayName}{isMe ? ' (You)' : ''}</span>
-                          <div className="text-[10px] text-white/60 flex items-center gap-2">
-                            {isMe && <span className="text-primary bg-primary/10 px-1.5 py-0.5 rounded-sm font-semibold">Host</span>}
-                            <span>{hasStream ? 'Video' : 'No video'}</span>
+                        <div className="flex flex-col flex-1 min-w-0">
+                          <span className="text-sm font-medium truncate w-full">{displayName}{isMe ? ' (You)' : ''}</span>
+                          <div className="text-[10px] text-white/60 flex items-center gap-2 truncate">
+                            {isMe && <span className="text-primary bg-primary/10 px-1.5 py-0.5 rounded-sm font-semibold shrink-0">Host</span>}
+                            <span className="truncate">{hasStream ? 'Video' : 'No video'}</span>
                           </div>
                         </div>
                       </div>
 
-                      <div className="flex items-center gap-2">
-                        <div className="p-1.5 rounded-md bg-white/5">
+                      <div className="flex items-center gap-1.5 shrink-0">
+                        <div className="p-1 rounded-md bg-white/5">
                           {isMe ? (
-                            isLocalMuted ? <MicOff className="w-4 h-4 text-red-500" /> : <Mic className="w-4 h-4 text-green-500" />
+                            isLocalMuted ? <MicOff className="w-3.5 h-3.5 text-red-500" /> : <Mic className="w-3.5 h-3.5 text-green-500" />
                           ) : (
-                            p.isMuted ? <MicOff className="w-4 h-4 text-red-500" /> : <Mic className="w-4 h-4 text-green-500" />
+                            p.isMuted ? <MicOff className="w-3.5 h-3.5 text-red-500" /> : <Mic className="w-3.5 h-3.5 text-green-500" />
                           )}
                         </div>
-                        <div className="p-1.5 rounded-md bg-white/5">
-                          {hasStream ? <Camera className="w-4 h-4 text-green-500" /> : <CameraOff className="w-4 h-4 text-red-500" />}
+                        <div className="p-1 rounded-md bg-white/5">
+                          {hasStream ? <Camera className="w-3.5 h-3.5 text-green-500" /> : <CameraOff className="w-3.5 h-3.5 text-red-500" />}
                         </div>
                         {isHost && !isMe && (
-                          <div className="flex gap-1 ml-1">
+                          <div className="flex gap-1 ml-1 shrink-0">
                             {/* Mute Audio — only allowed if not already muted (LiveKit restriction: no remote unmute) */}
                             {!p.isMuted ? (
                               <Button
                                 disabled={!!loadingActions?.[`${p.socketId}-audio-muting`]}
                                 variant="outline-danger"
                                 size="sm"
-                                className="px-2 py-1 text-[10px] h-7 min-w-[44px]"
+                                className="px-1.5 py-1 text-[10px] h-6 flex-shrink-0"
                                 onClick={() => onMute(p.socketId, 'audio', true)}
                               >
                                 {loadingActions?.[`${p.socketId}-audio-muting`]
@@ -180,7 +180,7 @@ export function MeetingSidePanel({
                                 }
                               </Button>
                             ) : (
-                              <span className="px-2 py-1 text-[10px] h-7 min-w-[44px] flex items-center justify-center rounded-lg bg-red-500/10 text-red-500 font-semibold border border-red-500/20" title="Participant must unmute themselves">
+                              <span className="px-1.5 py-1 text-[10px] h-6 flex items-center justify-center rounded-md bg-red-500/10 text-red-500 font-semibold border border-red-500/20 whitespace-nowrap" title="Participant must unmute themselves">
                                 Muted
                               </span>
                             )}
@@ -191,7 +191,7 @@ export function MeetingSidePanel({
                                 disabled={!!loadingActions?.[`${p.socketId}-video-muting`]}
                                 variant="outline-danger"
                                 size="sm"
-                                className="px-2 py-1 text-[10px] h-7 min-w-[58px]"
+                                className="px-1.5 py-1 text-[10px] h-6 flex-shrink-0"
                                 onClick={() => onMute(p.socketId, 'video', true)}
                               >
                                 {loadingActions?.[`${p.socketId}-video-muting`]
@@ -200,7 +200,7 @@ export function MeetingSidePanel({
                                 }
                               </Button>
                             ) : (
-                              <span className="px-2 py-1 text-[10px] h-7 min-w-[58px] flex items-center justify-center rounded-lg bg-red-500/10 text-red-500 font-semibold border border-red-500/20" title="Participant must turn camera on themselves">
+                              <span className="px-1.5 py-1 text-[10px] h-6 flex items-center justify-center rounded-md bg-red-500/10 text-red-500 font-semibold border border-red-500/20 whitespace-nowrap" title="Participant must turn camera on themselves">
                                 No Video
                               </span>
                             )}
@@ -210,7 +210,7 @@ export function MeetingSidePanel({
                               disabled={!!loadingActions?.[`${p.socketId}-removing`]}
                               variant="danger"
                               size="sm"
-                              className="px-2 py-1 text-[10px] h-7 min-w-[36px]"
+                              className="px-1.5 py-1 text-[10px] h-6 flex-shrink-0"
                               onClick={() => onRemove(p.socketId)}
                             >
                               {loadingActions?.[`${p.socketId}-removing`]
