@@ -61,16 +61,21 @@ const getLiveKitToken = asyncHandler(async (req, res) => {
     }
 
     // Track attendee
+    // If frontend sends an empty string or the string "undefined", treat it as a guest (null)
+    const validUserId = (userId && userId !== "undefined" && userId.trim() !== "") ? userId : null;
+
     const attendee = {
       name: username.trim(),
-      userId: userId || null,
+      userId: validUserId,
       joinedAt: new Date()
     };
 
     // Prevent duplicate entries for the same user (by userId or name)
-    const alreadyJoined = meeting.participants.some(p => 
-      (userId && p.userId === userId) || (!userId && p.name === attendee.name)
-    );
+    const alreadyJoined = meeting.participants.some(p => {
+      // Safely compare ObjectIds or Strings
+      const pUserId = p.userId ? p.userId.toString() : null;
+      return (validUserId && pUserId === validUserId) || (!validUserId && p.name === attendee.name);
+    });
 
     if (!alreadyJoined) {
       meeting.participants.push(attendee);
