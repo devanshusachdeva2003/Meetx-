@@ -3,7 +3,7 @@ import { motion } from "framer-motion";
 import { useNavigate } from "react-router-dom";
 import { useRoomContext, useLocalParticipant, useParticipants, useDataChannel, useTracks } from "@livekit/components-react";
 import { Track } from "livekit-client";
-import { Users } from "lucide-react";
+import { Users, Loader2 } from "lucide-react";
 import { toast } from "sonner";
 import api from "../../utils/api";
 import { useUser } from "../../context/UserContext";
