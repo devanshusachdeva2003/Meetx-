@@ -379,4 +379,4 @@ const endMeeting = asyncHandler(async (req, res) => {
   res.json({ success: true, message: 'Meeting ended' });
 });
 
-module.exports = { createMeeting, getMeeting, getMeetings, getLiveKitToken, removeParticipant, muteParticipant, shareFile, admitParticipant, endMeeting, denyParticipant: removeParticipant };
+module.exports = { createMeeting, getMeeting, getMeetings, getLiveKitToken, removeParticipant, muteParticipant, shareFile, admitParticipant, endMeeting, denyParticipant: removeParticipant, getPersonalMeeting };
