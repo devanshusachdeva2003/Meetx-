@@ -1,6 +1,7 @@
 import React, { useEffect, useState, useRef } from 'react';
 import { useForm, FormProvider } from 'react-hook-form';
 import { Camera, Trash2 } from 'lucide-react';
+import { toast } from 'sonner';
 import Button from '../ui/Button';
 import ControlledTextField from '../ui/ControlledTextField';
 import { useUser } from '../../context/UserContext';
@@ -18,7 +19,7 @@ export default function ProfileSettings() {
     if (!file) return;
 
     if (file.size > 5 * 1024 * 1024) {
-      alert("File size exceeds the 5MB limit.");
+      toast.error("File size exceeds the 5MB limit.");
       e.target.value = '';
       return;
     }
@@ -33,11 +34,12 @@ export default function ProfileSettings() {
       });
       if (response.data?.user) {
         updateUserContext(response.data.user);
+        toast.success("Avatar updated successfully");
       }
     } catch (error) {
       console.error("Failed to upload avatar", error);
       const backendError = error.response?.data?.message || error.message;
-      alert(`Upload Error: ${backendError}`);
+      toast.error(`Upload Error: ${backendError}`);
     } finally {
       setIsUploadingAvatar(false);
       e.target.value = '';
@@ -49,11 +51,12 @@ export default function ProfileSettings() {
       const response = await api.delete('/auth/me/avatar');
       if (response.data?.user) {
         updateUserContext(response.data.user);
+        toast.success("Avatar removed");
       }
     } catch (error) {
       console.error("Failed to remove avatar", error);
       const backendError = error.response?.data?.message || error.message;
-      alert(`Remove Error: ${backendError}`);
+      toast.error(`Remove Error: ${backendError}`);
     }
   };
 

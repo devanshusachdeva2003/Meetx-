@@ -8,6 +8,7 @@ import {
 import { useUser } from '../context/UserContext';
 import Button from '../component/ui/Button';
 import api from '../utils/api';
+import { toast } from 'sonner';
 
 export default function Notes() {
   const { user } = useUser();
@@ -69,7 +70,7 @@ export default function Notes() {
       setSelectedNote(res.data.note);
     } catch (e) {
       console.error(e);
-      alert("Failed to create note");
+      toast.error("Failed to create note");
     }
   };
 

@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
+import { toast } from 'sonner';
 import { 
   Calendar as CalendarIcon, 
   ChevronLeft, 
@@ -96,9 +97,9 @@ const MeetXCalendar = () => {
     } catch (err) {
       console.error(err);
       if (err.response?.status === 401) {
-        alert('Authentication required to create events');
+        toast.error('Authentication required to create events');
       } else {
-        alert('Could not create event');
+        toast.error('Could not create event');
       }
     } finally { 
       setCreating(false); 

@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { Search, Plus, Calendar, Clock, MoreHorizontal, BarChart2, Megaphone, Map, Presentation, Users, Video, X } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
+import { toast } from 'sonner';
 import api from '../utils/api';
 import Button from '../component/ui/Button';
 import { useUser } from '../context/UserContext';
@@ -110,7 +111,7 @@ export default function Meetings() {
               <button 
                 onClick={() => {
                   navigator.clipboard.writeText(`${window.location.origin}/meeting/${personalRoomId}`);
-                  alert("Link copied to clipboard!");
+                  toast.success("Link copied to clipboard!");
                 }}
                 className="px-4 py-2 text-sm font-semibold text-primary hover:text-primary-glow transition-colors"
               >
