@@ -180,30 +180,40 @@ export function MeetingUI({ id, name, onLeaveIntentional }) {
         trackRef.participant.identity !== localParticipant.identity ||
         trackRef.source === Track.Source.ScreenShare
       ) {
+        let isLobby = false;
+        try {
+          const meta = JSON.parse(trackRef.participant.metadata || "{}");
+          isLobby = meta.isLobby === true;
+        } catch (e) {}
+
+        if (isLobby) return;
+
+        let mediaStream = null;
         if (trackRef.publication?.track?.mediaStreamTrack) {
-          const mediaStream = new MediaStream([
+          mediaStream = new MediaStream([
             trackRef.publication.track.mediaStreamTrack,
           ]);
-          const isLocalScreenShare =
-            trackRef.participant.identity === localParticipant.identity;
-
-          let displayLabel =
-            trackRef.participant.name || trackRef.participant.identity;
-          if (trackRef.source === Track.Source.ScreenShare) {
-            displayLabel = isLocalScreenShare
-              ? `${name}'s Screen`
-              : `${displayLabel}'s Screen`;
-          }
-
-          streams.push({
-            id: trackRef.publication?.trackSid || `${trackRef.participant.identity}-${trackRef.source}`,
-            socketId: trackRef.participant.identity,
-            label: displayLabel,
-            stream: mediaStream,
-            isScreenShare: trackRef.source === Track.Source.ScreenShare,
-            publication: trackRef.publication,
-          });
         }
+
+        const isLocalScreenShare =
+          trackRef.participant.identity === localParticipant.identity;
+
+        let displayLabel =
+          trackRef.participant.name || trackRef.participant.identity;
+        if (trackRef.source === Track.Source.ScreenShare) {
+          displayLabel = isLocalScreenShare
+            ? `${name}'s Screen`
+            : `${displayLabel}'s Screen`;
+        }
+
+        streams.push({
+          id: trackRef.publication?.trackSid || `${trackRef.participant.identity}-${trackRef.source}`,
+          socketId: trackRef.participant.identity,
+          label: displayLabel,
+          stream: mediaStream,
+          isScreenShare: trackRef.source === Track.Source.ScreenShare,
+          publication: trackRef.publication,
+        });
       }
     });
 

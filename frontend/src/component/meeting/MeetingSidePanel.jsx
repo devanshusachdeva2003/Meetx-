@@ -146,7 +146,7 @@ export function MeetingSidePanel({
                         <div className="flex flex-col flex-1 min-w-0">
                           <span className="text-sm font-medium truncate w-full">{displayName}{isMe ? ' (You)' : ''}</span>
                           <div className="text-[10px] text-white/60 flex items-center gap-2 truncate">
-                            {isMe && <span className="text-primary bg-primary/10 px-1.5 py-0.5 rounded-sm font-semibold shrink-0">Host</span>}
+                            {(isMe && isHost) && <span className="text-primary bg-primary/10 px-1.5 py-0.5 rounded-sm font-semibold shrink-0">Host</span>}
                             <span className="truncate">{hasStream ? 'Video' : 'No video'}</span>
                           </div>
                         </div>
