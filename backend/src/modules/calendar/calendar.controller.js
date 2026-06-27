@@ -17,6 +17,7 @@ const generateRoomId = () => {
 // Create an event
 async function createEvent(req, res) {
   try {
+    console.log("Create event payload received:", req.body);
     const payload = req.body;
     if (req.user && req.user.id) payload.createdBy = req.user.id;
     

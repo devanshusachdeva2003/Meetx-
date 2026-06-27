@@ -84,14 +84,14 @@ const MeetXCalendar = () => {
 
   const handleCreateMeeting = async (data) => {
     setCreating(true);
-    const { title, description, startTime, endTime, isMeeting, recurrence } = data;
+    const { title, description, startTime, endTime, isMeeting, recurrence, recurrenceEndDate } = data;
     const [startH, startM] = startTime.split(':').map(Number);
     const [endH, endM] = endTime.split(':').map(Number);
     const start = new Date(year, month, selectedDate, startH, startM).toISOString();
     const end = new Date(year, month, selectedDate, endH, endM).toISOString();
     
     try {
-      await api.post('/calendar', { title, description, start, end, isMeeting, recurrence });
+      await api.post('/calendar', { title, description, start, end, isMeeting, recurrence, recurrenceEndDate });
       setIsModalOpen(false);
       fetchEventsForMonth(displayDate);
     } catch (err) {
