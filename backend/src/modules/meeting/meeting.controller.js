@@ -30,7 +30,7 @@ const generateRoomId = () => {
 };
 
 const createMeeting = asyncHandler(async (req, res) => {
-  const { title, description } = req.body;
+  const { title, description, scheduledAt } = req.body;
   const roomId = generateRoomId();
   
   if (!req.user || !req.user.id) {
@@ -38,7 +38,13 @@ const createMeeting = asyncHandler(async (req, res) => {
     throw new Error('Unauthorized. Must be logged in to create a meeting.');
   }
 
-  const meeting = await Meeting.create({ roomId, title, description, host: req.user.id });
+  const meeting = await Meeting.create({ 
+    roomId, 
+    title, 
+    description, 
+    host: req.user.id,
+    scheduledAt: scheduledAt ? new Date(scheduledAt) : null
+  });
   res.json({ meeting });
 });
 
@@ -122,7 +128,26 @@ const getMeetings = asyncHandler(async (req, res) => {
     throw new Error('Unauthorized. Must be logged in to view meetings.');
   }
 
-  const meetings = await Meeting.find({ host: req.user.id, isPersonal: { $ne: true } }).sort({ createdAt: -1 });
+  const type = req.query.type;
+  let filter = { host: req.user.id, isPersonal: { $ne: true } };
+  
+  if (type === 'upcoming') {
+    filter.scheduledAt = { $gte: new Date() };
+  } else if (type === 'recent') {
+    filter.$or = [
+      { scheduledAt: { $lt: new Date() } },
+      { scheduledAt: null }
+    ];
+  }
+
+  const limit = req.query.limit ? parseInt(req.query.limit) : 0;
+  let query = Meeting.find(filter).sort({ createdAt: -1 });
+  
+  if (limit > 0) {
+    query = query.limit(limit);
+  }
+
+  const meetings = await query;
   res.json({ meetings });
 });
 

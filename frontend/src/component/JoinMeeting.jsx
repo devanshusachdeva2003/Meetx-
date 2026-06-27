@@ -22,10 +22,7 @@ export function JoinMeeting() {
   };
 
   return (
-    <motion.div
-      initial={{ opacity: 0, y: 12 }}
-      animate={{ opacity: 1, y: 0 }}
-      transition={{ delay: 0.05 }}
+    <div
       className="bg-card border border-border rounded-3xl p-8 relative overflow-hidden flex flex-col min-h-[320px]"
     >
       <div className="absolute -bottom-16 -right-16 w-56 h-56 rounded-full bg-primary/10 blur-3xl pointer-events-none" />
@@ -58,6 +55,6 @@ export function JoinMeeting() {
       >
         Join Meeting
       </motion.button>
-    </motion.div>
+    </div>
   );
 }

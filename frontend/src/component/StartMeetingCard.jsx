@@ -14,9 +14,7 @@ export function StartMeetingCard({ onOpenCreateModal }) {
     }
   }
   return (
-    <motion.div
-      initial={{ opacity: 0, y: 12 }}
-      animate={{ opacity: 1, y: 0 }}
+    <div
       className="bg-card rounded-3xl p-8 relative overflow-hidden grid md:grid-cols-2 gap-6 items-center min-h-[320px] border border-border"
     >
       <div className="absolute -top-20 -left-20 w-72 h-72 rounded-full bg-primary/10 blur-3xl pointer-events-none" />
@@ -81,6 +79,6 @@ export function StartMeetingCard({ onOpenCreateModal }) {
            </svg>
         </div>
       </div>
-    </motion.div>
+    </div>
   );
 }

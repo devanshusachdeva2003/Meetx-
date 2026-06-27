@@ -67,6 +67,7 @@ export function Sidebar({ mobileOpen, setMobileOpen }) {
   return (
     <>
       <motion.aside
+        initial={false}
         animate={{ width: isCollapsed && !mobileOpen ? 80 : 260 }}
         className={`sidebar shrink-0 h-screen bg-background border-r border-border z-[100] transition-transform duration-300 md:sticky md:top-0 fixed top-0 left-0 ${mobileOpen ? "translate-x-0" : "-translate-x-full md:translate-x-0"}`}
       >

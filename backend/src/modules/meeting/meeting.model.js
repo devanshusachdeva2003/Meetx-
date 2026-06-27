@@ -13,6 +13,7 @@ const MeetingSchema = new mongoose.Schema({
   host: { type: mongoose.Schema.Types.ObjectId, ref: 'User', index: true },
   participants: [AttendeeSchema],
   isPersonal: { type: Boolean, default: false },
+  scheduledAt: { type: Date, default: null },
   createdAt: { type: Date, default: Date.now },
 }, { timestamps: true });
 
