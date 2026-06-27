@@ -9,9 +9,7 @@ import {
   Sparkles,
   ChevronLeft,
   ChevronRight,
-  FileText,
-  Sun,
-  Moon,
+  FileText
 } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 import { useState, useEffect } from "react";
@@ -56,7 +54,6 @@ export function Sidebar({ mobileOpen, setMobileOpen }) {
   const [showLogoutConfirm, setShowLogoutConfirm] = useState(false);
   const navigate = useNavigate();
   const { user, logoutContext } = useUser();
-  const { theme, toggleTheme } = useTheme();
 
   useEffect(() => {
     localStorage.setItem("sidebarCollapsed", isCollapsed);
@@ -69,7 +66,7 @@ export function Sidebar({ mobileOpen, setMobileOpen }) {
       <motion.aside
         initial={false}
         animate={{ width: isCollapsed && !mobileOpen ? 80 : 260 }}
-        className={`sidebar shrink-0 h-screen bg-background border-r border-border z-[100] transition-transform duration-300 md:sticky md:top-0 fixed top-0 left-0 ${mobileOpen ? "translate-x-0" : "-translate-x-full md:translate-x-0"}`}
+        className={`sidebar shrink-0 h-screen bg-background border-r border-border z-[100] transition-all duration-300 md:sticky md:top-0 fixed top-0 left-0 ${mobileOpen ? "translate-x-0" : "-translate-x-full md:translate-x-0"}`}
       >
         <Button
           variant="none"
@@ -145,18 +142,6 @@ export function Sidebar({ mobileOpen, setMobileOpen }) {
         </nav>
 
         <div className="mt-auto flex flex-col gap-4">
-          <Button
-            variant="none"
-            size="none"
-            onClick={toggleTheme}
-            className={`flex items-center ${isCollapsed && !mobileOpen ? "justify-center" : "gap-3 px-4"} py-3 rounded-2xl text-sm font-medium transition-all cursor-pointer text-muted-foreground hover:text-foreground hover:bg-muted border border-border mt-auto`}
-          >
-            {theme === 'dark' ? <Sun className="w-[18px] h-[18px] shrink-0" /> : <Moon className="w-[18px] h-[18px] shrink-0" />}
-            {!(isCollapsed && !mobileOpen) && (
-              <span className="whitespace-nowrap">{theme === 'dark' ? 'Light Mode' : 'Dark Mode'}</span>
-            )}
-          </Button>
-
 
 
           {user ? (

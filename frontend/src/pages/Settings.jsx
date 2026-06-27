@@ -1,6 +1,7 @@
 import React from 'react';
 import ProfileSettings from '../component/settings/ProfileSettings';
 import SecuritySettings from '../component/settings/SecuritySettings';
+import AppearanceSettings from '../component/settings/AppearanceSettings';
 import { useUser } from '../context/UserContext';
 
 export default function Settings() {
@@ -24,7 +25,10 @@ export default function Settings() {
         <div className="flex flex-col gap-8">
           <ProfileSettings />
           
-          <SecuritySettings />
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+            <SecuritySettings />
+            <AppearanceSettings />
+          </div>
         </div>
       </div>
     </main>

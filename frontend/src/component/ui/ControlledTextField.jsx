@@ -35,7 +35,7 @@ const ControlledTextField = ({
             value={value}
             className={cn(
               "w-full px-3 py-2.5 text-sm font-[inherit] box-border",
-              "border-[1.5px] rounded-xl outline-none transition-all duration-200",
+              "border-[1.5px] rounded-xl outline-none transition-all duration-300",
               "bg-input text-foreground",
               "placeholder:text-muted-foreground",
               error

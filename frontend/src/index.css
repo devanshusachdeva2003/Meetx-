@@ -40,8 +40,11 @@
 }
 
 @layer base {
+  *, ::before, ::after {
+    @apply transition-colors duration-300;
+  }
   body {
-    @apply bg-background text-foreground antialiased font-sans selection:bg-primary/30 selection:text-white transition-colors duration-300;
+    @apply bg-background text-foreground antialiased font-sans selection:bg-primary/30 selection:text-white;
   }
 }
 
