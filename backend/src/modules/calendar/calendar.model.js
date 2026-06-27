@@ -13,6 +13,8 @@ const EventSchema = new mongoose.Schema({
     email: String
   }],
   meetingId: { type: String }, // optional link to Meeting.roomId
+  recurrence: { type: String, enum: ['None', 'Daily', 'Weekly', 'Monthly'], default: 'None' },
+  recurrenceEndDate: { type: Date },
   createdBy: { type: mongoose.Schema.Types.ObjectId, ref: 'User', index: true },
 }, { timestamps: true });
 

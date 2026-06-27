@@ -108,7 +108,8 @@
 }
 
 ::-webkit-scrollbar-thumb {
-  background: #2D2D39;
+  background: var(--muted-foreground);
+  opacity: 0.5;
   border-radius: 10px;
 }
 
@@ -119,5 +120,15 @@
 /* Firefox */
 * {
   scrollbar-width: thin;
-  scrollbar-color: #2D2D39 transparent;
+  scrollbar-color: var(--muted-foreground) transparent;
+}
+
+@layer utilities {
+  .hide-scrollbar::-webkit-scrollbar {
+    display: none;
+  }
+  .hide-scrollbar {
+    -ms-overflow-style: none;
+    scrollbar-width: none;
+  }
 }

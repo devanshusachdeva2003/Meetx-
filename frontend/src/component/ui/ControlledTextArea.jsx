@@ -22,7 +22,7 @@ const ControlledTextArea = ({
       render={({ field: { onChange, onBlur, value, ref }, fieldState: { error } }) => (
         <div className={cn("flex flex-col gap-1.5 w-full", wrapperClassName)}>
           {displayLabel && (
-            <label htmlFor={field.name} className="text-sm font-semibold text-foreground text-gray-300">
+            <label htmlFor={field.name} className="text-sm font-semibold text-foreground">
               {displayLabel}
             </label>
           )}
@@ -35,13 +35,13 @@ const ControlledTextArea = ({
             value={value}
             rows={rows}
             className={cn(
-              "w-full px-4 py-3 text-sm font-[inherit] box-border resize-none",
-              "border rounded-xl outline-none transition-all duration-200",
-              "bg-input/50 text-white",
-              "placeholder:text-gray-500",
+              "w-full px-3 py-2.5 text-sm font-[inherit] box-border resize-none",
+              "border-[1.5px] rounded-xl outline-none transition-all duration-300",
+              "bg-input text-foreground",
+              "placeholder:text-muted-foreground",
               error
-                ? "border-red-400 focus:border-red-400 focus:ring-1 focus:ring-red-400/20"
-                : "border-border focus:border-primary focus:ring-1 focus:ring-primary",
+                ? "border-red-400 focus:border-red-400 focus:ring-3 focus:ring-red-400/20"
+                : "border-border focus:border-primary focus:ring-3 focus:ring-primary/20",
               inputClassName
             )}
             {...rest}
