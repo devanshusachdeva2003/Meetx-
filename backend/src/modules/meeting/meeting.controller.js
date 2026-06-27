@@ -15,9 +15,22 @@ const getRoomService = () => {
   );
 };
 
+// Generate a readable room ID in the format xxx-xxxx-xxx
+const generateRoomId = () => {
+  const chars = 'abcdefghijklmnopqrstuvwxyz';
+  const getChunk = (len) => {
+    let result = '';
+    for (let i = 0; i < len; i++) {
+      result += chars.charAt(Math.floor(Math.random() * chars.length));
+    }
+    return result;
+  };
+  return `${getChunk(3)}-${getChunk(4)}-${getChunk(3)}`;
+};
+
 const createMeeting = asyncHandler(async (req, res) => {
   const { title, description } = req.body;
-  const roomId = (Date.now().toString(36) + Math.random().toString(36).slice(2,8));
+  const roomId = generateRoomId();
   
   if (!req.user || !req.user.id) {
     res.status(401);
@@ -108,8 +121,33 @@ const getMeetings = asyncHandler(async (req, res) => {
     throw new Error('Unauthorized. Must be logged in to view meetings.');
   }
 
-  const meetings = await Meeting.find({ host: req.user.id }).sort({ createdAt: -1 });
+  const meetings = await Meeting.find({ host: req.user.id, isPersonal: { $ne: true } }).sort({ createdAt: -1 });
   res.json({ meetings });
+});
+
+const getPersonalMeeting = asyncHandler(async (req, res) => {
+  if (!req.user || !req.user.id) {
+    res.status(401);
+    throw new Error('Unauthorized');
+  }
+
+  let meeting = await Meeting.findOne({ host: req.user.id, isPersonal: true });
+
+  if (!meeting) {
+    const cleanName = req.user.name.toLowerCase().replace(/[^a-z0-9]/g, '');
+    const shortId = generateRoomId().split('-')[0]; // Just take 3 letters for personal room uniqueness
+    const roomId = `${cleanName}-${shortId}`;
+    
+    meeting = await Meeting.create({
+      roomId,
+      title: `${req.user.name}'s Personal Room`,
+      description: 'Your personal meeting space',
+      host: req.user.id,
+      isPersonal: true,
+    });
+  }
+
+  res.json({ meeting });
 });
 
 const removeParticipant = asyncHandler(async (req, res) => {

@@ -1,7 +1,7 @@
 const express = require('express');
 const router = express.Router();
 const multer = require('multer');
-const { createMeeting, getMeeting, getMeetings, getLiveKitToken, removeParticipant, muteParticipant, admitParticipant, endMeeting, denyParticipant, shareFile } = require('./meeting.controller');
+const { createMeeting, getMeeting, getMeetings, getLiveKitToken, removeParticipant, muteParticipant, admitParticipant, endMeeting, denyParticipant, shareFile, getPersonalMeeting } = require('./meeting.controller');
 const { protect } = require('../../middleware/authMiddleware');
 
 const upload = multer({ 
@@ -12,6 +12,7 @@ const upload = multer({
 router.get('/', protect, getMeetings);
 router.post('/', protect, createMeeting);
 router.get('/livekit/token', getLiveKitToken);
+router.get('/personal', protect, getPersonalMeeting);
 router.get('/:id', getMeeting);
 
 // Admin controls

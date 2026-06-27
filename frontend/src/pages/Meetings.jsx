@@ -11,6 +11,7 @@ export default function Meetings() {
   const [meetings, setMeetings] = useState([]);
   const [loading, setLoading] = useState(true);
   const [searchQuery, setSearchQuery] = useState('');
+  const [personalRoomId, setPersonalRoomId] = useState('');
   
   const navigate = useNavigate();
   const { user } = useUser();
@@ -23,8 +24,12 @@ export default function Meetings() {
   const fetchMeetings = async () => {
     try {
       setLoading(true);
-      const res = await api.get('/meetings');
+      const [res, personalRes] = await Promise.all([
+        api.get('/meetings'),
+        api.get('/meetings/personal')
+      ]);
       setMeetings(res.data.meetings || []);
+      setPersonalRoomId(personalRes.data.meeting.roomId);
     } catch (e) {
       console.error(e);
     } finally {
@@ -40,8 +45,6 @@ export default function Meetings() {
   const filteredMeetings = meetings.filter(m => 
     (m.title || 'Untitled Meeting').toLowerCase().includes(searchQuery.toLowerCase())
   );
-
-  const personalRoomId = user?.name ? `${user.name.toLowerCase().replace(/\s+/g, '-')}-room` : 'my-personal-room';
 
   return (
     <div className="flex-1 min-w-0 px-4 py-8 md:px-8 md:py-10 flex flex-col gap-8 h-full overflow-y-auto">
