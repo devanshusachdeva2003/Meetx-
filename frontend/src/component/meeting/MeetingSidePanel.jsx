@@ -1,5 +1,6 @@
 import React, { useState, useRef } from 'react';
 import { X, Mic, MicOff, Camera, CameraOff, Send, Paperclip, Loader2, FileText, Image as ImageIcon } from 'lucide-react';
+import { toast } from 'sonner';
 import Button from '../ui/Button';
 import api from '../../utils/api';
 
@@ -33,7 +34,7 @@ export function MeetingSidePanel({
 
     // 100 MB size limit
     if (file.size > 100 * 1024 * 1024) {
-      alert("File size exceeds the 100MB limit.");
+      toast.error("File size exceeds the 100MB limit.");
       e.target.value = '';
       return;
     }
@@ -59,7 +60,7 @@ export function MeetingSidePanel({
       }
     } catch (err) {
       console.error(err);
-      alert('Upload failed');
+      toast.error('Upload failed');
     } finally {
       setIsUploading(false);
       e.target.value = '';

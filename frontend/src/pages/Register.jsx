@@ -2,6 +2,7 @@ import React, { useState } from "react";
 import { useForm, FormProvider } from "react-hook-form";
 import { Link, useNavigate } from "react-router-dom";
 import { Loader2 } from "lucide-react";
+import { toast } from 'sonner';
 import ControlledTextField from "../component/ui/ControlledTextField";
 import ControlledPasswordField from "../component/ui/ControlledPasswordField";
 import Button from "../component/ui/Button";
@@ -34,7 +35,9 @@ const Register = () => {
         navigate("/login");
       }
     } catch (err) {
-      setErrorMsg(err.response?.data?.error || "Registration failed");
+      const msg = err.response?.data?.error || "Registration failed";
+      setErrorMsg(msg);
+      toast.error(msg);
     }
   };
 

@@ -14,7 +14,6 @@ const MeetingSchema = new mongoose.Schema({
   participants: [AttendeeSchema],
   isPersonal: { type: Boolean, default: false },
   scheduledAt: { type: Date, default: null },
-  createdAt: { type: Date, default: Date.now },
 }, { timestamps: true });
 
 module.exports = mongoose.model('Meeting', MeetingSchema);
