@@ -1,4 +1,5 @@
 const Meeting = require('./meeting.model');
+const User = require('../auth/user.model');
 const { AccessToken, RoomServiceClient } = require('livekit-server-sdk');
 const asyncHandler = require('../../utils/asyncHandler');
 const cloudinary = require('../../utils/cloudinary');
@@ -134,13 +135,15 @@ const getPersonalMeeting = asyncHandler(async (req, res) => {
   let meeting = await Meeting.findOne({ host: req.user.id, isPersonal: true });
 
   if (!meeting) {
-    const cleanName = req.user.name.toLowerCase().replace(/[^a-z0-9]/g, '');
+    const user = await User.findById(req.user.id);
+    const userName = user ? user.name : 'my';
+    const cleanName = userName.toLowerCase().replace(/[^a-z0-9]/g, '');
     const shortId = generateRoomId().split('-')[0]; // Just take 3 letters for personal room uniqueness
     const roomId = `${cleanName}-${shortId}`;
     
     meeting = await Meeting.create({
       roomId,
-      title: `${req.user.name}'s Personal Room`,
+      title: `${userName}'s Personal Room`,
       description: 'Your personal meeting space',
       host: req.user.id,
       isPersonal: true,
