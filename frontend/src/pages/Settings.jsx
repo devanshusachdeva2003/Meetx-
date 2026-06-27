@@ -1,5 +1,5 @@
 import React from 'react';
-import { Bell, Sliders, ChevronRight } from 'lucide-react';
+import { ChevronRight } from 'lucide-react';
 import ProfileSettings from '../component/settings/ProfileSettings';
 import SecuritySettings from '../component/settings/SecuritySettings';
 import { useUser } from '../context/UserContext';
@@ -24,35 +24,8 @@ export default function Settings() {
           {/* Static Cards */}
           <section className="lg:col-span-8 lg:col-start-5 mt-2">
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-              
               {/* Security Settings (Dynamic 2FA) */}
               <SecuritySettings />
-
-              <div className="bg-card rounded-2xl p-6 border border-white/5 flex items-center justify-between cursor-pointer hover:bg-white/5 transition-colors">
-                <div>
-                  <div className="flex items-center gap-3 mb-2">
-                    <div className="p-3 rounded-lg bg-background">
-                      <Bell className="w-5 h-5 text-purple-400" />
-                    </div>
-                    <h4 className="font-semibold">Notifications</h4>
-                  </div>
-                  <p className="text-sm text-white/60">Configure how you receive notifications and updates.</p>
-                </div>
-                <ChevronRight className="w-5 h-5 text-white/30 shrink-0 ml-4" />
-              </div>
-
-              <div className="bg-card rounded-2xl p-6 border border-white/5 flex items-center justify-between cursor-pointer hover:bg-white/5 transition-colors md:col-span-2">
-                <div>
-                  <div className="flex items-center gap-3 mb-2">
-                    <div className="p-3 rounded-lg bg-background">
-                      <Sliders className="w-5 h-5 text-cyan-400" />
-                    </div>
-                    <h4 className="font-semibold">Preferences</h4>
-                  </div>
-                  <p className="text-sm text-white/60">Customize your meeting and app preferences.</p>
-                </div>
-                <ChevronRight className="w-5 h-5 text-white/30 shrink-0 ml-4" />
-              </div>
             </div>
           </section>
         </div>
