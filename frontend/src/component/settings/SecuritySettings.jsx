@@ -186,13 +186,10 @@ export default function SecuritySettings() {
                 
                 {!user?.hasPassword && isOtpSent && (
                   <ControlledOTPInput
-                    field={{
-                      name: "otp",
-                      validation: { required: "OTP is required", minLength: { value: 6, message: "OTP must be 6 digits" } }
-                    }}
+                    name="otp"
                     label="Enter OTP from Email"
-                    length={6}
-                    wrapperClassName="mb-4"
+                    otpLength={6}
+                    containerClassName="mb-4"
                   />
                 )}
 
