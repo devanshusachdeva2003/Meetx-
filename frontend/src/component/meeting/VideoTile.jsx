@@ -36,17 +36,20 @@ export const VideoTile = React.memo(
     stream,
     label,
     isMuted,
+    isVideoOff,
+    isSpeaking,
     isLocal,
     localVideoRef, 
     publication,
     isHandRaised,
+    isScreenShare,
   }) => {
     const [isPlaying, setIsPlaying] = useState(false);
     const { theme } = useTheme();
 
     const containerClass = isMain
-      ? "relative w-full h-full min-h-0 rounded-3xl overflow-hidden bg-card border border-border shadow-2xl ring-2 ring-primary/50 group"
-      : "relative w-48 lg:w-full aspect-video rounded-2xl overflow-hidden bg-card border border-border shadow-lg group shrink-0 snap-center";
+      ? `relative w-full h-full min-h-0 rounded-3xl overflow-hidden bg-card border ${isSpeaking ? 'border-primary ring-4 ring-primary shadow-[0_0_40px_rgba(168,85,247,0.5)]' : 'border-border shadow-2xl'} group transition-all duration-300`
+      : `relative w-48 lg:w-full aspect-video rounded-2xl overflow-hidden bg-card border ${isSpeaking ? 'border-primary ring-2 ring-primary shadow-[0_0_20px_rgba(168,85,247,0.4)]' : 'border-border shadow-lg'} group shrink-0 snap-center transition-all duration-300`;
 
     const internalRef = useRef(null);
 
@@ -96,7 +99,7 @@ export const VideoTile = React.memo(
       };
     }, [publication]);
 
-    const noVideo = !stream || stream.getVideoTracks().length === 0;
+    const noVideo = isVideoOff || !stream || stream.getVideoTracks().length === 0;
     const initials = getInitials(label);
     const avatarGradient = nameToColor(label);
 
@@ -110,7 +113,7 @@ export const VideoTile = React.memo(
           muted={isLocal}
           playsInline
           onPlaying={() => setIsPlaying(true)}
-          className={`w-full h-full object-contain transition-transform duration-500 group-hover:scale-105 ${!isPlaying && !noVideo ? "opacity-0" : "opacity-100"}`}
+          className={`w-full h-full ${isScreenShare ? 'object-contain' : 'object-cover group-hover:scale-105'} transition-transform duration-500 ${!isPlaying && !noVideo ? "opacity-0" : "opacity-100"}`}
         />
 
         {/* Skeleton Loader while video is loading */}

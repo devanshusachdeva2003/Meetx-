@@ -194,6 +194,7 @@ export function MeetingUI({ id, name, onLeaveIntentional }) {
         user: { name: p.name || p.identity },
         isMuted: !p.isMicrophoneEnabled,
         hasVideo: p.isCameraEnabled,
+        isSpeaking: p.isSpeaking,
         isLobby,
       };
     });
@@ -552,8 +553,8 @@ export function MeetingUI({ id, name, onLeaveIntentional }) {
         <LobbyUI localStream={localStream} handleLeaveClick={handleLeaveClick} />
       ) : (
         <>
-          <main className="flex-1 w-full h-full pt-20 pb-28 px-4 md:px-8 overflow-hidden relative z-0 flex items-center justify-center">
-            <motion.div layout className="flex flex-col lg:flex-row gap-4 w-full h-full max-w-7xl mx-auto">
+          <main className="flex-1 w-full h-full pb-28 px-4 md:px-8 overflow-hidden relative z-0 flex items-center justify-center">
+            <motion.div layout className="flex flex-col lg:flex-row gap-4 w-full h-full max-w-7xl mx-auto py-4">
               <motion.div layout className="flex-1 min-h-0 min-w-0 rounded-3xl overflow-hidden flex items-center justify-center relative">
                 {mainIsLocal ? (
                   <VideoTile
@@ -562,6 +563,8 @@ export function MeetingUI({ id, name, onLeaveIntentional }) {
                     stream={localStream}
                     label={`${name} (You)`}
                     isMuted={isMuted}
+                    isVideoOff={isVideoOff}
+                    isSpeaking={localParticipant.isSpeaking}
                     isHandRaised={raisedHands.has(localParticipant.identity)}
                   />
                 ) : (
@@ -574,8 +577,13 @@ export function MeetingUI({ id, name, onLeaveIntentional }) {
                       uiParticipants.find((p) => p.socketId === mainStream.socketId)
                         ?.isMuted
                     }
+                    isVideoOff={
+                      mainStream.isScreenShare ? false : !uiParticipants.find((p) => p.socketId === mainStream.socketId)?.hasVideo
+                    }
+                    isSpeaking={uiParticipants.find(p => p.socketId === mainStream.socketId)?.isSpeaking}
                     publication={mainStream.publication}
                     isHandRaised={raisedHands.has(mainStream.socketId)}
+                    isScreenShare={mainStream.isScreenShare}
                   />
                 )}
               </motion.div>
@@ -588,12 +596,16 @@ export function MeetingUI({ id, name, onLeaveIntentional }) {
                     stream={localStream}
                     label={`${name} (You)`}
                     isMuted={isMuted}
+                    isVideoOff={isVideoOff}
+                    isSpeaking={localParticipant.isSpeaking}
                     isHandRaised={raisedHands.has(localParticipant.identity)}
                   />
                 )}
 
                 {hasRemotes &&
-                  remoteStreams.map((r) => (
+                  remoteStreams
+                    .filter((r) => r.id !== mainStream?.id)
+                    .map((r) => (
                     <VideoTile
                       key={r.id}
                       isMain={false}
@@ -604,8 +616,13 @@ export function MeetingUI({ id, name, onLeaveIntentional }) {
                         uiParticipants.find((p) => p.socketId === r.socketId)
                           ?.isMuted
                       }
+                      isVideoOff={
+                        r.isScreenShare ? false : !uiParticipants.find((p) => p.socketId === r.socketId)?.hasVideo
+                      }
+                      isSpeaking={uiParticipants.find(p => p.socketId === r.socketId)?.isSpeaking}
                       publication={r.publication}
                       isHandRaised={raisedHands.has(r.socketId)}
+                      isScreenShare={r.isScreenShare}
                     />
                   ))}
               </motion.div>

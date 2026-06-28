@@ -198,7 +198,7 @@ export default function Meeting() {
             VideoPresets.h360,
             VideoPresets.h720,
           ],
-          screenShareEncoding: ScreenSharePresets.h1080fps15.encoding,
+          screenShareEncoding: ScreenSharePresets.h1080fps30.encoding,
         },
         videoCaptureDefaults: {
           deviceId: joinOptions.videoDeviceId || undefined,

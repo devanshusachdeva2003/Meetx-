@@ -8,7 +8,7 @@ export function MeetingHeader({ id, onLeave }) {
   };
 
   return (
-    <header className="absolute top-0 inset-x-0 flex items-center justify-between px-4 md:px-6 py-4 bg-card/60 backdrop-blur-md z-40 border-b border-white/5 shadow-lg">
+    <header className="relative shrink-0 w-full flex items-center justify-between px-4 md:px-6 py-4 bg-card/60 backdrop-blur-md z-40 border-b border-white/5 shadow-lg">
       <div className="flex items-center gap-2 md:gap-4 bg-white/5 px-3 md:px-4 py-2 rounded-2xl border border-white/10 backdrop-blur-md flex-1 min-w-0 mr-4">
         <Lock className="text-primary w-4 h-4 shrink-0" />
         <h1 className="text-sm font-semibold truncate tracking-wide min-w-0">Meeting: {id}</h1>

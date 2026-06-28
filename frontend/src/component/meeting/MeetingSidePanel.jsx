@@ -127,7 +127,7 @@ export function MeetingSidePanel({
             <div>
               <div className="flex items-center justify-between mb-3 px-2">
                 <h3 className="text-xs font-bold text-gray-500 uppercase tracking-wider">In Meeting ({participants.filter(p => !p.isLobby).length})</h3>
-                {isHost && raisedHands?.size > 0 && (
+                {isHost && participants.some(p => !p.isLobby && raisedHands?.has(p.socketId)) && (
                   <Button size="none" variant="outline" className="text-xs h-6 py-0 px-2 rounded-md hover:bg-white/5 border-white/20" onClick={onLowerAllHands}>
                     Lower All Hands
                   </Button>
