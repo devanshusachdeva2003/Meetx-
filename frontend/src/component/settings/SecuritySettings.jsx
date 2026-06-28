@@ -200,7 +200,7 @@ export default function SecuritySettings() {
                     validation: { 
                       required: "New password is required",
                       pattern: {
-                        value: /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&])[A-Za-z\d@$!%*?&]{8,}$/,
+                        value: /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[\W_])\S{8,}$/,
                         message: "Must be at least 8 chars with 1 uppercase, 1 lowercase, 1 number, and 1 special character."
                       }
                     }

@@ -246,7 +246,7 @@ const changePassword = async (id, currentPassword, newPassword) => {
     throw new Error('Invalid current password');
   }
   
-  const passwordComplexityRegex = /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&])[A-Za-z\d@$!%*?&]{8,}$/;
+  const passwordComplexityRegex = /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[\W_])\S{8,}$/;
   if (!passwordComplexityRegex.test(newPassword)) {
     throw new Error('Password must be at least 8 characters long and contain at least one uppercase, lowercase, number, and special character.');
   }
@@ -287,7 +287,7 @@ const setPassword = async (id, otp, newPassword) => {
   const isMatch = await bcrypt.compare(otp, otpRecord.otpHash);
   if (!isMatch) throw new Error('Invalid OTP');
 
-  const passwordComplexityRegex = /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&])[A-Za-z\d@$!%*?&]{8,}$/;
+  const passwordComplexityRegex = /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[\W_])\S{8,}$/;
   if (!passwordComplexityRegex.test(newPassword)) {
     throw new Error('Password must be at least 8 characters long and contain at least one uppercase, lowercase, number, and special character.');
   }
