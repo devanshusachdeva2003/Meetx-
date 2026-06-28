@@ -84,11 +84,15 @@ const MeetXCalendar = () => {
 
   const handleCreateMeeting = async (data) => {
     setCreating(true);
-    const { title, description, startTime, endTime, isMeeting, recurrence, recurrenceEndDate } = data;
+    const { title, description, date, startTime, endTime, isMeeting, recurrence, recurrenceEndDate } = data;
     const [startH, startM] = startTime.split(':').map(Number);
     const [endH, endM] = endTime.split(':').map(Number);
-    const start = new Date(year, month, selectedDate, startH, startM).toISOString();
-    const end = new Date(year, month, selectedDate, endH, endM).toISOString();
+    
+    // date comes as YYYY-MM-DD
+    const [dYear, dMonth, dDate] = date.split('-').map(Number);
+    
+    const start = new Date(dYear, dMonth - 1, dDate, startH, startM).toISOString();
+    const end = new Date(dYear, dMonth - 1, dDate, endH, endM).toISOString();
     
     try {
       await api.post('/calendar', { title, description, start, end, isMeeting, recurrence, recurrenceEndDate });
@@ -134,11 +138,35 @@ const MeetXCalendar = () => {
       <div className="px-4 md:px-6 mb-6 relative z-10">
         <div className="flex flex-col sm:flex-row items-center justify-between gap-4 sm:gap-0 mb-6">
           <div className="flex items-center gap-4">
-              <Button variant="outline" size="icon" className="hover:bg-muted bg-card border-border" onClick={() => setDisplayDate(new Date(year, month - 1, 1))}>
+              <Button variant="outline" size="icon" className="hover:bg-muted bg-card border-border" onClick={() => {
+                if (currentView === 'Day') {
+                  const d = new Date(year, month, selectedDate - 1);
+                  setDisplayDate(d);
+                  setSelectedDate(d.getDate());
+                } else if (currentView === 'Week') {
+                  const d = new Date(year, month, selectedDate - 7);
+                  setDisplayDate(d);
+                  setSelectedDate(d.getDate());
+                } else {
+                  setDisplayDate(new Date(year, month - 1, 1));
+                }
+              }}>
                 <ChevronLeft className="w-5 h-5 text-muted-foreground" />
               </Button>
               <h2 className="text-xl font-semibold">{displayDate.toLocaleString('default', { month: 'long' })} {year}</h2>
-              <Button variant="outline" size="icon" className="hover:bg-muted bg-card border-border" onClick={() => setDisplayDate(new Date(year, month + 1, 1))}>
+              <Button variant="outline" size="icon" className="hover:bg-muted bg-card border-border" onClick={() => {
+                if (currentView === 'Day') {
+                  const d = new Date(year, month, selectedDate + 1);
+                  setDisplayDate(d);
+                  setSelectedDate(d.getDate());
+                } else if (currentView === 'Week') {
+                  const d = new Date(year, month, selectedDate + 7);
+                  setDisplayDate(d);
+                  setSelectedDate(d.getDate());
+                } else {
+                  setDisplayDate(new Date(year, month + 1, 1));
+                }
+              }}>
                 <ChevronRight className="w-5 h-5 text-muted-foreground" />
               </Button>
           </div>
@@ -160,42 +188,106 @@ const MeetXCalendar = () => {
         </div>
 
         {/* Calendar Grid */}
+        {currentView === 'Month' && (
           <div className="grid grid-cols-7 gap-y-4 text-center">
-          {days.map(day => (
-            <span key={day} className="text-xs font-bold text-muted-foreground uppercase tracking-widest">{day}</span>
-          ))}
-          {/* Empty spaces for offset */}
-          {Array.from({ length: startOffset }).map((_, i) => (
-            <div key={`empty-${i}`} className="h-10" />
-          ))}
-          {dates.map(date => {
-            const isToday = date === new Date().getDate() && month === new Date().getMonth() && year === new Date().getFullYear();
-            return (
-              <div key={date} className="relative flex flex-col items-center justify-start h-14 md:h-16">
-                <Button
-                  variant="none"
-                  size="none"
-                  onClick={() => setSelectedDate(date)}
-                  className={`relative w-8 h-8 md:w-10 md:h-10 flex flex-col items-center justify-center rounded-xl text-sm font-medium transition-all ${
-                    selectedDate === date 
-                    ? 'bg-primary text-white shadow-lg shadow-primary/30 ring-2 ring-primary/50 ring-offset-2 ring-offset-background' 
-                    : isToday 
-                      ? 'text-primary font-bold border border-primary/30 bg-primary/10'
-                      : 'text-muted-foreground hover:bg-muted hover:text-foreground'
-                  }`}
-                >
-                  <span className="relative z-10">{date}</span>
-                </Button>
-                {/* Event Indicators - Fixed height container prevents grid misalignment */}
-                <div className="flex gap-1 mt-1.5 h-1.5 w-full justify-center">
-                  {(eventsByDate[date] || []).slice(0,3).map((e, idx) => (
-                    <div key={idx} className={`w-1.5 h-1.5 rounded-full ${idx === 0 ? 'bg-primary shadow-[0_0_5px_rgba(168,85,247,0.8)]' : 'bg-green-400'}`} />
-                  ))}
+            {days.map(day => (
+              <span key={day} className="text-xs font-bold text-muted-foreground uppercase tracking-widest">{day}</span>
+            ))}
+            {/* Empty spaces for offset */}
+            {Array.from({ length: startOffset }).map((_, i) => (
+              <div key={`empty-${i}`} className="h-10" />
+            ))}
+            {dates.map(date => {
+              const isToday = date === new Date().getDate() && month === new Date().getMonth() && year === new Date().getFullYear();
+              return (
+                <div key={date} className="relative flex flex-col items-center justify-start h-14 md:h-16">
+                  <Button
+                    variant="none"
+                    size="none"
+                    onClick={() => setSelectedDate(date)}
+                    className={`relative w-8 h-8 md:w-10 md:h-10 flex flex-col items-center justify-center rounded-xl text-sm font-medium transition-all ${
+                      selectedDate === date 
+                      ? 'bg-primary text-white shadow-lg shadow-primary/30 ring-2 ring-primary/50 ring-offset-2 ring-offset-background' 
+                      : isToday 
+                        ? 'text-primary font-bold border border-primary/30 bg-primary/10'
+                        : 'text-muted-foreground hover:bg-muted hover:text-foreground'
+                    }`}
+                  >
+                    <span className="relative z-10">{date}</span>
+                  </Button>
+                  {/* Event Indicators */}
+                  <div className="flex gap-1 mt-1.5 h-1.5 w-full justify-center">
+                    {(eventsByDate[date] || []).slice(0,3).map((e, idx) => (
+                      <div key={idx} className={`w-1.5 h-1.5 rounded-full ${idx === 0 ? 'bg-primary shadow-[0_0_5px_rgba(168,85,247,0.8)]' : 'bg-green-400'}`} />
+                    ))}
+                  </div>
                 </div>
-              </div>
-            );
-          })}
-        </div>
+              );
+            })}
+          </div>
+        )}
+
+        {currentView === 'Week' && (
+          <div className="grid grid-cols-7 gap-y-4 text-center">
+            {days.map(day => (
+              <span key={day} className="text-xs font-bold text-muted-foreground uppercase tracking-widest">{day}</span>
+            ))}
+            {Array.from({ length: 7 }).map((_, i) => {
+              const d = new Date(year, month, selectedDate);
+              const dayOfWeek = d.getDay();
+              const startOfWeek = new Date(year, month, selectedDate - dayOfWeek);
+              const currentDay = new Date(startOfWeek.getFullYear(), startOfWeek.getMonth(), startOfWeek.getDate() + i);
+              const dateNum = currentDay.getDate();
+              const currentMonth = currentDay.getMonth();
+              const currentYear = currentDay.getFullYear();
+              
+              const isToday = dateNum === new Date().getDate() && currentMonth === new Date().getMonth() && currentYear === new Date().getFullYear();
+              const isSelected = dateNum === selectedDate && currentMonth === month && currentYear === year;
+              
+              const eventsForDay = (currentMonth === month ? eventsByDate[dateNum] : []) || [];
+
+              return (
+                <div key={i} className="relative flex flex-col items-center justify-start h-14 md:h-16">
+                  <Button
+                    variant="none"
+                    size="none"
+                    onClick={() => {
+                      if (currentMonth !== month) {
+                        setDisplayDate(new Date(currentYear, currentMonth, 1));
+                      }
+                      setSelectedDate(dateNum);
+                    }}
+                    className={`relative w-8 h-8 md:w-10 md:h-10 flex flex-col items-center justify-center rounded-xl text-sm font-medium transition-all ${
+                      isSelected
+                      ? 'bg-primary text-white shadow-lg shadow-primary/30 ring-2 ring-primary/50 ring-offset-2 ring-offset-background' 
+                      : isToday 
+                        ? 'text-primary font-bold border border-primary/30 bg-primary/10'
+                        : 'text-muted-foreground hover:bg-muted hover:text-foreground'
+                    }`}
+                  >
+                    <span className="relative z-10">{dateNum}</span>
+                  </Button>
+                  <div className="flex gap-1 mt-1.5 h-1.5 w-full justify-center">
+                    {eventsForDay.slice(0,3).map((e, idx) => (
+                      <div key={idx} className={`w-1.5 h-1.5 rounded-full ${idx === 0 ? 'bg-primary shadow-[0_0_5px_rgba(168,85,247,0.8)]' : 'bg-green-400'}`} />
+                    ))}
+                  </div>
+                </div>
+              );
+            })}
+          </div>
+        )}
+
+        {currentView === 'Day' && (
+          <div className="flex flex-col items-center justify-center py-6">
+            <h3 className="text-3xl font-bold text-primary mb-2">
+              {new Date(year, month, selectedDate).toLocaleDateString('default', { weekday: 'long', month: 'long', day: 'numeric' })}
+            </h3>
+            <p className="text-muted-foreground text-sm">
+              {eventsByDate[selectedDate]?.length || 0} events scheduled
+            </p>
+          </div>
+        )}
       </div>
 
       {/* Upcoming Meetings Section */}

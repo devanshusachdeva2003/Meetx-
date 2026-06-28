@@ -21,6 +21,7 @@ const ScheduleMeetingModal = ({
     defaultValues: {
       title: '',
       description: '',
+      date: '',
       startTime: '11:00',
       endTime: '12:00',
       isMeeting: true,
@@ -29,8 +30,18 @@ const ScheduleMeetingModal = ({
     }
   });
 
-  const { handleSubmit, control, reset, watch } = methods;
+  const { handleSubmit, control, reset, watch, setValue } = methods;
   const currentRecurrence = watch('recurrence');
+
+  React.useEffect(() => {
+    if (open) {
+      const d = new Date(year, displayDate.getMonth(), selectedDate);
+      const yyyy = d.getFullYear();
+      const mm = String(d.getMonth() + 1).padStart(2, '0');
+      const dd = String(d.getDate()).padStart(2, '0');
+      setValue('date', `${yyyy}-${mm}-${dd}`);
+    }
+  }, [open, year, displayDate, selectedDate, setValue]);
 
   const handleModalClose = () => {
     reset();
@@ -78,16 +89,27 @@ const ScheduleMeetingModal = ({
           />
 
           <div className="flex flex-col md:flex-row gap-4">
-            <div className="flex-1 p-3.5 bg-card/50 rounded-xl border border-border flex items-center justify-between">
-              <div className="flex items-center gap-3">
+            <div className="flex-1 p-3.5 bg-card/50 rounded-xl border border-border flex items-center justify-between transition-colors hover:border-primary/30">
+              <div className="flex items-center gap-3 w-full">
                 <div className="p-2 bg-primary/10 rounded-lg">
                   <CalendarIcon className="w-4 h-4 text-primary" />
                 </div>
-                <div className="flex flex-col">
+                <div className="flex flex-col flex-1">
                   <span className="text-xs text-muted-foreground font-medium mb-0.5">Date</span>
-                  <span className="text-sm font-semibold text-foreground">
-                    {displayDate.toLocaleString('default', { month: 'short' })} {selectedDate}, {year}
-                  </span>
+                  <Controller
+                    name="date"
+                    control={control}
+                    rules={{ required: 'Date is required' }}
+                    render={({ field }) => (
+                      <div className="relative">
+                        <input 
+                          {...field} 
+                          type="date" 
+                          className="bg-transparent text-sm font-semibold outline-none text-foreground w-full cursor-pointer [&::-webkit-calendar-picker-indicator]:opacity-0 [&::-webkit-calendar-picker-indicator]:absolute [&::-webkit-calendar-picker-indicator]:inset-0 [&::-webkit-calendar-picker-indicator]:w-full [&::-webkit-calendar-picker-indicator]:h-full [&::-webkit-calendar-picker-indicator]:cursor-pointer" 
+                        />
+                      </div>
+                    )}
+                  />
                 </div>
               </div>
             </div>
