@@ -1,13 +1,29 @@
 import React, { useEffect, useState } from 'react';
 import { useForm, FormProvider } from 'react-hook-form';
-import { Shield } from 'lucide-react';
+import { Shield, Key, Loader2 } from 'lucide-react';
 import ControlledToggle from '../ui/ControlledToggle';
+import ControlledPasswordField from '../ui/ControlledPasswordField';
+import ControlledOTPInput from '../ui/ControlledOTPInput';
+import Button from '../ui/Button';
 import { useUser } from '../../context/UserContext';
 import api from '../../utils/api';
+import { toast } from 'sonner';
 
 export default function SecuritySettings() {
   const { user, updateUserContext } = useUser();
   const [isSaving, setIsSaving] = useState(false);
+  
+  const passwordMethods = useForm({
+    defaultValues: {
+      currentPassword: '',
+      newPassword: '',
+      confirmPassword: '',
+      otp: ''
+    }
+  });
+  const [isPasswordSaving, setIsPasswordSaving] = useState(false);
+  const [isOtpSent, setIsOtpSent] = useState(false);
+  const [isOtpRequesting, setIsOtpRequesting] = useState(false);
 
   const methods = useForm({
     defaultValues: {
@@ -55,6 +71,50 @@ export default function SecuritySettings() {
     }
   }, [isDirty]);
 
+  const requestSetPasswordOtp = async () => {
+    try {
+      setIsOtpRequesting(true);
+      await api.post('/auth/me/password/request-otp');
+      toast.success("OTP sent to your email");
+      setIsOtpSent(true);
+    } catch (error) {
+      toast.error(error.response?.data?.error || "Failed to send OTP");
+    } finally {
+      setIsOtpRequesting(false);
+    }
+  };
+
+  const onPasswordSubmit = async (data) => {
+    if (data.newPassword !== data.confirmPassword) {
+      passwordMethods.setError("confirmPassword", { type: "manual", message: "Passwords do not match" });
+      return;
+    }
+
+    try {
+      setIsPasswordSaving(true);
+      if (user.hasPassword) {
+        await api.put('/auth/me/password/change', {
+          currentPassword: data.currentPassword,
+          newPassword: data.newPassword
+        });
+        toast.success("Password changed successfully");
+      } else {
+        await api.put('/auth/me/password/set', {
+          otp: data.otp,
+          newPassword: data.newPassword
+        });
+        toast.success("Password set successfully");
+        updateUserContext({ ...user, hasPassword: true });
+        setIsOtpSent(false);
+      }
+      passwordMethods.reset();
+    } catch (error) {
+      toast.error(error.response?.data?.error || "Failed to update password");
+    } finally {
+      setIsPasswordSaving(false);
+    }
+  };
+
   return (
     <div className="bg-card/50 backdrop-blur-xl border border-white/5 rounded-3xl p-6 md:p-8 relative overflow-hidden group h-full flex flex-col">
       <div className="absolute top-0 right-0 w-32 h-32 bg-green-500/5 blur-[60px] rounded-full pointer-events-none group-hover:bg-green-500/10 transition-colors duration-500" />
@@ -79,6 +139,104 @@ export default function SecuritySettings() {
             />
           </form>
         </FormProvider>
+
+        <div className="mt-8 pt-8 border-t border-white/10">
+          <div className="flex items-center gap-4 mb-6">
+            <div className="p-2.5 rounded-xl bg-primary/10 border border-primary/20">
+              <Key className="w-5 h-5 text-primary" />
+            </div>
+            <div>
+              <h3 className="font-bold text-lg text-white">Password Settings</h3>
+              <p className="text-sm text-gray-400">
+                {user?.hasPassword ? "Change your existing password" : "Set a password to log in without Google"}
+              </p>
+            </div>
+          </div>
+          
+          <FormProvider {...passwordMethods}>
+            {!user?.hasPassword && !isOtpSent ? (
+              <div className="space-y-4">
+                <p className="text-sm text-gray-300">
+                  To set a password for your account, we first need to verify your identity.
+                </p>
+                <Button onClick={requestSetPasswordOtp} disabled={isOtpRequesting} className="w-full">
+                  {isOtpRequesting ? (
+                    <span className="flex items-center justify-center gap-2">
+                      <Loader2 className="w-4 h-4 animate-spin" /> Sending OTP...
+                    </span>
+                  ) : (
+                    "Send Verification Code"
+                  )}
+                </Button>
+              </div>
+            ) : (
+              <form onSubmit={passwordMethods.handleSubmit(onPasswordSubmit)} className="space-y-4">
+                {user?.hasPassword && (
+                  <ControlledPasswordField
+                    field={{ 
+                      name: "currentPassword", 
+                      placeholder: "Enter current password",
+                      validation: { required: "Current password is required" }
+                    }}
+                    label="Current Password"
+                    wrapperClassName="mb-1"
+                    inputClassName="bg-white/5 border-white/10 text-white placeholder:text-gray-500"
+                  />
+                )}
+                
+                {!user?.hasPassword && isOtpSent && (
+                  <ControlledOTPInput
+                    field={{
+                      name: "otp",
+                      validation: { required: "OTP is required", minLength: { value: 6, message: "OTP must be 6 digits" } }
+                    }}
+                    label="Enter OTP from Email"
+                    length={6}
+                    wrapperClassName="mb-4"
+                  />
+                )}
+
+                <ControlledPasswordField
+                  field={{ 
+                    name: "newPassword", 
+                    placeholder: "Enter new password",
+                    validation: { 
+                      required: "New password is required",
+                      pattern: {
+                        value: /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&])[A-Za-z\d@$!%*?&]{8,}$/,
+                        message: "Must be at least 8 chars with 1 uppercase, 1 lowercase, 1 number, and 1 special character."
+                      }
+                    }
+                  }}
+                  label="New Password"
+                  wrapperClassName="mb-1"
+                  inputClassName="bg-white/5 border-white/10 text-white placeholder:text-gray-500"
+                />
+                
+                <ControlledPasswordField
+                  field={{ 
+                    name: "confirmPassword", 
+                    placeholder: "Confirm new password",
+                    validation: { required: "Please confirm your new password" }
+                  }}
+                  label="Confirm New Password"
+                  wrapperClassName="mb-1"
+                  inputClassName="bg-white/5 border-white/10 text-white placeholder:text-gray-500"
+                />
+                
+                <div className="pt-2">
+                  <Button type="submit" disabled={isPasswordSaving} className="w-full">
+                    {isPasswordSaving ? (
+                      <span className="flex items-center gap-2">
+                        <Loader2 className="w-4 h-4 animate-spin" /> Saving...
+                      </span>
+                    ) : user?.hasPassword ? "Change Password" : "Set Password"}
+                  </Button>
+                </div>
+              </form>
+            )}
+          </FormProvider>
+        </div>
         
         <div className="h-6 mt-4 flex items-center justify-center">
           {isSaving && (

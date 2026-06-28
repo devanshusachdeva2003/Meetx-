@@ -35,7 +35,12 @@ const verifyOtp = async (req, res) => {
     const { user, token } = await authService.verifyOTP(email, otp);
     return sendSuccess(res, 200, 'OTP verified successfully', {
       token,
-      user: { id: user._id, name: user.name, email: user.email }
+      user: { 
+        id: user._id, 
+        name: user.name, 
+        email: user.email,
+        hasPassword: !!user.passwordHash 
+      }
     });
   } catch (error) {
     return sendError(res, 400, error.message);
@@ -57,7 +62,12 @@ const login = async (req, res) => {
 
     return sendSuccess(res, 200, 'Login successful', {
       token: result.token,
-      user: { id: result.user._id, name: result.user.name, email: result.user.email }
+      user: { 
+        id: result.user._id, 
+        name: result.user.name, 
+        email: result.user.email,
+        hasPassword: !!result.user.passwordHash
+      }
     });
   } catch (error) {
     return sendError(res, 400, error.message);
@@ -77,7 +87,8 @@ const getMe = async (req, res) => {
         email: user.email, 
         phone: user.phone,
         avatar: user.avatar,
-        requiresTwoFactorAuth: user.requiresTwoFactorAuth
+        requiresTwoFactorAuth: user.requiresTwoFactorAuth,
+        hasPassword: !!user.passwordHash
       }
     });
   } catch (error) {
@@ -165,7 +176,13 @@ const googleLogin = async (req, res) => {
 
     return sendSuccess(res, 200, 'Login successful', {
       token: result.token,
-      user: { id: result.user._id, name: result.user.name, email: result.user.email, avatar: result.user.avatar }
+      user: { 
+        id: result.user._id, 
+        name: result.user.name, 
+        email: result.user.email, 
+        avatar: result.user.avatar,
+        hasPassword: !!result.user.passwordHash 
+      }
     });
   } catch (error) {
     return sendError(res, 400, error.message);
@@ -219,11 +236,47 @@ const removeAvatar = async (req, res) => {
         email: user.email, 
         phone: user.phone,
         avatar: user.avatar,
-        requiresTwoFactorAuth: user.requiresTwoFactorAuth
+        requiresTwoFactorAuth: user.requiresTwoFactorAuth,
+        hasPassword: !!user.passwordHash
       }
     });
   } catch (error) {
     return sendError(res, 400, 'Failed to remove avatar: ' + error.message);
+  }
+};
+
+const changePassword = async (req, res) => {
+  try {
+    const { currentPassword, newPassword } = req.body;
+    if (!currentPassword || !newPassword) {
+      return sendError(res, 400, 'Current password and new password are required');
+    }
+    await authService.changePassword(req.user.id, currentPassword, newPassword);
+    return sendSuccess(res, 200, 'Password changed successfully');
+  } catch (error) {
+    return sendError(res, 400, error.message);
+  }
+};
+
+const requestSetPasswordOtp = async (req, res) => {
+  try {
+    await authService.requestSetPasswordOtp(req.user.id);
+    return sendSuccess(res, 200, 'OTP sent successfully');
+  } catch (error) {
+    return sendError(res, 400, error.message);
+  }
+};
+
+const setPassword = async (req, res) => {
+  try {
+    const { otp, newPassword } = req.body;
+    if (!otp || !newPassword) {
+      return sendError(res, 400, 'OTP and new password are required');
+    }
+    await authService.setPassword(req.user.id, otp, newPassword);
+    return sendSuccess(res, 200, 'Password set successfully');
+  } catch (error) {
+    return sendError(res, 400, error.message);
   }
 };
 
@@ -239,5 +292,8 @@ module.exports = {
   getGoogleAuthUrl,
   googleLogin,
   uploadAvatar,
-  removeAvatar
+  removeAvatar,
+  changePassword,
+  requestSetPasswordOtp,
+  setPassword
 };
