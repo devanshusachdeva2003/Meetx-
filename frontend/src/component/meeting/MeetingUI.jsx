@@ -545,7 +545,7 @@ export function MeetingUI({ id, name, onLeaveIntentional }) {
   }
 
   return (
-    <div className="relative flex flex-col h-screen bg-background text-foreground font-manrope overflow-hidden">
+    <div className="relative flex flex-col h-[100dvh] bg-background text-foreground font-manrope overflow-hidden">
       <MeetingHeader id={id} onLeave={handleLeaveClick} />
 
       {waitingForHost ? (
@@ -614,28 +614,28 @@ export function MeetingUI({ id, name, onLeaveIntentional }) {
             <ReactionsOverlay reactions={reactions} />
             <LiveCaptions captions={captions} settings={captionSettings} />
             
-            {showNotes && (
-              <MeetingNotes
-                onClose={() => setShowNotes(false)}
-                roomId={id}
-                localUser={{ name }}
-                notesContent={notesContent}
-                setNotesContent={setNotesContent}
-                tasks={tasks}
-                setTasks={setTasks}
-                onNotesChange={broadcastNotes}
-                onTasksChange={broadcastTasks}
-              />
-            )}
-            
-            {showWhiteboard && (
-              <MeetingWhiteboard
-                onClose={() => setShowWhiteboard(false)}
-                onSave={() => toast.success("Whiteboard saved to meeting!")}
-              />
-            )}
-            
           </main>
+
+          {showNotes && (
+            <MeetingNotes
+              onClose={() => setShowNotes(false)}
+              roomId={id}
+              localUser={{ name }}
+              notesContent={notesContent}
+              setNotesContent={setNotesContent}
+              tasks={tasks}
+              setTasks={setTasks}
+              onNotesChange={broadcastNotes}
+              onTasksChange={broadcastTasks}
+            />
+          )}
+          
+          {showWhiteboard && (
+            <MeetingWhiteboard
+              onClose={() => setShowWhiteboard(false)}
+              onSave={() => toast.success("Whiteboard saved to meeting!")}
+            />
+          )}
 
           <MeetingDock
             isMuted={isMuted}

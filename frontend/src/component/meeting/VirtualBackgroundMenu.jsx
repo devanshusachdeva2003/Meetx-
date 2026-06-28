@@ -12,7 +12,7 @@ export function VirtualBackgroundMenu({ currentBg, onSelectBg, onUploadCustom, i
   ];
 
   return (
-    <div className="absolute bottom-full left-1/2 -translate-x-1/2 mb-4 bg-card/90 backdrop-blur-xl border border-white/10 p-4 rounded-3xl w-80 shadow-2xl z-50 flex flex-col gap-4 animate-in fade-in slide-in-from-bottom-2">
+    <div className="absolute bottom-full left-[-20px] sm:left-1/2 sm:-translate-x-1/2 mb-4 bg-card/90 backdrop-blur-xl border border-white/10 p-4 rounded-3xl w-[85vw] sm:w-80 shadow-2xl z-50 flex flex-col gap-4 animate-in fade-in slide-in-from-bottom-2 max-w-[320px]">
       <div className="flex items-center justify-between">
         <h4 className="font-semibold text-sm">Virtual Background</h4>
         <button onClick={onClose} className="text-muted-foreground hover:text-white">&times;</button>

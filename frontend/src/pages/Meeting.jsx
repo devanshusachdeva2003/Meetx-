@@ -83,7 +83,7 @@ export default function Meeting() {
 
   if (!serverUrl) {
     return (
-      <div className="flex h-screen items-center justify-center bg-[#0B0C10] text-white flex-col gap-4">
+      <div className="flex h-[100dvh] items-center justify-center bg-[#0B0C10] text-white flex-col gap-4">
         <h2 className="text-xl font-bold text-red-500">Configuration Error</h2>
         <p>
           VITE_LIVEKIT_URL is missing. Please add it to your Vercel Environment
@@ -96,7 +96,7 @@ export default function Meeting() {
   if (isKicked) {
     if (isIntentionalLeaveRef.current) {
       return (
-        <div className="flex h-screen w-full flex-col items-center justify-center bg-background text-foreground">
+        <div className="flex h-[100dvh] w-full flex-col items-center justify-center bg-background text-foreground">
           <div className="bg-card/50 border border-white/10 rounded-3xl p-8 max-w-md w-full text-center shadow-2xl backdrop-blur-md">
             <div className="w-20 h-20 bg-primary/20 rounded-full flex items-center justify-center mx-auto mb-6 ring-4 ring-primary/30">
               <Users className="w-10 h-10 text-primary" />
@@ -121,7 +121,7 @@ export default function Meeting() {
     const isRemoved = String(disconnectReason).includes('remove') || disconnectReason === 5 || disconnectReason === 'participant_removed';
 
     return (
-      <div className="flex h-screen w-full flex-col items-center justify-center bg-background text-foreground">
+      <div className="flex h-[100dvh] w-full flex-col items-center justify-center bg-background text-foreground">
         <div className="bg-card/50 border border-white/10 rounded-3xl p-8 max-w-md w-full text-center shadow-2xl backdrop-blur-md">
           <div className="w-20 h-20 bg-red-500/20 rounded-full flex items-center justify-center mx-auto mb-6 ring-4 ring-red-500/30">
             <Users className="w-10 h-10 text-red-500" />

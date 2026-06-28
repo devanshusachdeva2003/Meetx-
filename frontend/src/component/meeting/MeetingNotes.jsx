@@ -89,19 +89,21 @@ export function MeetingNotes({
   };
 
   return (
-    <div className="absolute inset-0 m-4 md:m-8 bg-card/95 backdrop-blur-3xl border border-white/10 rounded-3xl z-40 flex flex-col shadow-2xl overflow-hidden animate-in fade-in slide-in-from-bottom-8">
-      <header className="p-4 flex items-center justify-between border-b border-white/10 bg-white/5">
-        <div className="flex items-center gap-4">
-          <h2 className="text-xl font-bold">Meeting Notes & Tasks</h2>
-          <span className="px-2 py-1 bg-green-500/20 text-green-500 text-xs font-bold rounded-md">Live Sync Active</span>
+    <div className="absolute inset-0 m-4 md:m-8 bg-card/95 backdrop-blur-3xl border border-white/10 rounded-3xl z-50 flex flex-col shadow-2xl overflow-hidden animate-in fade-in slide-in-from-bottom-8">
+      <header className="relative p-4 flex flex-col md:flex-row items-start md:items-center justify-between border-b border-white/10 bg-white/5 gap-4">
+        <Button variant="none" size="icon" onClick={onClose} className="absolute right-4 top-4 hover:bg-white/10 md:static md:order-last md:ml-2">
+          <X />
+        </Button>
+        <div className="flex items-center gap-2 md:gap-4 pr-10 md:pr-0 flex-wrap">
+          <h2 className="text-lg md:text-xl font-bold">Meeting Notes & Tasks</h2>
+          <span className="px-2 py-1 bg-green-500/20 text-green-500 text-[10px] md:text-xs font-bold rounded-md">Live Sync Active</span>
         </div>
-        <div className="flex items-center gap-2">
-          <Button variant="outline" size="sm" onClick={exportNotes}><Download className="w-4 h-4 mr-2" /> Export</Button>
-          <Button variant="primary" size="sm" onClick={saveToDatabase} disabled={isSaving}>
-            <Save className="w-4 h-4 mr-2" /> {isSaving ? 'Saving...' : 'Save to DB'}
+        <div className="flex items-center gap-2 w-full md:w-auto">
+          <Button variant="outline" size="sm" onClick={exportNotes} className="flex-1 md:flex-none justify-center">
+            <Download className="w-4 h-4 mr-1 md:mr-2" /> <span className="hidden sm:inline">Export</span>
           </Button>
-          <Button variant="none" size="icon" onClick={onClose} className="hover:bg-white/10 ml-2">
-            <X />
+          <Button variant="primary" size="sm" onClick={saveToDatabase} disabled={isSaving} className="flex-1 md:flex-none justify-center">
+            <Save className="w-4 h-4 mr-1 md:mr-2" /> {isSaving ? 'Saving...' : <><span className="hidden sm:inline">Save to DB</span><span className="sm:hidden">Save</span></>}
           </Button>
         </div>
       </header>

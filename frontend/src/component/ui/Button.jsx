@@ -21,7 +21,7 @@ const sizes = {
   sm: "px-3 py-1.5 rounded-lg text-xs",
   lg: "px-6 py-3 rounded-2xl text-base",
   icon: "p-2 rounded-full",
-  "icon-lg": "p-4 rounded-full",
+  "icon-lg": "p-2.5 md:p-4 rounded-full",
   none: "",
 };
 

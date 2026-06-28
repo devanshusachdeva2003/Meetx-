@@ -18,18 +18,18 @@ export function MeetingWhiteboard({ onClose, onSave, store }) {
   }, []);
 
   return (
-    <div className="absolute inset-0 m-4 md:m-8 bg-card/95 backdrop-blur-3xl border border-white/10 rounded-3xl z-40 flex flex-col shadow-2xl overflow-hidden animate-in fade-in slide-in-from-bottom-8">
-      <header className="p-4 flex items-center justify-between border-b border-white/10 bg-white/5 absolute top-0 w-full z-10 pointer-events-none">
-        <div className="flex items-center gap-4 pointer-events-auto">
-          <h2 className="text-xl font-bold drop-shadow-md">Collaborative Whiteboard</h2>
-          <span className="px-2 py-1 bg-blue-500/20 text-blue-500 text-xs font-bold rounded-md shadow-sm">Live</span>
+    <div className="absolute inset-0 m-4 md:m-8 bg-card/95 backdrop-blur-3xl border border-white/10 rounded-3xl z-50 flex flex-col shadow-2xl overflow-hidden animate-in fade-in slide-in-from-bottom-8">
+      <header className="relative p-4 flex flex-col md:flex-row items-start md:items-center justify-between border-b border-white/10 bg-white/5 absolute top-0 w-full z-10 pointer-events-none gap-4">
+        <Button variant="none" size="icon" onClick={onClose} className="pointer-events-auto absolute right-4 top-4 hover:bg-white/10 md:static md:order-last shadow-lg bg-card border border-white/10 rounded-full md:ml-2">
+          <X />
+        </Button>
+        <div className="flex items-center gap-2 md:gap-4 pointer-events-auto pr-10 md:pr-0 flex-wrap">
+          <h2 className="text-lg md:text-xl font-bold drop-shadow-md">Collaborative Whiteboard</h2>
+          <span className="px-2 py-1 bg-blue-500/20 text-blue-500 text-[10px] md:text-xs font-bold rounded-md shadow-sm">Live</span>
         </div>
-        <div className="flex items-center gap-2 pointer-events-auto">
-          <Button variant="primary" size="sm" onClick={onSave} className="shadow-lg">
-            <Save className="w-4 h-4 mr-2" /> Save to DB
-          </Button>
-          <Button variant="none" size="icon" onClick={onClose} className="hover:bg-white/10 ml-2 shadow-lg bg-card border border-white/10 rounded-full">
-            <X />
+        <div className="flex items-center gap-2 pointer-events-auto w-full md:w-auto">
+          <Button variant="primary" size="sm" onClick={onSave} className="shadow-lg flex-1 md:flex-none justify-center">
+            <Save className="w-4 h-4 mr-1 md:mr-2" /> <span className="hidden sm:inline">Save to DB</span><span className="sm:hidden">Save</span>
           </Button>
         </div>
       </header>

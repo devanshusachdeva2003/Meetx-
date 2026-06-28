@@ -45,11 +45,11 @@ export function MeetingDock({
   const timeString = time.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
 
   return (
-    <nav className="absolute bottom-8 left-1/2 -translate-x-1/2 z-40 bg-card/70 backdrop-blur-2xl border border-white/10 p-2 rounded-[2rem] flex items-center gap-2 shadow-[0_20px_40px_rgba(0,0,0,0.4)]">
-      <div className="px-4 border-r border-white/10 flex items-center justify-center">
-        <span className="text-white text-sm font-semibold tracking-wider">{timeString}</span>
+    <nav className="absolute bottom-4 md:bottom-8 left-1/2 -translate-x-1/2 z-40 bg-card/70 backdrop-blur-2xl border border-white/10 p-1.5 md:p-2 rounded-full md:rounded-[2rem] flex flex-nowrap justify-center items-center gap-1 md:gap-2 shadow-[0_20px_40px_rgba(0,0,0,0.4)] w-max max-w-[98vw] md:w-auto">
+      <div className="hidden sm:flex px-2 md:px-4 border-r border-white/10 items-center justify-center shrink-0">
+        <span className="text-white text-xs md:text-sm font-semibold tracking-wider">{timeString}</span>
       </div>
-      <div className="flex items-center gap-2 pl-1">
+      <div className="flex items-center gap-1 md:gap-2 pl-1">
         <Button 
           onClick={onToggleMute}
           size="icon-lg"
@@ -116,9 +116,9 @@ export function MeetingDock({
         </Button>
       </div>
 
-      <div className="w-px h-8 bg-white/10 mx-2" />
+      <div className="w-px h-6 md:h-8 bg-white/10 mx-1 md:mx-2 hidden md:block" />
 
-      <div className="flex items-center gap-2 relative">
+      <div className="flex items-center gap-1 md:gap-2 relative">
         <Button 
           onClick={onToggleHand}
           size="icon-lg"
@@ -159,9 +159,9 @@ export function MeetingDock({
         </div>
       </div>
 
-      <div className="w-px h-8 bg-white/10 mx-2" />
+      <div className="w-px h-6 md:h-8 bg-white/10 mx-1 md:mx-2 hidden md:block" />
 
-      <div className="flex items-center gap-2 relative">
+      <div className="flex items-center gap-1 md:gap-2 relative">
         <Button 
           onClick={onToggleParticipants}
           size="icon-lg"
@@ -178,11 +178,10 @@ export function MeetingDock({
           className="group relative"
         >
           <MessageSquare className="w-5 h-5 group-hover:scale-110 transition-transform" />
-          {/* Using a simple indicator if unread messages exist could go here */}
         </Button>
       </div>
 
-      <div className="w-px h-8 bg-white/10 mx-2" />
+      <div className="w-px h-6 md:h-8 bg-white/10 mx-1 md:mx-2 hidden md:block" />
 
       <div className="relative">
         {showMoreMenu && (
