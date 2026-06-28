@@ -13,6 +13,8 @@
   },
   "dependencies": {
     "@livekit/components-react": "^2.9.21",
+    "@livekit/track-processors": "^0.7.2",
+    "@tldraw/tldraw": "^5.1.1",
     "axios": "^1.7.2",
     "framer-motion": "latest",
     "livekit-client": "^2.19.1",

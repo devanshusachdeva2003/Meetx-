@@ -15,17 +15,43 @@ import { MeetingSidePanel } from "./MeetingSidePanel";
 import { VideoTile } from "./VideoTile";
 import { LobbyUI } from "./LobbyUI";
 import { LeaveMeetingDialog } from "./LeaveMeetingDialog";
+import { ReactionsOverlay } from "./ReactionsOverlay";
+import { LiveCaptions } from "./LiveCaptions";
+import { MeetingNotes } from "./MeetingNotes";
+import { MeetingWhiteboard } from "./MeetingWhiteboard";
 
 export function MeetingUI({ id, name, onLeaveIntentional }) {
   const navigate = useNavigate();
   const [showParticipants, setShowParticipants] = useState(false);
   const [showChat, setShowChat] = useState(false);
+  const [showNotes, setShowNotes] = useState(false);
+  const [showWhiteboard, setShowWhiteboard] = useState(false);
   const [chatMessage, setChatMessage] = useState("");
   const [chatMessages, setChatMessages] = useState([]);
   const [showLeaveConfirm, setShowLeaveConfirm] = useState(false);
   const [isAudioLoading, setIsAudioLoading] = useState(false);
   const [isVideoLoading, setIsVideoLoading] = useState(false);
   const [loadingActions, setLoadingActions] = useState({});
+
+  // Enhancements State
+  const [raisedHands, setRaisedHands] = useState(new Set());
+  const [reactions, setReactions] = useState([]);
+  const [captions, setCaptions] = useState([]);
+  const [captionSettings, setCaptionSettings] = useState({
+    enabled: true,
+    fontSize: 'text-xl',
+    color: '#ffffff',
+    background: 'rgba(0,0,0,0.5)',
+    filter: 'blur',
+    opacity: 50
+  });
+  
+  // Notes and Tasks State
+  const [notesContent, setNotesContent] = useState("");
+  const [tasks, setTasks] = useState([]);
+  
+  const [currentBg, setCurrentBg] = useState('none');
+  const [bgProcessor, setBgProcessor] = useState(null);
 
   const room = useRoomContext();
   const { localParticipant, isMicrophoneEnabled, isCameraEnabled, isScreenShareEnabled } = useLocalParticipant();
@@ -268,6 +294,149 @@ export function MeetingUI({ id, name, onLeaveIntentional }) {
     }
   };
 
+  // Reactions Data Channel
+  const handleReactionMessage = React.useCallback((msg) => {
+    try {
+      const parsed = JSON.parse(new TextDecoder().decode(msg.payload));
+      const reaction = { id: Date.now() + Math.random(), emoji: parsed.emoji, identity: parsed.identity, name: parsed.name };
+      setReactions((prev) => [...prev, reaction]);
+      setTimeout(() => setReactions((prev) => prev.filter(r => r.id !== reaction.id)), 4000);
+    } catch (e) {}
+  }, []);
+  const { send: sendReaction } = useDataChannel("reactions", handleReactionMessage);
+
+  const broadcastReaction = (emoji) => {
+    const payload = { emoji, identity: localParticipant.identity, name };
+    sendReaction(new TextEncoder().encode(JSON.stringify(payload)), { reliable: true });
+    handleReactionMessage({ payload: new TextEncoder().encode(JSON.stringify(payload)) });
+  };
+
+  // Raise Hand Data Channel
+  const handleHandMessage = React.useCallback((msg) => {
+    try {
+      const parsed = JSON.parse(new TextDecoder().decode(msg.payload));
+      setRaisedHands((prev) => {
+        const next = new Set(prev);
+        if (parsed.action === 'raise') next.add(parsed.identity);
+        else next.delete(parsed.identity);
+        return next;
+      });
+    } catch (e) {}
+  }, []);
+  const { send: sendHand } = useDataChannel("hands", handleHandMessage);
+
+  const toggleRaiseHand = () => {
+    const isRaised = raisedHands.has(localParticipant.identity);
+    const payload = { action: isRaised ? 'lower' : 'raise', identity: localParticipant.identity };
+    sendHand(new TextEncoder().encode(JSON.stringify(payload)), { reliable: true });
+    handleHandMessage({ payload: new TextEncoder().encode(JSON.stringify(payload)) });
+  };
+  
+  const lowerHand = (identity) => {
+    const payload = { action: 'lower', identity };
+    sendHand(new TextEncoder().encode(JSON.stringify(payload)), { reliable: true });
+    handleHandMessage({ payload: new TextEncoder().encode(JSON.stringify(payload)) });
+  };
+
+  const lowerAllHands = () => {
+    raisedHands.forEach((identity) => lowerHand(identity));
+  };
+
+  // Captions Data Channel & SpeechRecognition
+  const handleCaptionMessage = React.useCallback((msg) => {
+    try {
+      const parsed = JSON.parse(new TextDecoder().decode(msg.payload));
+      setCaptions((prev) => {
+        const existing = prev.findIndex(c => c.id === parsed.id);
+        const newCaptions = [...prev];
+        if (existing >= 0) newCaptions[existing] = parsed;
+        else newCaptions.push(parsed);
+        return newCaptions.slice(-10); // Keep last 10
+      });
+      if (parsed.isFinal) {
+        setTimeout(() => {
+          setCaptions((prev) => prev.filter(c => c.id !== parsed.id));
+        }, 6000); // Remove after 6 seconds
+      }
+    } catch (e) {}
+  }, []);
+  const { send: sendCaption } = useDataChannel("captions", handleCaptionMessage);
+
+  useEffect(() => {
+    if (!captionSettings.enabled || !isMicrophoneEnabled) return;
+    
+    const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
+    if (!SpeechRecognition) return;
+
+    const recognition = new SpeechRecognition();
+    recognition.continuous = true;
+    recognition.interimResults = true;
+    
+    let currentId = null;
+
+    recognition.onresult = (event) => {
+      let interimTranscript = '';
+      let finalTranscript = '';
+
+      for (let i = event.resultIndex; i < event.results.length; ++i) {
+        if (event.results[i].isFinal) {
+          finalTranscript += event.results[i][0].transcript;
+        } else {
+          interimTranscript += event.results[i][0].transcript;
+        }
+      }
+
+      if (!currentId) currentId = Date.now().toString();
+
+      const text = finalTranscript || interimTranscript;
+      if (!text.trim()) return;
+
+      const isFinal = !!finalTranscript;
+      const payload = {
+        id: currentId,
+        text,
+        identity: localParticipant.identity,
+        name,
+        isFinal
+      };
+
+      sendCaption(new TextEncoder().encode(JSON.stringify(payload)), { reliable: false });
+      handleCaptionMessage({ payload: new TextEncoder().encode(JSON.stringify(payload)) });
+
+      if (isFinal) {
+        currentId = null;
+      }
+    };
+
+    try {
+      recognition.start();
+    } catch (e) {}
+
+    return () => {
+      try {
+        recognition.stop();
+      } catch (e) {}
+    };
+  }, [captionSettings.enabled, isMicrophoneEnabled, sendCaption, handleCaptionMessage, localParticipant.identity, name]);
+
+  // Notes & Tasks Data Channel
+  const handleNotesMessage = React.useCallback((msg) => {
+    try {
+      const parsed = JSON.parse(new TextDecoder().decode(msg.payload));
+      if (parsed.type === 'notes') setNotesContent(parsed.content);
+      if (parsed.type === 'tasks') setTasks(parsed.tasks);
+    } catch (e) {}
+  }, []);
+  const { send: sendNotes } = useDataChannel("notes-sync", handleNotesMessage);
+
+  const broadcastNotes = (content) => {
+    sendNotes(new TextEncoder().encode(JSON.stringify({ type: 'notes', content })), { reliable: true });
+  };
+  
+  const broadcastTasks = (updatedTasks) => {
+    sendNotes(new TextEncoder().encode(JSON.stringify({ type: 'tasks', tasks: updatedTasks })), { reliable: true });
+  };
+
   const doLeave = () => {
     if (onLeaveIntentional) onLeaveIntentional();
     room.disconnect();
@@ -322,6 +491,46 @@ export function MeetingUI({ id, name, onLeaveIntentional }) {
     }
   };
 
+  const applyVirtualBackground = async (bgType) => {
+    try {
+      const pub = localParticipant.getTrackPublication(Track.Source.Camera);
+      const track = pub?.videoTrack;
+      
+      if (!track) {
+        toast.error("Camera is off. Turn on your camera first.");
+        return;
+      }
+
+      // Dynamic import to prevent build crashing if not installed
+      const processors = await import('@livekit/track-processors');
+      
+      if (bgProcessor) {
+        await track.stopProcessor();
+        setBgProcessor(null);
+      }
+
+      if (bgType === 'none') {
+        setCurrentBg('none');
+        return;
+      }
+
+      let processor;
+      if (bgType === 'blur') {
+        processor = processors.BackgroundBlur(10, { delegate: 'GPU' });
+      } else {
+        processor = processors.VirtualBackground(bgType);
+      }
+
+      await track.setProcessor(processor);
+      setBgProcessor(processor);
+      setCurrentBg(bgType);
+      toast.success("Background applied!");
+    } catch (e) {
+      console.error("Virtual background error:", e);
+      toast.error("Failed to apply background. You may need to run 'npm install @livekit/track-processors'");
+    }
+  };
+
   const hasRemotes = remoteStreams && remoteStreams.length > 0;
   const mainIsLocal = !hasRemotes;
   const mainStream = hasRemotes ? remoteStreams[0] : null;
@@ -353,6 +562,7 @@ export function MeetingUI({ id, name, onLeaveIntentional }) {
                     stream={localStream}
                     label={`${name} (You)`}
                     isMuted={isMuted}
+                    isHandRaised={raisedHands.has(localParticipant.identity)}
                   />
                 ) : (
                   <VideoTile
@@ -365,6 +575,7 @@ export function MeetingUI({ id, name, onLeaveIntentional }) {
                         ?.isMuted
                     }
                     publication={mainStream.publication}
+                    isHandRaised={raisedHands.has(mainStream.socketId)}
                   />
                 )}
               </motion.div>
@@ -377,6 +588,7 @@ export function MeetingUI({ id, name, onLeaveIntentional }) {
                     stream={localStream}
                     label={`${name} (You)`}
                     isMuted={isMuted}
+                    isHandRaised={raisedHands.has(localParticipant.identity)}
                   />
                 )}
 
@@ -393,10 +605,36 @@ export function MeetingUI({ id, name, onLeaveIntentional }) {
                           ?.isMuted
                       }
                       publication={r.publication}
+                      isHandRaised={raisedHands.has(r.socketId)}
                     />
                   ))}
               </motion.div>
             </motion.div>
+            
+            <ReactionsOverlay reactions={reactions} />
+            <LiveCaptions captions={captions} settings={captionSettings} />
+            
+            {showNotes && (
+              <MeetingNotes
+                onClose={() => setShowNotes(false)}
+                roomId={id}
+                localUser={{ name }}
+                notesContent={notesContent}
+                setNotesContent={setNotesContent}
+                tasks={tasks}
+                setTasks={setTasks}
+                onNotesChange={broadcastNotes}
+                onTasksChange={broadcastTasks}
+              />
+            )}
+            
+            {showWhiteboard && (
+              <MeetingWhiteboard
+                onClose={() => setShowWhiteboard(false)}
+                onSave={() => toast.success("Whiteboard saved to meeting!")}
+              />
+            )}
+            
           </main>
 
           <MeetingDock
@@ -411,13 +649,32 @@ export function MeetingUI({ id, name, onLeaveIntentional }) {
             onToggleParticipants={() => {
               setShowParticipants(!showParticipants);
               setShowChat(false);
+              setShowNotes(false);
             }}
             onToggleChat={() => {
               setShowChat(!showChat);
               setShowParticipants(false);
+              setShowNotes(false);
             }}
+            onToggleNotes={() => {
+              setShowNotes(!showNotes);
+              setShowChat(false);
+              setShowParticipants(false);
+            }}
+            onToggleWhiteboard={() => setShowWhiteboard(!showWhiteboard)}
+            showNotes={showNotes}
+            showWhiteboard={showWhiteboard}
             isAudioLoading={isAudioLoading}
             isVideoLoading={isVideoLoading}
+            // Enhancements
+            isHandRaised={raisedHands.has(localParticipant.identity)}
+            onToggleHand={toggleRaiseHand}
+            onReaction={broadcastReaction}
+            captionSettings={captionSettings}
+            setCaptionSettings={setCaptionSettings}
+            currentBg={currentBg}
+            onSelectBg={applyVirtualBackground}
+            onUploadCustomBg={applyVirtualBackground}
           />
 
           <MeetingSidePanel
@@ -443,6 +700,10 @@ export function MeetingUI({ id, name, onLeaveIntentional }) {
             onAdmit={handleAdmit}
             onDeny={handleDeny}
             loadingActions={loadingActions}
+            // Enhancements
+            raisedHands={raisedHands}
+            onLowerHand={lowerHand}
+            onLowerAllHands={lowerAllHands}
           />
         </>
       )}

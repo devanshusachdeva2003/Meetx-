@@ -37,8 +37,9 @@ export const VideoTile = React.memo(
     label,
     isMuted,
     isLocal,
-    localVideoRef, // Only passed if this is the local tile, to store the ref for future access
+    localVideoRef, 
     publication,
+    isHandRaised,
   }) => {
     const [isPlaying, setIsPlaying] = useState(false);
     const { theme } = useTheme();
@@ -141,6 +142,7 @@ export const VideoTile = React.memo(
 
         <div className={`absolute bottom-4 left-4 backdrop-blur-xl border px-3 py-1.5 rounded-xl text-xs font-medium flex items-center gap-2 shadow-lg z-30 ${labelBgClass}`}>
           {label}
+          {isHandRaised && <span title="Hand raised" className="text-sm ml-1 drop-shadow-md">✋</span>}
           {isMuted !== undefined &&
             (isMuted ? (
               <MicOff className="text-red-500 w-3.5 h-3.5" />

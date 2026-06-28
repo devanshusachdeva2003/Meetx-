@@ -1,5 +1,5 @@
 import React, { useState, useRef } from 'react';
-import { X, Mic, MicOff, Camera, CameraOff, Send, Paperclip, Loader2, FileText, Image as ImageIcon } from 'lucide-react';
+import { X, Mic, MicOff, Camera, CameraOff, Send, Paperclip, Loader2, FileText, Image as ImageIcon, MoreVertical } from 'lucide-react';
 import { toast } from 'sonner';
 import Button from '../ui/Button';
 import api from '../../utils/api';
@@ -23,9 +23,13 @@ export function MeetingSidePanel({
   roomId,
   onAdmit,
   onDeny,
-  loadingActions
+  loadingActions,
+  raisedHands,
+  onLowerHand,
+  onLowerAllHands
 }) {
   const [isUploading, setIsUploading] = useState(false);
+  const [openMenuId, setOpenMenuId] = useState(null);
   const fileInputRef = useRef(null);
 
   const handleFileUpload = async (e) => {
@@ -121,7 +125,14 @@ export function MeetingSidePanel({
 
             {/* Active Participants */}
             <div>
-              <h3 className="text-xs font-bold text-gray-500 uppercase tracking-wider mb-3 px-2">In Meeting ({participants.filter(p => !p.isLobby).length})</h3>
+              <div className="flex items-center justify-between mb-3 px-2">
+                <h3 className="text-xs font-bold text-gray-500 uppercase tracking-wider">In Meeting ({participants.filter(p => !p.isLobby).length})</h3>
+                {isHost && raisedHands?.size > 0 && (
+                  <Button size="none" variant="outline" className="text-xs h-6 py-0 px-2 rounded-md hover:bg-white/5 border-white/20" onClick={onLowerAllHands}>
+                    Lower All Hands
+                  </Button>
+                )}
+              </div>
               <ul className="space-y-2">
                 {participants.filter(p => !p.isLobby).map((p) => {
                   const isMe = p.socketId === socketId;
@@ -145,7 +156,10 @@ export function MeetingSidePanel({
                           </div>
                         </div>
                         <div className="flex flex-col flex-1 min-w-0">
-                          <span className="text-sm font-medium truncate w-full">{displayName}{isMe ? ' (You)' : ''}</span>
+                          <span className="text-sm font-medium truncate w-full flex items-center gap-1.5">
+                            {displayName}{isMe ? ' (You)' : ''}
+                            {raisedHands?.has(p.socketId) && <span title="Hand raised" className="text-sm">✋</span>}
+                          </span>
                           <div className="text-[10px] text-white/60 flex items-center gap-2 truncate">
                             {(isMe && isHost) && <span className="text-primary bg-primary/10 px-1.5 py-0.5 rounded-sm font-semibold shrink-0">Host</span>}
                             <span className="truncate">{hasStream ? 'Video' : 'No video'}</span>
@@ -165,60 +179,62 @@ export function MeetingSidePanel({
                           {hasStream ? <Camera className="w-3.5 h-3.5 text-green-500" /> : <CameraOff className="w-3.5 h-3.5 text-red-500" />}
                         </div>
                         {isHost && !isMe && (
-                          <div className="flex gap-1 ml-1 shrink-0">
-                            {/* Mute Audio — only allowed if not already muted (LiveKit restriction: no remote unmute) */}
-                            {!p.isMuted ? (
-                              <Button
-                                disabled={!!loadingActions?.[`${p.socketId}-audio-muting`]}
-                                variant="outline-danger"
-                                size="sm"
-                                className="px-1.5 py-1 text-[10px] h-6 flex-shrink-0"
-                                onClick={() => onMute(p.socketId, 'audio', true)}
-                              >
-                                {loadingActions?.[`${p.socketId}-audio-muting`]
-                                  ? <Loader2 className="w-3 h-3 animate-spin" />
-                                  : 'Mute'
-                                }
-                              </Button>
-                            ) : (
-                              <span className="px-1.5 py-1 text-[10px] h-6 flex items-center justify-center rounded-md bg-red-500/10 text-red-500 font-semibold border border-red-500/20 whitespace-nowrap" title="Participant must unmute themselves">
-                                Muted
-                              </span>
-                            )}
-
-                            {/* No Video — only show if camera is on (LiveKit restriction: no remote unmute) */}
-                            {p.hasVideo ? (
-                              <Button
-                                disabled={!!loadingActions?.[`${p.socketId}-video-muting`]}
-                                variant="outline-danger"
-                                size="sm"
-                                className="px-1.5 py-1 text-[10px] h-6 flex-shrink-0"
-                                onClick={() => onMute(p.socketId, 'video', true)}
-                              >
-                                {loadingActions?.[`${p.socketId}-video-muting`]
-                                  ? <Loader2 className="w-3 h-3 animate-spin" />
-                                  : 'No Video'
-                                }
-                              </Button>
-                            ) : (
-                              <span className="px-1.5 py-1 text-[10px] h-6 flex items-center justify-center rounded-md bg-red-500/10 text-red-500 font-semibold border border-red-500/20 whitespace-nowrap" title="Participant must turn camera on themselves">
-                                No Video
-                              </span>
-                            )}
-
-                            {/* Kick */}
-                            <Button
-                              disabled={!!loadingActions?.[`${p.socketId}-removing`]}
-                              variant="danger"
-                              size="sm"
-                              className="px-1.5 py-1 text-[10px] h-6 flex-shrink-0"
-                              onClick={() => onRemove(p.socketId)}
+                          <div className="relative ml-1 shrink-0">
+                            <Button 
+                              size="sm" 
+                              variant="glass" 
+                              className="px-1.5 py-1 h-6 hover:bg-white/10"
+                              onClick={() => setOpenMenuId(openMenuId === p.socketId ? null : p.socketId)}
                             >
-                              {loadingActions?.[`${p.socketId}-removing`]
-                                ? <Loader2 className="w-3 h-3 animate-spin" />
-                                : 'Kick'
-                              }
+                              <MoreVertical className="w-3.5 h-3.5" />
                             </Button>
+                            
+                            {openMenuId === p.socketId && (
+                              <div className="absolute right-0 top-full mt-1 bg-card/95 backdrop-blur-xl border border-white/10 rounded-xl shadow-2xl z-50 flex flex-col min-w-[120px] p-1 overflow-hidden">
+                                {!p.isMuted ? (
+                                  <button
+                                    disabled={!!loadingActions?.[`${p.socketId}-audio-muting`]}
+                                    className="px-3 py-2 text-xs text-left hover:bg-white/5 rounded-lg flex items-center justify-between text-red-400"
+                                    onClick={() => { onMute(p.socketId, 'audio', true); setOpenMenuId(null); }}
+                                  >
+                                    Mute Audio {loadingActions?.[`${p.socketId}-audio-muting`] && <Loader2 className="w-3 h-3 animate-spin" />}
+                                  </button>
+                                ) : (
+                                  <div className="px-3 py-2 text-xs text-left text-muted-foreground italic">Audio Muted</div>
+                                )}
+
+                                {hasStream ? (
+                                  <button
+                                    disabled={!!loadingActions?.[`${p.socketId}-video-muting`]}
+                                    className="px-3 py-2 text-xs text-left hover:bg-white/5 rounded-lg flex items-center justify-between text-red-400"
+                                    onClick={() => { onMute(p.socketId, 'video', true); setOpenMenuId(null); }}
+                                  >
+                                    Stop Video {loadingActions?.[`${p.socketId}-video-muting`] && <Loader2 className="w-3 h-3 animate-spin" />}
+                                  </button>
+                                ) : (
+                                  <div className="px-3 py-2 text-xs text-left text-muted-foreground italic">Video Stopped</div>
+                                )}
+
+                                {raisedHands?.has(p.socketId) && (
+                                  <button
+                                    className="px-3 py-2 text-xs text-left hover:bg-white/5 rounded-lg"
+                                    onClick={() => { onLowerHand(p.socketId); setOpenMenuId(null); }}
+                                  >
+                                    Lower Hand
+                                  </button>
+                                )}
+
+                                <div className="h-px bg-white/10 my-1"></div>
+
+                                <button
+                                  disabled={!!loadingActions?.[`${p.socketId}-removing`]}
+                                  className="px-3 py-2 text-xs text-left hover:bg-red-500/10 rounded-lg flex items-center justify-between text-red-500 font-semibold"
+                                  onClick={() => { onRemove(p.socketId); setOpenMenuId(null); }}
+                                >
+                                  Kick {loadingActions?.[`${p.socketId}-removing`] && <Loader2 className="w-3 h-3 animate-spin" />}
+                                </button>
+                              </div>
+                            )}
                           </div>
                         )}
                       </div>

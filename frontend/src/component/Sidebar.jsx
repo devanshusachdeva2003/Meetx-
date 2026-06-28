@@ -9,7 +9,9 @@ import {
   Sparkles,
   ChevronLeft,
   ChevronRight,
-  FileText
+  FileText,
+  CheckSquare,
+  PenTool
 } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 import { useState, useEffect } from "react";
@@ -37,13 +39,20 @@ const menu = [
     path: "/notes",
     public: true,
   },
-  // { icon: Users, label: "Contacts", key: "contacts", path: "/contacts" },
-  // {
-  //   icon: PlayCircle,
-  //   label: "Recordings",
-  //   key: "recordings",
-  //   path: "/recordings",
-  // },
+  {
+    icon: CheckSquare,
+    label: "Tasks",
+    key: "tasks",
+    path: "/tasks",
+    public: true,
+  },
+  {
+    icon: PenTool,
+    label: "Whiteboard",
+    key: "whiteboard",
+    path: "/whiteboard",
+    public: true,
+  },
   { icon: Settings, label: "Settings", key: "settings", path: "/settings" },
 ];
 
