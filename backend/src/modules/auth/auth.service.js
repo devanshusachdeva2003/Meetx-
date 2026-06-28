@@ -216,6 +216,75 @@ const updateUserAvatar = async (id, avatarUrl) => {
   return user;
 };
 
+const changePassword = async (id, currentPassword, newPassword) => {
+  const user = await User.findById(id);
+  if (!user) {
+    throw new Error('User not found');
+  }
+  
+  if (!user.passwordHash) {
+    throw new Error('No password set for this account. Please use Set Password instead.');
+  }
+
+  const isMatch = await bcrypt.compare(currentPassword, user.passwordHash);
+  if (!isMatch) {
+    throw new Error('Invalid current password');
+  }
+  
+  const passwordComplexityRegex = /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&])[A-Za-z\d@$!%*?&]{8,}$/;
+  if (!passwordComplexityRegex.test(newPassword)) {
+    throw new Error('Password must be at least 8 characters long and contain at least one uppercase, lowercase, number, and special character.');
+  }
+
+  const salt = await bcrypt.genSalt(10);
+  user.passwordHash = await bcrypt.hash(newPassword, salt);
+  await user.save();
+  return true;
+};
+
+const requestSetPasswordOtp = async (id) => {
+  const user = await User.findById(id);
+  if (!user) throw new Error('User not found');
+  if (user.passwordHash) throw new Error('Password already set');
+  
+  await createAndSendOTP(user.email);
+  return true;
+};
+
+const setPassword = async (id, otp, newPassword) => {
+  const user = await User.findById(id);
+  if (!user) {
+    throw new Error('User not found');
+  }
+
+  if (user.passwordHash) {
+    throw new Error('Password already set. Please use Change Password instead.');
+  }
+  
+  // Verify OTP
+  const otpRecord = await Otp.findOne({ email: user.email }).sort({ createdAt: -1 });
+  if (!otpRecord) throw new Error('Invalid OTP');
+  if (otpRecord.expiresAt < new Date()) {
+    await Otp.deleteMany({ email: user.email });
+    throw new Error('OTP has expired');
+  }
+  
+  const isMatch = await bcrypt.compare(otp, otpRecord.otpHash);
+  if (!isMatch) throw new Error('Invalid OTP');
+
+  const passwordComplexityRegex = /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&])[A-Za-z\d@$!%*?&]{8,}$/;
+  if (!passwordComplexityRegex.test(newPassword)) {
+    throw new Error('Password must be at least 8 characters long and contain at least one uppercase, lowercase, number, and special character.');
+  }
+
+  const salt = await bcrypt.genSalt(10);
+  user.passwordHash = await bcrypt.hash(newPassword, salt);
+  await user.save();
+  await Otp.deleteMany({ email: user.email }); // Cleanup OTP
+
+  return true;
+};
+
 const generateGoogleAuthUrl = () => {
   const client = getGoogleClient();
   const url = client.generateAuthUrl({
@@ -264,14 +333,18 @@ const verifyGoogleTokenAndLogin = async (code) => {
 
 module.exports = {
   registerUser,
-  verifyOTP,
   loginUser,
-  getUserById,
-  updateUserById,
-  updateUserAvatar,
+  verifyOTP,
   createAndSendOTP,
   forgotPassword,
   resetPassword,
+  getUserById,
+  updateUserById,
+  updateUserAvatar,
   generateGoogleAuthUrl,
-  verifyGoogleTokenAndLogin
+  verifyGoogleTokenAndLogin,
+  changePassword,
+  requestSetPasswordOtp,
+  setPassword
 };
+

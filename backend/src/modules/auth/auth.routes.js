@@ -22,6 +22,9 @@ router.get('/me', protect, authController.getMe);
 router.put('/me', protect, authLimiter, authController.updateMe);
 router.post('/me/avatar', protect, upload.single('avatar'), authController.uploadAvatar);
 router.delete('/me/avatar', protect, authController.removeAvatar);
+router.put('/me/password/change', protect, authLimiter, authController.changePassword);
+router.post('/me/password/request-otp', protect, authLimiter, authController.requestSetPasswordOtp);
+router.put('/me/password/set', protect, authLimiter, authController.setPassword);
 
 // Google Auth
 router.get('/google/url', authController.getGoogleAuthUrl);
