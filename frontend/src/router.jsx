@@ -15,6 +15,7 @@ import Settings from "./pages/Settings.jsx";
 import PrivateConnect from "./pages/PrivateConnect.jsx";
 import MemoryWall from "./pages/MemoryWall.jsx";
 import SharedMemory from "./pages/SharedMemory.jsx";
+import WhiteboardPage from "./pages/WhiteboardPage.jsx";
 import PrivacyPolicy from "./pages/PrivacyPolicy.jsx";
 import TermsOfService from "./pages/TermsOfService.jsx";
 import GoogleCallback from "./pages/GoogleCallback.jsx";
@@ -108,6 +109,22 @@ const Router = () => {
           element={
             <ProtectedRoute>
               <MemoryWall />
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/whiteboard"
+          element={
+            <ProtectedRoute>
+              <WhiteboardPage />
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/whiteboard/:id"
+          element={
+            <ProtectedRoute>
+              <WhiteboardPage />
             </ProtectedRoute>
           }
         />

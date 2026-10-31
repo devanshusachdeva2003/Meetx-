@@ -105,7 +105,7 @@ export default function MemoryWall() {
       setIsModalOpen(false);
       setEditingMemory(null);
     } catch (err) {
-      toast.error(err.response?.data?.error || 'Failed to save memory');
+      toast.error(err.response?.data?.message || err.response?.data?.error || 'Failed to save memory');
       throw err;
     }
   };
@@ -196,7 +196,7 @@ export default function MemoryWall() {
   };
 
   return (
-    <main className="flex-1 min-w-0 px-4 py-8 md:px-8 md:py-10 flex flex-col gap-6 h-full max-w-7xl mx-auto w-full">
+    <main className="flex-1 min-w-0 px-4 py-6 md:px-8 md:py-8 flex flex-col gap-6 min-h-full max-w-7xl mx-auto w-full">
       {/* Top Banner Header */}
       <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 pb-2">
         <div>
