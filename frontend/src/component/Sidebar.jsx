@@ -12,11 +12,8 @@ import {
   FileText,
   CheckSquare,
   PenTool,
-<<<<<<< HEAD
-  Heart
-=======
+  Heart,
   LogOut,
->>>>>>> 4c613abd68e7e63948c92320c2ae1baaf952a57b
 } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 import { useState, useEffect } from "react";
@@ -131,90 +128,6 @@ export function Sidebar({ mobileOpen, setMobileOpen }) {
             ) : null}
           </div>
 
-<<<<<<< HEAD
-        <div
-          className={`flex items-center ${isCollapsed && !mobileOpen ? "justify-center" : "gap-3 px-2"} pt-2 mb-2 cursor-pointer`}
-          onClick={() => navigate("/")}
-        >
-          <img
-            src="/meetlogo.png"
-            alt="MeetX Logo"
-            className="w-10 h-10 object-contain shrink-0"
-          />
-          {!isCollapsed || mobileOpen ? (
-            <span className="font-bold text-2xl tracking-tight text-foreground whitespace-nowrap">
-              Meet<span className="text-primary">X</span>
-            </span>
-          ) : null}
-        </div>
-
-        <nav className="flex flex-col gap-2">
-          {visibleMenu.map((item) => {
-            const Icon = item.icon;
-            return (
-              <NavLink
-                to={item.path}
-                key={item.key}
-                title={isCollapsed ? item.label : undefined}
-                className="block"
-              >
-                {({ isActive }) => (
-                  <motion.div
-                    whileHover={{ x: 4 }}
-                    whileTap={{ scale: 0.97 }}
-                    className={`relative flex items-center ${isCollapsed && !mobileOpen ? "justify-center" : "gap-3 px-4"} py-3 rounded-2xl text-sm font-medium transition-all cursor-pointer ${
-                      isActive
-                        ? "gradient-primary shadow-[0_0_20px_rgba(168,85,247,0.3)] text-white"
-                        : "text-muted-foreground hover:text-foreground hover:bg-muted"
-                    }`}
-                  >
-                    <Icon className="w-[18px] h-[18px] shrink-0" />
-                    {!(isCollapsed && !mobileOpen) && (
-                      <span className="whitespace-nowrap">{item.label}</span>
-                    )}
-                    {item.badgeDot && !(isCollapsed && !mobileOpen) && (
-                      <span className="ml-auto w-2 h-2 rounded-full bg-pink-500 shadow-[0_0_8px_#ec4899] animate-pulse" />
-                    )}
-                  </motion.div>
-                )}
-              </NavLink>
-            );
-          })}
-        </nav>
-
-        <div className="mt-auto flex flex-col gap-4">
-
-
-          {user ? (
-            <div
-              className={`flex items-center ${isCollapsed && !mobileOpen ? "justify-center" : "gap-3 p-2"} rounded-xl hover:bg-muted transition-colors cursor-pointer mt-2`}
-            >
-              <img
-                src={user?.avatar || avatarJohn}
-                alt={user.name}
-                className="w-10 h-10 rounded-full object-cover ring-2 ring-primary/40 shrink-0"
-              />
-              {!(isCollapsed && !mobileOpen) && (
-                <>
-                  <div className="flex-1 min-w-0">
-                    <p className="text-sm font-semibold text-foreground truncate">
-                      {user.name}
-                    </p>
-                    <p className="text-xs text-muted-foreground truncate">
-                      {user.email}
-                    </p>
-                  </div>
-                  <div className="flex flex-col items-end">
-                    <ChevronDown className="w-4 h-4 text-muted-foreground" />
-                    <Button
-                      variant="none"
-                      size="none"
-                      onClick={(e) => {
-                        e.stopPropagation();
-                        setShowLogoutConfirm(true);
-                      }}
-                      className="text-xs text-primary mt-1 hover:text-primary-glow whitespace-nowrap"
-=======
           <nav className="flex flex-col gap-2">
             {visibleMenu.map((item) => {
               const Icon = item.icon;
@@ -234,11 +147,13 @@ export function Sidebar({ mobileOpen, setMobileOpen }) {
                           ? "gradient-primary shadow-[0_0_20px_rgba(168,85,247,0.3)] text-white"
                           : "text-muted-foreground hover:text-foreground hover:bg-muted"
                       }`}
->>>>>>> 4c613abd68e7e63948c92320c2ae1baaf952a57b
                     >
                       <Icon className="w-[18px] h-[18px] shrink-0" />
                       {!(isCollapsed && !mobileOpen) && (
                         <span className="whitespace-nowrap">{item.label}</span>
+                      )}
+                      {item.badgeDot && !(isCollapsed && !mobileOpen) && (
+                        <span className="ml-auto w-2 h-2 rounded-full bg-pink-500 shadow-[0_0_8px_#ec4899] animate-pulse" />
                       )}
                     </motion.div>
                   )}
@@ -252,11 +167,6 @@ export function Sidebar({ mobileOpen, setMobileOpen }) {
               <div className="flex flex-col gap-2 w-full">
                 <div
                   className={`flex items-center ${isCollapsed && !mobileOpen ? "justify-center" : "gap-3 p-2"} rounded-xl hover:bg-muted transition-colors cursor-pointer mt-2`}
-                  // onClick={() => {
-                  //   if (isCollapsed && !mobileOpen) {
-                  //     setShowLogoutConfirm(true);
-                  //   }
-                  // }}
                   title={
                     isCollapsed && !mobileOpen
                       ? "Profile (Click to Sign Out)"
