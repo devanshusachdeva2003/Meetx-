@@ -35,12 +35,7 @@ const verifyOtp = async (req, res) => {
     const { user, token } = await authService.verifyOTP(email, otp);
     return sendSuccess(res, 200, 'OTP verified successfully', {
       token,
-      user: { 
-        id: user._id, 
-        name: user.name, 
-        email: user.email,
-        hasPassword: !!user.passwordHash 
-      }
+      user
     });
   } catch (error) {
     return sendError(res, 400, error.message);
@@ -62,12 +57,7 @@ const login = async (req, res) => {
 
     return sendSuccess(res, 200, 'Login successful', {
       token: result.token,
-      user: { 
-        id: result.user._id, 
-        name: result.user.name, 
-        email: result.user.email,
-        hasPassword: !!result.user.passwordHash
-      }
+      user: result.user
     });
   } catch (error) {
     return sendError(res, 400, error.message);
@@ -80,17 +70,7 @@ const getMe = async (req, res) => {
     if (!user) {
       return sendError(res, 404, 'User not found');
     }
-    return sendSuccess(res, 200, 'User retrieved successfully', {
-      user: { 
-        id: user._id, 
-        name: user.name, 
-        email: user.email, 
-        phone: user.phone,
-        avatar: user.avatar,
-        requiresTwoFactorAuth: user.requiresTwoFactorAuth,
-        hasPassword: !!user.passwordHash
-      }
-    });
+    return sendSuccess(res, 200, 'User retrieved successfully', { user });
   } catch (error) {
     return sendError(res, 400, error.message);
   }
@@ -99,16 +79,7 @@ const getMe = async (req, res) => {
 const updateMe = asyncHandler(async (req, res) => {
   const user = await authService.updateUserById(req.user.id, req.body);
   
-  return sendSuccess(res, 200, 'Profile updated successfully', {
-    user: { 
-      id: user._id, 
-      name: user.name, 
-      email: user.email, 
-      phone: user.phone,
-      avatar: user.avatar,
-      requiresTwoFactorAuth: user.requiresTwoFactorAuth
-    }
-  });
+  return sendSuccess(res, 200, 'Profile updated successfully', { user });
 });
 
 const resendOtp = async (req, res) => {
@@ -176,13 +147,7 @@ const googleLogin = async (req, res) => {
 
     return sendSuccess(res, 200, 'Login successful', {
       token: result.token,
-      user: { 
-        id: result.user._id, 
-        name: result.user.name, 
-        email: result.user.email, 
-        avatar: result.user.avatar,
-        hasPassword: !!result.user.passwordHash 
-      }
+      user: result.user
     });
   } catch (error) {
     return sendError(res, 400, error.message);
@@ -207,16 +172,7 @@ const uploadAvatar = async (req, res) => {
 
     const user = await authService.updateUserAvatar(req.user.id, result.secure_url);
 
-    return sendSuccess(res, 200, 'Avatar updated successfully', {
-      user: {
-        id: user._id, 
-        name: user.name, 
-        email: user.email, 
-        phone: user.phone,
-        avatar: user.avatar,
-        requiresTwoFactorAuth: user.requiresTwoFactorAuth
-      }
-    });
+    return sendSuccess(res, 200, 'Avatar updated successfully', { user });
   } catch (error) {
     if (req.file && fs.existsSync(req.file.path)) {
       fs.unlinkSync(req.file.path);
@@ -229,17 +185,7 @@ const removeAvatar = async (req, res) => {
   try {
     const user = await authService.updateUserAvatar(req.user.id, null);
     
-    return sendSuccess(res, 200, 'Avatar removed successfully', {
-      user: {
-        id: user._id, 
-        name: user.name, 
-        email: user.email, 
-        phone: user.phone,
-        avatar: user.avatar,
-        requiresTwoFactorAuth: user.requiresTwoFactorAuth,
-        hasPassword: !!user.passwordHash
-      }
-    });
+    return sendSuccess(res, 200, 'Avatar removed successfully', { user });
   } catch (error) {
     return sendError(res, 400, 'Failed to remove avatar: ' + error.message);
   }

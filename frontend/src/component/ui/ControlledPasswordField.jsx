@@ -36,6 +36,9 @@ const ControlledPasswordField = ({
               onChange={onChange}
               onBlur={onBlur}
               value={value}
+              data-lpignore="true"
+              data-1p-ignore="true"
+              autoComplete="new-password"
               className={cn(
                 "w-full pl-3 pr-10 py-2.5 text-sm font-[inherit] box-border",
                 "border-[1.5px] rounded-xl outline-none transition-all duration-200",

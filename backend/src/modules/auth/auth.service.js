@@ -18,6 +18,20 @@ const generateOTP = () => {
   return Math.floor(100000 + Math.random() * 900000).toString();
 };
 
+const sanitizeUser = (userDoc) => {
+  if (!userDoc) return null;
+  const rawUser = typeof userDoc.toObject === 'function' ? userDoc.toObject() : { ...userDoc };
+  return {
+    id: rawUser._id,
+    name: rawUser.name,
+    email: rawUser.email,
+    phone: rawUser.phone,
+    avatar: rawUser.avatar,
+    requiresTwoFactorAuth: rawUser.requiresTwoFactorAuth || false,
+    hasPassword: !!rawUser.passwordHash
+  };
+};
+
 const sendOTPEmail = async (email, otp) => {
   // If SMTP is not configured, just log to console as a mock
   if (!process.env.SMTP_HOST) {
@@ -82,7 +96,7 @@ const registerUser = async (name, email, password) => {
     createAndSendOTP(email).catch(err => console.error("OTP/email error", err))
   );
 
-  return user;
+  return sanitizeUser(user);
 };
 
 const verifyOTP = async (email, otp) => {
@@ -114,7 +128,7 @@ const verifyOTP = async (email, otp) => {
   await Otp.deleteMany({ email }); // cleanup
 
   const token = jwt.sign({ id: user._id }, process.env.JWT_SECRET || 'fallback_secret', { expiresIn: '7d' });
-  return { user, token };
+  return { user: sanitizeUser(user), token };
 };
 
 const loginUser = async (email, password) => {
@@ -140,11 +154,11 @@ const loginUser = async (email, password) => {
     waitUntil(
       createAndSendOTP(email).catch(err => console.error("OTP/email error", err))
     );
-    return { requireOtp: true, user };
+    return { requireOtp: true, user: sanitizeUser(user) };
   }
 
   const token = jwt.sign({ id: user._id }, process.env.JWT_SECRET || 'fallback_secret', { expiresIn: '7d' });
-  return { token, user };
+  return { token, user: sanitizeUser(user) };
 };
 
 const forgotPassword = async (email) => {
@@ -191,7 +205,8 @@ const resetPassword = async (email, otp, newPassword) => {
 };
 
 const getUserById = async (id) => {
-  return await User.findById(id).select('-passwordHash');
+  const user = await User.findById(id);
+  return sanitizeUser(user);
 };
 
 const updateUserById = async (id, data) => {
@@ -201,19 +216,19 @@ const updateUserById = async (id, data) => {
   if (data.phone !== undefined) updates.phone = data.phone;
   if (data.requiresTwoFactorAuth !== undefined) updates.requiresTwoFactorAuth = data.requiresTwoFactorAuth;
   
-  const user = await User.findByIdAndUpdate(id, updates, { new: true }).select('-passwordHash');
+  const user = await User.findByIdAndUpdate(id, updates, { new: true });
   if (!user) {
     throw new Error('User not found');
   }
-  return user;
+  return sanitizeUser(user);
 };
 
 const updateUserAvatar = async (id, avatarUrl) => {
-  const user = await User.findByIdAndUpdate(id, { avatar: avatarUrl }, { new: true }).select('-passwordHash');
+  const user = await User.findByIdAndUpdate(id, { avatar: avatarUrl }, { new: true });
   if (!user) {
     throw new Error('User not found');
   }
-  return user;
+  return sanitizeUser(user);
 };
 
 const changePassword = async (id, currentPassword, newPassword) => {
@@ -231,7 +246,7 @@ const changePassword = async (id, currentPassword, newPassword) => {
     throw new Error('Invalid current password');
   }
   
-  const passwordComplexityRegex = /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&])[A-Za-z\d@$!%*?&]{8,}$/;
+  const passwordComplexityRegex = /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[\W_])\S{8,}$/;
   if (!passwordComplexityRegex.test(newPassword)) {
     throw new Error('Password must be at least 8 characters long and contain at least one uppercase, lowercase, number, and special character.');
   }
@@ -272,7 +287,7 @@ const setPassword = async (id, otp, newPassword) => {
   const isMatch = await bcrypt.compare(otp, otpRecord.otpHash);
   if (!isMatch) throw new Error('Invalid OTP');
 
-  const passwordComplexityRegex = /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&])[A-Za-z\d@$!%*?&]{8,}$/;
+  const passwordComplexityRegex = /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[\W_])\S{8,}$/;
   if (!passwordComplexityRegex.test(newPassword)) {
     throw new Error('Password must be at least 8 characters long and contain at least one uppercase, lowercase, number, and special character.');
   }
@@ -328,7 +343,7 @@ const verifyGoogleTokenAndLogin = async (code) => {
 
   // Bypass OTP verification completely for Google login, even if requiresTwoFactorAuth is true
   const token = jwt.sign({ id: user._id }, process.env.JWT_SECRET || 'fallback_secret', { expiresIn: '7d' });
-  return { token, user };
+  return { token, user: sanitizeUser(user) };
 };
 
 module.exports = {
