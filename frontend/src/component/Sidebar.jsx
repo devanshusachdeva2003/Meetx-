@@ -14,6 +14,7 @@ import {
   PenTool,
   Heart,
   LogOut,
+  Images,
 } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 import { useState, useEffect } from "react";
@@ -54,6 +55,13 @@ const menu = [
     key: "whiteboard",
     path: "/whiteboard",
     public: true,
+  },
+  {
+    icon: Images,
+    label: "Memory Wall",
+    key: "memory-wall",
+    path: "/memory-wall",
+    public: false,
   },
   {
     icon: Heart,

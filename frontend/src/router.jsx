@@ -13,6 +13,8 @@ import Notes from "./pages/Notes.jsx";
 import Calendar from "./pages/Calendar.jsx";
 import Settings from "./pages/Settings.jsx";
 import PrivateConnect from "./pages/PrivateConnect.jsx";
+import MemoryWall from "./pages/MemoryWall.jsx";
+import SharedMemory from "./pages/SharedMemory.jsx";
 import PrivacyPolicy from "./pages/PrivacyPolicy.jsx";
 import TermsOfService from "./pages/TermsOfService.jsx";
 import GoogleCallback from "./pages/GoogleCallback.jsx";
@@ -102,6 +104,14 @@ const Router = () => {
           }
         />
         <Route
+          path="/memory-wall"
+          element={
+            <ProtectedRoute>
+              <MemoryWall />
+            </ProtectedRoute>
+          }
+        />
+        <Route
           path="*"
           element={
             <div className="flex-1 min-w-0 px-8 py-10 flex flex-col gap-8 h-full items-center justify-center text-gray-400">
@@ -113,6 +123,7 @@ const Router = () => {
           }
         />
       </Route>
+      <Route path="/shared-memory/:shareToken" element={<SharedMemory />} />
       <Route path="/meeting" element={<Meeting />} />
       <Route path="/meeting/:id" element={<Meeting />} />
       <Route path="/login" element={<Login />} />
