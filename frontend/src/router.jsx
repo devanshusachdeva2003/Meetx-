@@ -12,6 +12,7 @@ import Meetings from "./pages/Meetings.jsx";
 import Notes from "./pages/Notes.jsx";
 import Calendar from "./pages/Calendar.jsx";
 import Settings from "./pages/Settings.jsx";
+import PrivateConnect from "./pages/PrivateConnect.jsx";
 import PrivacyPolicy from "./pages/PrivacyPolicy.jsx";
 import TermsOfService from "./pages/TermsOfService.jsx";
 import GoogleCallback from "./pages/GoogleCallback.jsx";
@@ -89,6 +90,14 @@ const Router = () => {
           element={
             <ProtectedRoute>
               <Notes />
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/private-connect"
+          element={
+            <ProtectedRoute>
+              <PrivateConnect />
             </ProtectedRoute>
           }
         />

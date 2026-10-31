@@ -11,7 +11,8 @@ import {
   ChevronRight,
   FileText,
   CheckSquare,
-  PenTool
+  PenTool,
+  Heart
 } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 import { useState, useEffect } from "react";
@@ -52,6 +53,14 @@ const menu = [
     key: "whiteboard",
     path: "/whiteboard",
     public: true,
+  },
+  {
+    icon: Heart,
+    label: "Private Connect",
+    key: "private-connect",
+    path: "/private-connect",
+    public: false,
+    badgeDot: true,
   },
   { icon: Settings, label: "Settings", key: "settings", path: "/settings" },
 ];
@@ -142,6 +151,9 @@ export function Sidebar({ mobileOpen, setMobileOpen }) {
                     <Icon className="w-[18px] h-[18px] shrink-0" />
                     {!(isCollapsed && !mobileOpen) && (
                       <span className="whitespace-nowrap">{item.label}</span>
+                    )}
+                    {item.badgeDot && !(isCollapsed && !mobileOpen) && (
+                      <span className="ml-auto w-2 h-2 rounded-full bg-pink-500 shadow-[0_0_8px_#ec4899] animate-pulse" />
                     )}
                   </motion.div>
                 )}

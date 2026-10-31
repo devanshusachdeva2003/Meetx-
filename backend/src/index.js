@@ -4,10 +4,25 @@ const envFile = process.env.NODE_ENV
   : ".env.local";
 require("dotenv").config({ path: path.resolve(process.cwd(), envFile) });
 
+const http = require("http");
+const { Server } = require("socket.io");
 const app = require("./app");
+const { initPrivateConnectSocket } = require("./modules/privateConnect/socket");
+
+const server = http.createServer(app);
+const io = new Server(server, {
+  cors: {
+    origin: "*",
+    methods: ["GET", "POST", "PUT", "DELETE", "OPTIONS"],
+  },
+});
+
+initPrivateConnectSocket(io);
+
 if (!process.env.VERCEL) {
   const port = process.env.PORT || 4000;
-  app.listen(port, () => console.log(`Server listening on ${port}`));
+  server.listen(port, () => console.log(`Server listening on ${port}`));
 }
 
 module.exports = app;
+
