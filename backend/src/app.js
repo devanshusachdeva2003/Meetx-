@@ -43,7 +43,16 @@ app.use("/api", apiRoutes);
 
 // Static uploads (for recording files)
 const path = require("path");
-app.use("/uploads", express.static(path.join(process.cwd(), "uploads")));
+const os = require("os");
+const fs = require("fs");
+const localUploads = path.join(process.cwd(), "uploads");
+if (fs.existsSync(localUploads)) {
+  app.use("/uploads", express.static(localUploads));
+}
+const tmpRecordings = path.join(os.tmpdir(), "meetx_recordings");
+if (fs.existsSync(tmpRecordings)) {
+  app.use("/uploads/recordings", express.static(tmpRecordings));
+}
 
 // Global Error Handler MUST be the very last middleware
 app.use(errorHandler);

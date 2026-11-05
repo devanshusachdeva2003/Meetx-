@@ -5,6 +5,7 @@ const asyncHandler = require('../../utils/asyncHandler');
 const cloudinary = require('../../utils/cloudinary');
 const fs = require('fs');
 const path = require('path');
+const os = require('os');
 const jwt = require('jsonwebtoken');
 const ffmpeg = require('fluent-ffmpeg');
 const ffmpegInstaller = require('@ffmpeg-installer/ffmpeg');
@@ -350,9 +351,16 @@ const uploadRecording = asyncHandler(async (req, res) => {
     throw new Error('No recording file provided');
   }
 
-  const recordingsDir = path.join(process.cwd(), 'uploads', 'recordings');
-  if (!fs.existsSync(recordingsDir)) {
-    fs.mkdirSync(recordingsDir, { recursive: true });
+  // Writable temporary directory (works in local, Docker, and Vercel /tmp)
+  let recordingsDir = os.tmpdir();
+  try {
+    const subDir = path.join(os.tmpdir(), 'meetx_recordings');
+    if (!fs.existsSync(subDir)) {
+      fs.mkdirSync(subDir, { recursive: true });
+    }
+    recordingsDir = subDir;
+  } catch (err) {
+    console.warn('Could not create meetx_recordings subfolder, using os.tmpdir directly:', err.message);
   }
 
   const inputPath = req.file.path;
@@ -361,17 +369,65 @@ const uploadRecording = asyncHandler(async (req, res) => {
 
   broadcastMeetingEvent(id, 'recording:processing', { roomId: id, status: 'processing' });
 
+  let transcoded = false;
+  let finalFileUrl = '';
+  let fileSize = 0;
+
+  // 1. Try local FFmpeg transcode
+  try {
+    console.log(`[FFmpeg] Transcoding ${inputPath} -> ${outputPath}`);
+    await convertWebmToMp4(inputPath, outputPath);
+    if (fs.existsSync(outputPath)) {
+      transcoded = true;
+      fileSize = fs.statSync(outputPath).size;
+    }
+  } catch (ffmpegErr) {
+    console.warn('[FFmpeg] Local transcoding unavailable or error, will rely on Cloudinary:', ffmpegErr.message);
+  }
+
+  // 2. Upload to Cloudinary (cloud video transcode & hosting)
+  if (process.env.CLOUDINARY_API_KEY && process.env.CLOUDINARY_API_SECRET) {
+    const fileToUpload = transcoded && fs.existsSync(outputPath) ? outputPath : inputPath;
+    try {
+      console.log(`[Cloudinary] Uploading recording to Cloudinary: ${fileToUpload}`);
+      const cloudRes = await cloudinary.uploader.upload(fileToUpload, {
+        resource_type: 'video',
+        folder: 'meetx_recordings',
+        format: 'mp4',
+        public_id: `meetx_rec_${id}_${Date.now()}`
+      });
+      if (cloudRes.secure_url) {
+        finalFileUrl = cloudRes.secure_url;
+        fileSize = cloudRes.bytes || fileSize;
+      }
+    } catch (cErr) {
+      console.warn('[Cloudinary] Cloudinary upload notice:', cErr.message);
+    }
+  }
+
+  // Fallback to local URL if not uploaded to cloud
+  if (!finalFileUrl && transcoded && fs.existsSync(outputPath)) {
+    finalFileUrl = `/api/meetings/${id}/recordings/file/${mp4FileName}`;
+  }
+
+  // Clean up input WebM file
+  if (fs.existsSync(inputPath)) {
+    try { fs.unlinkSync(inputPath); } catch (e) {}
+  }
+
+  const isReady = Boolean(finalFileUrl || transcoded);
+
   const recordingEntry = {
     recordingOwner: req.user.id,
     ownerName: req.user.name || 'Host',
     startTime: meeting.recordingStartedAt || new Date(Date.now() - duration * 1000),
     endTime: new Date(),
     duration,
-    fileUrl: `/uploads/recordings/${mp4FileName}`,
+    fileUrl: finalFileUrl || outputPath,
     localPath: outputPath,
     format: 'mp4',
-    status: 'processing',
-    size: 0
+    status: isReady ? 'ready' : 'failed',
+    size: fileSize
   };
 
   meeting.recordings.push(recordingEntry);
@@ -379,74 +435,22 @@ const uploadRecording = asyncHandler(async (req, res) => {
   await meeting.save();
 
   const savedRecording = meeting.recordings[meeting.recordings.length - 1];
-  const savedRecordingId = savedRecording._id;
 
-  // Process FFmpeg transcode asynchronously
-  (async () => {
-    try {
-      console.log(`[FFmpeg] Transcoding ${inputPath} -> ${outputPath}`);
-      await convertWebmToMp4(inputPath, outputPath);
-
-      const stats = fs.statSync(outputPath);
-      const fileSize = stats.size;
-      let finalFileUrl = `/uploads/recordings/${mp4FileName}`;
-
-      if (process.env.CLOUDINARY_API_KEY && process.env.CLOUDINARY_API_SECRET) {
-        try {
-          const cloudRes = await cloudinary.uploader.upload(outputPath, {
-            resource_type: 'video',
-            folder: 'meetx_recordings',
-            public_id: `meetx_rec_${id}_${Date.now()}`
-          });
-          if (cloudRes.secure_url) {
-            finalFileUrl = cloudRes.secure_url;
-          }
-        } catch (cErr) {
-          console.warn('[FFmpeg] Cloudinary upload skipped, using local MP4:', cErr.message);
-        }
-      }
-
-      if (fs.existsSync(inputPath)) {
-        try { fs.unlinkSync(inputPath); } catch (e) {}
-      }
-
-      const updatedMeeting = await Meeting.findOne({ roomId: id });
-      if (updatedMeeting) {
-        const rec = updatedMeeting.recordings.id(savedRecordingId);
-        if (rec) {
-          rec.status = 'ready';
-          rec.fileUrl = finalFileUrl;
-          rec.size = fileSize;
-          rec.duration = duration;
-          await updatedMeeting.save();
-
-          broadcastMeetingEvent(id, 'recording:completed', {
-            roomId: id,
-            recording: rec
-          });
-          console.log(`[FFmpeg] Successfully generated MP4 for ${savedRecordingId}`);
-        }
-      }
-    } catch (err) {
-      console.error('[FFmpeg] Transcoding failed:', err);
-      const updatedMeeting = await Meeting.findOne({ roomId: id });
-      if (updatedMeeting) {
-        const rec = updatedMeeting.recordings.id(savedRecordingId);
-        if (rec) {
-          rec.status = 'failed';
-          await updatedMeeting.save();
-          broadcastMeetingEvent(id, 'recording:failed', {
-            roomId: id,
-            error: 'Failed to transcode recording into MP4.'
-          });
-        }
-      }
-    }
-  })();
+  if (savedRecording.status === 'ready') {
+    broadcastMeetingEvent(id, 'recording:completed', {
+      roomId: id,
+      recording: savedRecording
+    });
+  } else {
+    broadcastMeetingEvent(id, 'recording:failed', {
+      roomId: id,
+      error: 'Failed to process recording into MP4.'
+    });
+  }
 
   res.json({
     success: true,
-    message: 'Recording uploaded and queued for MP4 transcoding',
+    message: isReady ? 'Recording processed into MP4 successfully' : 'Recording failed to process',
     recording: savedRecording
   });
 });
@@ -512,17 +516,26 @@ const downloadRecording = asyncHandler(async (req, res) => {
     throw new Error(`Recording is not ready. Current status: ${recording.status}`);
   }
 
+  if (recording.fileUrl.startsWith('http')) {
+    let downloadUrl = recording.fileUrl;
+    if (downloadUrl.includes('/upload/') && !downloadUrl.includes('/upload/fl_attachment/')) {
+      downloadUrl = downloadUrl.replace('/upload/', '/upload/fl_attachment/');
+    }
+    return res.redirect(downloadUrl);
+  }
+
   if (recording.localPath && fs.existsSync(recording.localPath)) {
     return res.download(recording.localPath, `MeetX-${id}-${recordingId}.mp4`);
   }
 
-  if (recording.fileUrl.startsWith('http')) {
-    return res.redirect(recording.fileUrl);
+  const tempFallback = path.join(os.tmpdir(), 'meetx_recordings', path.basename(recording.fileUrl));
+  if (fs.existsSync(tempFallback)) {
+    return res.download(tempFallback, `MeetX-${id}-${recordingId}.mp4`);
   }
 
-  const fallback = path.join(process.cwd(), recording.fileUrl);
-  if (fs.existsSync(fallback)) {
-    return res.download(fallback, `MeetX-${id}-${recordingId}.mp4`);
+  const directTmp = path.join(os.tmpdir(), path.basename(recording.fileUrl));
+  if (fs.existsSync(directTmp)) {
+    return res.download(directTmp, `MeetX-${id}-${recordingId}.mp4`);
   }
 
   res.status(404);
