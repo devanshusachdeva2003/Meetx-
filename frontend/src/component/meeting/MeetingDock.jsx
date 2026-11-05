@@ -1,5 +1,28 @@
 import React from 'react';
-import { Mic, MicOff, Camera, CameraOff, Users, MessageSquare, MoreVertical, MonitorUp, MonitorOff, Loader2, Hand, Smile, Subtitles, Type, Palette, Layout, Settings, Image as ImageIcon, PenTool, FileText } from 'lucide-react';
+import {
+  Mic,
+  MicOff,
+  Camera,
+  CameraOff,
+  Users,
+  MessageSquare,
+  MoreVertical,
+  MonitorUp,
+  MonitorOff,
+  Loader2,
+  Hand,
+  Smile,
+  Subtitles,
+  Type,
+  Layout,
+  Image as ImageIcon,
+  PenTool,
+  FileText,
+  Disc,
+  Square,
+  Play,
+  Pause
+} from 'lucide-react';
 import Button from '../ui/Button';
 import { VirtualBackgroundMenu } from './VirtualBackgroundMenu';
 
@@ -27,15 +50,21 @@ export function MeetingDock({
   showNotes,
   showWhiteboard,
   onToggleNotes,
-  onToggleWhiteboard
+  onToggleWhiteboard,
+  // Recording props
+  isRecording = false,
+  isPaused = false,
+  formattedDuration = "00:00",
+  onStartRecording,
+  onStopRecording,
+  onPauseRecording,
+  onResumeRecording,
 }) {
   const [time, setTime] = React.useState(new Date());
   const [showReactions, setShowReactions] = React.useState(false);
   const [showCaptionsMenu, setShowCaptionsMenu] = React.useState(false);
   const [showBgMenu, setShowBgMenu] = React.useState(false);
   const [showMoreMenu, setShowMoreMenu] = React.useState(false);
-
-  // Close popovers on outside click could be added, but simple toggle for now is okay
 
   React.useEffect(() => {
     const timer = setInterval(() => setTime(new Date()), 1000);
@@ -56,6 +85,7 @@ export function MeetingDock({
           variant={isMuted ? 'danger' : 'glass'}
           className="group"
           disabled={isAudioLoading}
+          title={isMuted ? "Unmute Microphone" : "Mute Microphone"}
         >
           {isAudioLoading ? (
             <Loader2 className="w-5 h-5 animate-spin" />
@@ -73,6 +103,7 @@ export function MeetingDock({
             variant={isVideoOff ? 'danger' : 'glass'}
             className="group"
             disabled={isVideoLoading}
+            title={isVideoOff ? "Turn Camera On" : "Turn Camera Off"}
           >
             {isVideoLoading ? (
               <Loader2 className="w-5 h-5 animate-spin" />
@@ -111,8 +142,30 @@ export function MeetingDock({
           size="icon-lg"
           variant={isScreenSharing ? 'primary' : 'glass'}
           className="group"
+          title={isScreenSharing ? "Stop Screen Share" : "Share Screen"}
         >
           {isScreenSharing ? <MonitorOff className="w-5 h-5 group-hover:scale-110 transition-transform" /> : <MonitorUp className="w-5 h-5 group-hover:scale-110 transition-transform" />}
+        </Button>
+
+        {/* Meeting Recording Button */}
+        <Button
+          onClick={isRecording ? onStopRecording : onStartRecording}
+          size="icon-lg"
+          variant={isRecording ? 'danger' : 'glass'}
+          className={`group relative ${isRecording ? 'bg-red-500 hover:bg-red-600 text-white shadow-lg shadow-red-500/30' : ''}`}
+          title={isRecording ? `Recording (${formattedDuration}) - Click to stop` : 'Record Meeting'}
+        >
+          {isRecording ? (
+            <div className="relative flex items-center justify-center">
+              <Square className="w-5 h-5 fill-current text-white" />
+              <span className="absolute -top-1 -right-1 flex h-2.5 w-2.5">
+                <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-white opacity-75"></span>
+                <span className="relative inline-flex rounded-full h-2.5 w-2.5 bg-white"></span>
+              </span>
+            </div>
+          ) : (
+            <Disc className="w-5 h-5 text-red-500 group-hover:scale-110 transition-transform" />
+          )}
         </Button>
       </div>
 
@@ -124,6 +177,7 @@ export function MeetingDock({
           size="icon-lg"
           variant={isHandRaised ? 'primary' : 'glass'}
           className="group"
+          title={isHandRaised ? "Lower Hand" : "Raise Hand"}
         >
           <Hand className="w-5 h-5 group-hover:scale-110 transition-transform" />
         </Button>
@@ -153,6 +207,7 @@ export function MeetingDock({
             size="icon-lg"
             variant={showReactions ? 'soft' : 'glass'}
             className="group"
+            title="Reactions"
           >
             <Smile className="w-5 h-5 group-hover:scale-110 transition-transform" />
           </Button>
@@ -167,6 +222,7 @@ export function MeetingDock({
           size="icon-lg"
           variant={showParticipants ? 'soft' : 'glass'}
           className="group"
+          title="Participants"
         >
           <Users className="w-5 h-5 group-hover:scale-110 transition-transform" />
         </Button>
@@ -176,6 +232,7 @@ export function MeetingDock({
           size="icon-lg"
           variant={showChat ? 'soft' : 'glass'}
           className="group relative"
+          title="Chat"
         >
           <MessageSquare className="w-5 h-5 group-hover:scale-110 transition-transform" />
         </Button>
@@ -185,7 +242,47 @@ export function MeetingDock({
 
       <div className="relative">
         {showMoreMenu && (
-          <div className="absolute bottom-full right-0 mb-4 bg-card/90 backdrop-blur-xl border border-white/10 p-2 rounded-3xl w-48 shadow-2xl z-50 flex flex-col gap-1">
+          <div className="absolute bottom-full right-0 mb-4 bg-card/90 backdrop-blur-xl border border-white/10 p-2 rounded-3xl w-52 shadow-2xl z-50 flex flex-col gap-1">
+            {/* Record in More Menu */}
+            <button 
+              onClick={() => { 
+                if (isRecording) onStopRecording?.(); 
+                else onStartRecording?.(); 
+                setShowMoreMenu(false); 
+              }}
+              className={`flex items-center justify-between w-full px-4 py-3 rounded-2xl transition-colors text-sm font-medium ${isRecording ? 'bg-red-500/20 text-red-400 font-semibold' : 'hover:bg-white/5 text-foreground'}`}
+            >
+              <div className="flex items-center gap-3">
+                {isRecording ? (
+                  <Square className="w-5 h-5 fill-current text-red-500" />
+                ) : (
+                  <Disc className="w-5 h-5 text-red-500" />
+                )}
+                <span>{isRecording ? 'Stop Recording' : 'Record Meeting'}</span>
+              </div>
+              {isRecording && (
+                <span className="text-xs font-mono bg-red-500/30 px-2 py-0.5 rounded-full text-red-300">
+                  {formattedDuration}
+                </span>
+              )}
+            </button>
+
+            {isRecording && (
+              <button
+                onClick={() => {
+                  if (isPaused) onResumeRecording?.();
+                  else onPauseRecording?.();
+                  setShowMoreMenu(false);
+                }}
+                className="flex items-center gap-3 px-4 py-2.5 rounded-2xl transition-colors text-xs font-medium hover:bg-white/5 text-muted-foreground ml-2"
+              >
+                {isPaused ? <Play className="w-4 h-4 text-emerald-400" /> : <Pause className="w-4 h-4 text-amber-400" />}
+                <span>{isPaused ? "Resume Recording" : "Pause Recording"}</span>
+              </button>
+            )}
+
+            <div className="w-full h-px bg-white/10 my-1" />
+
             <button 
               onClick={() => { onToggleNotes(); setShowMoreMenu(false); }}
               className={`flex items-center gap-3 px-4 py-3 rounded-2xl transition-colors text-sm font-medium ${showNotes ? 'bg-primary/20 text-primary' : 'hover:bg-white/5 text-foreground'}`}
@@ -249,6 +346,7 @@ export function MeetingDock({
           variant={showMoreMenu ? 'soft' : 'glass'} 
           className="group"
           onClick={() => setShowMoreMenu(!showMoreMenu)}
+          title="More options"
         >
           <MoreVertical className="w-5 h-5 group-hover:scale-110 transition-transform" />
         </Button>

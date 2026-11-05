@@ -19,6 +19,8 @@ import { ReactionsOverlay } from "./ReactionsOverlay";
 import { LiveCaptions } from "./LiveCaptions";
 import { MeetingNotes } from "./MeetingNotes";
 import { MeetingWhiteboard } from "./MeetingWhiteboard";
+import { RecordingModal } from "./RecordingModal";
+import { useMeetingRecorder } from "../../hooks/useMeetingRecorder";
 
 export function MeetingUI({ id, name, onLeaveIntentional }) {
   const navigate = useNavigate();
@@ -438,7 +440,60 @@ export function MeetingUI({ id, name, onLeaveIntentional }) {
     sendNotes(new TextEncoder().encode(JSON.stringify({ type: 'tasks', tasks: updatedTasks })), { reliable: true });
   };
 
+  // Recording State & Data Channel
+  const [remoteRecorder, setRemoteRecorder] = useState(null);
+
+  const handleRecordingStatusMessage = React.useCallback((msg) => {
+    try {
+      const parsed = JSON.parse(new TextDecoder().decode(msg.payload));
+      if (parsed.isRecording) {
+        setRemoteRecorder(parsed.recorderName || "A participant");
+        toast.info(`${parsed.recorderName || "A participant"} started recording the meeting.`);
+      } else {
+        setRemoteRecorder(null);
+        toast.info("Meeting recording ended.");
+      }
+    } catch (e) {}
+  }, []);
+  const { send: sendRecordingStatus } = useDataChannel("meeting-recording", handleRecordingStatusMessage);
+
+  const {
+    isRecording,
+    isPaused,
+    recordingDuration,
+    formattedDuration,
+    recordedData,
+    showPreviewModal,
+    setShowPreviewModal,
+    startRecording: rawStartRecording,
+    stopRecording: rawStopRecording,
+    pauseRecording,
+    resumeRecording,
+    downloadRecording,
+  } = useMeetingRecorder(id);
+
+  const handleStartRecording = async () => {
+    const started = await rawStartRecording();
+    if (started) {
+      try {
+        const payload = { isRecording: true, recorderName: name };
+        sendRecordingStatus(new TextEncoder().encode(JSON.stringify(payload)), { reliable: true });
+      } catch (e) {}
+    }
+  };
+
+  const handleStopRecording = () => {
+    rawStopRecording();
+    try {
+      const payload = { isRecording: false };
+      sendRecordingStatus(new TextEncoder().encode(JSON.stringify(payload)), { reliable: true });
+    } catch (e) {}
+  };
+
   const doLeave = () => {
+    if (isRecording) {
+      handleStopRecording();
+    }
     if (onLeaveIntentional) onLeaveIntentional();
     room.disconnect();
   };
@@ -547,7 +602,15 @@ export function MeetingUI({ id, name, onLeaveIntentional }) {
 
   return (
     <div className="relative flex flex-col h-[100dvh] bg-background text-foreground font-manrope overflow-hidden">
-      <MeetingHeader id={id} onLeave={handleLeaveClick} />
+      <MeetingHeader 
+        id={id} 
+        onLeave={handleLeaveClick} 
+        isRecording={isRecording}
+        isPaused={isPaused}
+        formattedDuration={formattedDuration}
+        onStopRecording={handleStopRecording}
+        remoteRecordingBy={remoteRecorder}
+      />
 
       {waitingForHost ? (
         <LobbyUI localStream={localStream} handleLeaveClick={handleLeaveClick} />
@@ -692,6 +755,14 @@ export function MeetingUI({ id, name, onLeaveIntentional }) {
             currentBg={currentBg}
             onSelectBg={applyVirtualBackground}
             onUploadCustomBg={applyVirtualBackground}
+            // Recording
+            isRecording={isRecording}
+            isPaused={isPaused}
+            formattedDuration={formattedDuration}
+            onStartRecording={handleStartRecording}
+            onStopRecording={handleStopRecording}
+            onPauseRecording={pauseRecording}
+            onResumeRecording={resumeRecording}
           />
 
           <MeetingSidePanel
@@ -737,6 +808,13 @@ export function MeetingUI({ id, name, onLeaveIntentional }) {
           setShowLeaveConfirm(false);
           handleEndMeeting();
         }}
+      />
+
+      <RecordingModal
+        open={showPreviewModal}
+        onClose={() => setShowPreviewModal(false)}
+        recordedData={recordedData}
+        onDownload={downloadRecording}
       />
     </div>
   );
