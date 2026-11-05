@@ -77,6 +77,10 @@ export default function Meeting() {
         setToken(resp.data.token);
       } catch (e) {
         console.error(e);
+        if (e.response?.status === 403) {
+          setDisconnectReason('The meeting has ended.');
+          setKicked(true);
+        }
       }
     })();
   }, [id, name, hasJoined]);

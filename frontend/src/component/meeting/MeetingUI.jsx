@@ -20,7 +20,8 @@ import { LiveCaptions } from "./LiveCaptions";
 import { MeetingNotes } from "./MeetingNotes";
 import { MeetingWhiteboard } from "./MeetingWhiteboard";
 import { RecordingModal } from "./RecordingModal";
-import { useMeetingRecorder } from "../../hooks/useMeetingRecorder";
+import { useMeetingCanvasRecorder } from "../../hooks/useMeetingCanvasRecorder";
+import { useMeetingSocket } from "../../hooks/useMeetingSocket";
 
 export function MeetingUI({ id, name, onLeaveIntentional }) {
   const navigate = useNavigate();
@@ -61,12 +62,21 @@ export function MeetingUI({ id, name, onLeaveIntentional }) {
   const { user } = useUser();
   const [meetingData, setMeetingData] = useState(null);
   const [meetingDataLoaded, setMeetingDataLoaded] = useState(false);
+  const [meetingStatus, setMeetingStatus] = useState("waiting");
+  const [isStartingMeeting, setIsStartingMeeting] = useState(false);
+  const [isEndingMeeting, setIsEndingMeeting] = useState(false);
+  const [showRecordingModal, setShowRecordingModal] = useState(false);
 
   useEffect(() => {
     if (id) {
       api
         .get(`/meetings/${id}`)
-        .then((res) => setMeetingData(res.data.meeting))
+        .then((res) => {
+          setMeetingData(res.data.meeting);
+          if (res.data.meeting?.status) {
+            setMeetingStatus(res.data.meeting.status);
+          }
+        })
         .catch(console.error)
         .finally(() => setMeetingDataLoaded(true));
     }
@@ -77,6 +87,24 @@ export function MeetingUI({ id, name, onLeaveIntentional }) {
     user &&
     (meetingData.host === user.id || meetingData.host === user._id),
   );
+
+  const {
+    isRecording: socketIsRecording,
+    recorderName: socketRecorderName,
+    recordingProcessingStatus: socketProcessingStatus,
+    latestRecording: socketLatestRecording,
+  } = useMeetingSocket({
+    roomId: id,
+    user,
+    onMeetingStarted: () => {
+      setMeetingStatus("live");
+    },
+    onMeetingEnded: () => {
+      setMeetingStatus("ended");
+      if (onLeaveIntentional) onLeaveIntentional();
+      room.disconnect();
+    },
+  });
 
   const hostInRoom = allParticipants.some((p) => {
     try {
@@ -93,10 +121,10 @@ export function MeetingUI({ id, name, onLeaveIntentional }) {
     isLocalLobby = meta.isLobby === true;
   } catch (e) {}
 
-  // Only evaluate lobby state AFTER meeting data has loaded.
-  // Without this guard, isHost is always false during the API fetch,
-  // which causes a race condition that briefly shows the LobbyUI.
-  const waitingForHost = meetingDataLoaded && !isHost && (!hostInRoom || isLocalLobby);
+  // If meeting is not live yet, non-hosts wait in lobby.
+  // If host joins before starting, host sees LobbyUI with "Start Meeting Now" button!
+  const waitingForHost =
+    meetingDataLoaded && (meetingStatus !== "live" || (!isHost && isLocalLobby));
 
   const handleMute = async (identity, trackType, muted) => {
     const actionKey = trackType === 'audio' ? 'audio-muting' : 'video-muting';
@@ -164,17 +192,6 @@ export function MeetingUI({ id, name, onLeaveIntentional }) {
         delete next[`${identity}-denying`];
         return next;
       });
-    }
-  };
-
-  const handleEndMeeting = async () => {
-    try {
-      doLeave(); // Disconnect immediately so the user sees the intentional leave screen
-      await api.post(`/meetings/${id}/end`);
-      toast.success("Meeting ended");
-    } catch (e) {
-      console.error("Failed to end meeting", e);
-      toast.error("Failed to end meeting");
     }
   };
 
@@ -440,72 +457,85 @@ export function MeetingUI({ id, name, onLeaveIntentional }) {
     sendNotes(new TextEncoder().encode(JSON.stringify({ type: 'tasks', tasks: updatedTasks })), { reliable: true });
   };
 
-  // Recording State & Data Channel
-  const [remoteRecorder, setRemoteRecorder] = useState(null);
-
-  const handleRecordingStatusMessage = React.useCallback((msg) => {
-    try {
-      const parsed = JSON.parse(new TextDecoder().decode(msg.payload));
-      if (parsed.isRecording) {
-        setRemoteRecorder(parsed.recorderName || "A participant");
-        toast.info(`${parsed.recorderName || "A participant"} started recording the meeting.`);
-      } else {
-        setRemoteRecorder(null);
-        toast.info("Meeting recording ended.");
-      }
-    } catch (e) {}
-  }, []);
-  const { send: sendRecordingStatus } = useDataChannel("meeting-recording", handleRecordingStatusMessage);
+  // Composed Canvas Meeting Recorder (Captures actual meeting layout, video, screen shares, and mixed audio)
+  const isMuted = !isMicrophoneEnabled;
+  const isVideoOff = !isCameraEnabled;
 
   const {
     isRecording,
-    isPaused,
     recordingDuration,
     formattedDuration,
-    recordedData,
-    showPreviewModal,
-    setShowPreviewModal,
-    startRecording: rawStartRecording,
-    stopRecording: rawStopRecording,
-    pauseRecording,
-    resumeRecording,
-    downloadRecording,
-  } = useMeetingRecorder(id);
+    isUploading,
+    processingStatus,
+    setProcessingStatus,
+    readyRecording,
+    startRecording,
+    stopRecording,
+    downloadMp4,
+  } = useMeetingCanvasRecorder({
+    roomId: id,
+    room,
+    localParticipant,
+    localStream,
+    isLocalVideoOff: isVideoOff,
+    isLocalMuted: isMuted,
+    localName: name,
+    remoteStreams,
+    uiParticipants,
+    isHost,
+  });
 
-  const handleStartRecording = async () => {
-    const started = await rawStartRecording();
-    if (started) {
-      try {
-        const payload = { isRecording: true, recorderName: name };
-        sendRecordingStatus(new TextEncoder().encode(JSON.stringify(payload)), { reliable: true });
-      } catch (e) {}
+  useEffect(() => {
+    if (readyRecording || socketLatestRecording) {
+      setShowRecordingModal(true);
     }
-  };
+  }, [readyRecording, socketLatestRecording]);
 
-  const handleStopRecording = () => {
-    rawStopRecording();
+  const handleStartMeeting = async () => {
+    if (!isHost) return;
+    setIsStartingMeeting(true);
     try {
-      const payload = { isRecording: false };
-      sendRecordingStatus(new TextEncoder().encode(JSON.stringify(payload)), { reliable: true });
-    } catch (e) {}
+      await api.post(`/meetings/${id}/start`);
+      setMeetingStatus("live");
+      toast.success("Meeting started! Participants can now join.");
+    } catch (e) {
+      console.error("Failed to start meeting", e);
+      toast.error(e.response?.data?.message || "Failed to start meeting");
+    } finally {
+      setIsStartingMeeting(false);
+    }
   };
 
   const doLeave = () => {
     if (isRecording) {
-      handleStopRecording();
+      stopRecording();
     }
     if (onLeaveIntentional) onLeaveIntentional();
     room.disconnect();
   };
 
+  const handleEndMeeting = async () => {
+    if (!isHost) return;
+    setIsEndingMeeting(true);
+    try {
+      if (isRecording) {
+        await stopRecording();
+      }
+      await api.post(`/meetings/${id}/end`);
+      setMeetingStatus("ended");
+      toast.success("Meeting ended for everyone.");
+      doLeave();
+    } catch (e) {
+      console.error("Failed to end meeting", e);
+      toast.error(e.response?.data?.message || "Failed to end meeting");
+    } finally {
+      setIsEndingMeeting(false);
+    }
+  };
+
   const handleLeaveClick = () => {
     setShowLeaveConfirm(true);
   };
-
-  // Use reactive properties from useLocalParticipant() — reading directly from
-  // localParticipant.isMicrophoneEnabled is NOT reactive and won't trigger re-renders.
-  const isMuted = !isMicrophoneEnabled;
-  const isVideoOff = !isCameraEnabled;
 
   const toggleMute = async () => {
     setIsAudioLoading(true);
@@ -604,16 +634,28 @@ export function MeetingUI({ id, name, onLeaveIntentional }) {
     <div className="relative flex flex-col h-[100dvh] bg-background text-foreground font-manrope overflow-hidden">
       <MeetingHeader 
         id={id} 
+        isHost={isHost}
+        meetingStatus={meetingStatus}
+        onStartMeeting={handleStartMeeting}
+        isStartingMeeting={isStartingMeeting}
         onLeave={handleLeaveClick} 
-        isRecording={isRecording}
-        isPaused={isPaused}
+        isRecording={isRecording || socketIsRecording}
         formattedDuration={formattedDuration}
-        onStopRecording={handleStopRecording}
-        remoteRecordingBy={remoteRecorder}
+        onStopRecording={stopRecording}
+        remoteRecordingBy={isRecording ? null : socketRecorderName}
+        recordingProcessingStatus={processingStatus || socketProcessingStatus}
+        onOpenRecordingModal={() => setShowRecordingModal(true)}
       />
 
       {waitingForHost ? (
-        <LobbyUI localStream={localStream} handleLeaveClick={handleLeaveClick} />
+        <LobbyUI
+          localStream={localStream}
+          handleLeaveClick={handleLeaveClick}
+          isHost={isHost}
+          onStartMeeting={handleStartMeeting}
+          isStarting={isStartingMeeting}
+          meetingStatus={meetingStatus}
+        />
       ) : (
         <>
           <main className="flex-1 w-full h-full pb-28 px-4 md:px-8 overflow-hidden relative z-0 flex items-center justify-center">
@@ -755,14 +797,12 @@ export function MeetingUI({ id, name, onLeaveIntentional }) {
             currentBg={currentBg}
             onSelectBg={applyVirtualBackground}
             onUploadCustomBg={applyVirtualBackground}
-            // Recording
-            isRecording={isRecording}
-            isPaused={isPaused}
+            // Host & Recording
+            isHost={isHost}
+            isRecording={isRecording || socketIsRecording}
             formattedDuration={formattedDuration}
-            onStartRecording={handleStartRecording}
-            onStopRecording={handleStopRecording}
-            onPauseRecording={pauseRecording}
-            onResumeRecording={resumeRecording}
+            onStartRecording={startRecording}
+            onStopRecording={stopRecording}
           />
 
           <MeetingSidePanel
@@ -808,13 +848,15 @@ export function MeetingUI({ id, name, onLeaveIntentional }) {
           setShowLeaveConfirm(false);
           handleEndMeeting();
         }}
+        isEnding={isEndingMeeting}
       />
 
       <RecordingModal
-        open={showPreviewModal}
-        onClose={() => setShowPreviewModal(false)}
-        recordedData={recordedData}
-        onDownload={downloadRecording}
+        open={showRecordingModal}
+        onClose={() => setShowRecordingModal(false)}
+        status={processingStatus || socketProcessingStatus || (readyRecording || socketLatestRecording ? "ready" : "processing")}
+        recording={readyRecording || socketLatestRecording}
+        onDownload={() => downloadMp4(readyRecording?._id || socketLatestRecording?._id)}
       />
     </div>
   );

@@ -41,6 +41,10 @@ app.get("/health", (req, res) => {
 // Modular Routes Mount Point
 app.use("/api", apiRoutes);
 
+// Static uploads (for recording files)
+const path = require("path");
+app.use("/uploads", express.static(path.join(process.cwd(), "uploads")));
+
 // Global Error Handler MUST be the very last middleware
 app.use(errorHandler);
 

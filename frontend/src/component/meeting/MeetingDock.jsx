@@ -51,6 +51,8 @@ export function MeetingDock({
   showWhiteboard,
   onToggleNotes,
   onToggleWhiteboard,
+  // Host status
+  isHost = false,
   // Recording props
   isRecording = false,
   isPaused = false,
@@ -147,26 +149,34 @@ export function MeetingDock({
           {isScreenSharing ? <MonitorOff className="w-5 h-5 group-hover:scale-110 transition-transform" /> : <MonitorUp className="w-5 h-5 group-hover:scale-110 transition-transform" />}
         </Button>
 
-        {/* Meeting Recording Button */}
-        <Button
-          onClick={isRecording ? onStopRecording : onStartRecording}
-          size="icon-lg"
-          variant={isRecording ? 'danger' : 'glass'}
-          className={`group relative ${isRecording ? 'bg-red-500 hover:bg-red-600 text-white shadow-lg shadow-red-500/30' : ''}`}
-          title={isRecording ? `Recording (${formattedDuration}) - Click to stop` : 'Record Meeting'}
-        >
-          {isRecording ? (
-            <div className="relative flex items-center justify-center">
-              <Square className="w-5 h-5 fill-current text-white" />
-              <span className="absolute -top-1 -right-1 flex h-2.5 w-2.5">
-                <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-white opacity-75"></span>
-                <span className="relative inline-flex rounded-full h-2.5 w-2.5 bg-white"></span>
-              </span>
-            </div>
-          ) : (
-            <Disc className="w-5 h-5 text-red-500 group-hover:scale-110 transition-transform" />
-          )}
-        </Button>
+        {/* Host Meeting Recording Button */}
+        {isHost && (
+          <Button
+            onClick={isRecording ? onStopRecording : onStartRecording}
+            size="icon-lg"
+            variant={isRecording ? 'danger' : 'glass'}
+            className={`group relative ${isRecording ? 'bg-red-500 hover:bg-red-600 text-white shadow-lg shadow-red-500/30' : ''}`}
+            title={isRecording ? `Recording (${formattedDuration}) - Click to stop` : 'Record Meeting'}
+          >
+            {isRecording ? (
+              <div className="relative flex items-center justify-center">
+                <Square className="w-5 h-5 fill-current text-white" />
+                <span className="absolute -top-1 -right-1 flex h-2.5 w-2.5">
+                  <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-white opacity-75"></span>
+                  <span className="relative inline-flex rounded-full h-2.5 w-2.5 bg-white"></span>
+                </span>
+              </div>
+            ) : (
+              <Disc className="w-5 h-5 text-red-500 group-hover:scale-110 transition-transform" />
+            )}
+          </Button>
+        )}
+        {!isHost && isRecording && (
+          <div className="flex items-center gap-1.5 px-3 py-2 bg-red-500/10 border border-red-500/20 rounded-full text-red-400 text-xs font-semibold">
+            <span className="w-2 h-2 rounded-full bg-red-500 animate-pulse" />
+            <span>REC</span>
+          </div>
+        )}
       </div>
 
       <div className="w-px h-6 md:h-8 bg-white/10 mx-1 md:mx-2 hidden md:block" />
@@ -243,45 +253,49 @@ export function MeetingDock({
       <div className="relative">
         {showMoreMenu && (
           <div className="absolute bottom-full right-0 mb-4 bg-card/90 backdrop-blur-xl border border-white/10 p-2 rounded-3xl w-52 shadow-2xl z-50 flex flex-col gap-1">
-            {/* Record in More Menu */}
-            <button 
-              onClick={() => { 
-                if (isRecording) onStopRecording?.(); 
-                else onStartRecording?.(); 
-                setShowMoreMenu(false); 
-              }}
-              className={`flex items-center justify-between w-full px-4 py-3 rounded-2xl transition-colors text-sm font-medium ${isRecording ? 'bg-red-500/20 text-red-400 font-semibold' : 'hover:bg-white/5 text-foreground'}`}
-            >
-              <div className="flex items-center gap-3">
-                {isRecording ? (
-                  <Square className="w-5 h-5 fill-current text-red-500" />
-                ) : (
-                  <Disc className="w-5 h-5 text-red-500" />
+            {/* Host Record in More Menu */}
+            {isHost && (
+              <>
+                <button 
+                  onClick={() => { 
+                    if (isRecording) onStopRecording?.(); 
+                    else onStartRecording?.(); 
+                    setShowMoreMenu(false); 
+                  }}
+                  className={`flex items-center justify-between w-full px-4 py-3 rounded-2xl transition-colors text-sm font-medium ${isRecording ? 'bg-red-500/20 text-red-400 font-semibold' : 'hover:bg-white/5 text-foreground'}`}
+                >
+                  <div className="flex items-center gap-3">
+                    {isRecording ? (
+                      <Square className="w-5 h-5 fill-current text-red-500" />
+                    ) : (
+                      <Disc className="w-5 h-5 text-red-500" />
+                    )}
+                    <span>{isRecording ? 'Stop Recording' : 'Record Meeting'}</span>
+                  </div>
+                  {isRecording && (
+                    <span className="text-xs font-mono bg-red-500/30 px-2 py-0.5 rounded-full text-red-300">
+                      {formattedDuration}
+                    </span>
+                  )}
+                </button>
+
+                {isRecording && (
+                  <button
+                    onClick={() => {
+                      if (isPaused) onResumeRecording?.();
+                      else onPauseRecording?.();
+                      setShowMoreMenu(false);
+                    }}
+                    className="flex items-center gap-3 px-4 py-2.5 rounded-2xl transition-colors text-xs font-medium hover:bg-white/5 text-muted-foreground ml-2"
+                  >
+                    {isPaused ? <Play className="w-4 h-4 text-emerald-400" /> : <Pause className="w-4 h-4 text-amber-400" />}
+                    <span>{isPaused ? "Resume Recording" : "Pause Recording"}</span>
+                  </button>
                 )}
-                <span>{isRecording ? 'Stop Recording' : 'Record Meeting'}</span>
-              </div>
-              {isRecording && (
-                <span className="text-xs font-mono bg-red-500/30 px-2 py-0.5 rounded-full text-red-300">
-                  {formattedDuration}
-                </span>
-              )}
-            </button>
 
-            {isRecording && (
-              <button
-                onClick={() => {
-                  if (isPaused) onResumeRecording?.();
-                  else onPauseRecording?.();
-                  setShowMoreMenu(false);
-                }}
-                className="flex items-center gap-3 px-4 py-2.5 rounded-2xl transition-colors text-xs font-medium hover:bg-white/5 text-muted-foreground ml-2"
-              >
-                {isPaused ? <Play className="w-4 h-4 text-emerald-400" /> : <Pause className="w-4 h-4 text-amber-400" />}
-                <span>{isPaused ? "Resume Recording" : "Pause Recording"}</span>
-              </button>
+                <div className="w-full h-px bg-white/10 my-1" />
+              </>
             )}
-
-            <div className="w-full h-px bg-white/10 my-1" />
 
             <button 
               onClick={() => { onToggleNotes(); setShowMoreMenu(false); }}

@@ -9,6 +9,7 @@ const { Server } = require("socket.io");
 const app = require("./app");
 const { initPrivateConnectSocket } = require("./modules/privateConnect/socket");
 const { initWhiteboardSocket } = require("./modules/whiteboard/whiteboard.socket");
+const { initMeetingSocket } = require("./modules/meeting/meeting.socket");
 
 const server = http.createServer(app);
 const io = new Server(server, {
@@ -20,6 +21,7 @@ const io = new Server(server, {
 
 initPrivateConnectSocket(io);
 initWhiteboardSocket(io);
+initMeetingSocket(io);
 
 if (!process.env.VERCEL) {
   const port = process.env.PORT || 4000;
